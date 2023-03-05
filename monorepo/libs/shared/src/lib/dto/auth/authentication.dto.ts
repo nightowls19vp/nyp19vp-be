@@ -7,7 +7,12 @@ export class LoginReqDto {
   password: string;
 }
 
-export class LoginResDto extends BaseResDto {}
+export class LoginResDto extends BaseResDto {
+  @ApiProperty()
+  accessToken: string;
+  @ApiProperty()
+  refreshToken: string;
+}
 
 export class LogoutReqDto {
   username: string;
@@ -35,4 +40,6 @@ export class RegisterReqDto {
   email: string;
 }
 
-export class RegisterResDto extends BaseResDto {}
+export class RegisterResDto extends BaseResDto {
+  //fixme
+}

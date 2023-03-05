@@ -1,27 +1,27 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { AuthenticationService } from './authentication.service';
+import { AuthenticationController } from './authentication.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'AUTH_SERVICE',
+        name: 'USERS_SERVICE',
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'auth',
+            clientId: 'users',
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'auth-consumer',
+            groupId: 'users-consumer',
           },
         },
       },
     ]),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [AuthenticationController],
+  providers: [AuthenticationService],
 })
-export class AuthModule {}
+export class AuthenticationModule {}

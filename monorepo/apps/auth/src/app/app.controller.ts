@@ -1,6 +1,7 @@
+import { MessagePattern } from '@nestjs/microservices';
 import { Controller, Get } from '@nestjs/common';
 
-import { LoginResDto } from '@nyp19vp-be/shared';
+import { kafkaTopic, LoginResDto } from '@nyp19vp-be/shared';
 
 import { AppService } from './app.service';
 
@@ -11,5 +12,10 @@ export class AppController {
   @Get()
   getData() {
     return this.appService.getData();
+  }
+
+  @MessagePattern(kafkaTopic.HEALT_CHECK.AUTH)
+  healthcheck() {
+    return 'ok  ';
   }
 }
