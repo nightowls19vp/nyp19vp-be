@@ -19,11 +19,11 @@ export class AuthenticationService {
     });
     await createdAccount.save();
 
-    const res = await firstValueFrom(
-      this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
-    );
+    // const res = await firstValueFrom(
+    //   this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
+    // );
 
-    console.log('register: auth check users', res);
+    // console.log('register: auth check users', res);
 
     return Promise.resolve({
       status: 'success',
