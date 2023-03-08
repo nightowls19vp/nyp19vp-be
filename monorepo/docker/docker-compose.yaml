@@ -27,80 +27,19 @@ services:
       KAFKA_RESTART_DELAY: '5'
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: '0'
 
-  db_auth:
+  mongodb:
     env_file:
-      - ../.env.dev
+      - ./.env
     image: mongo
     restart: always
     ports:
-      - '${DB_AUTH_PORT}:27017'
+      - '${MONGO_PORT}:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${DB_AUTH_DATABASE}
     volumes:
-      - db_auth_data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-
-  db_users:
-    env_file: ../.env.dev
-    image: mongo
-    restart: always
-    ports:
-      - '${DB_USERS_PORT}:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${DB_USERS_DATABASE}
-    volumes:
-      - db_users_data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-
-  db_pkg_mgmt:
-    env_file: ../.env.dev
-    image: mongo
-    restart: always
-    ports:
-      - '${DB_PKG_MGMT_PORT}:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${DB_PKG_MGMT_DATABASE}
-    volumes:
-      - db_pkg_mgmt_data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-
-  db_prod_mgmt:
-    env_file: ../.env.dev
-    image: mongo
-    restart: always
-    ports:
-      - '${DB_PROD_MGMT_PORT}:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${DB_PROD_MGMT_DATABASE}
-    volumes:
-      - db_prod_mgmt_data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-
-  db_txn:
-    env_file: ../.env.dev
-    image: mongo
-    restart: always
-    ports:
-      - '${DB_TXN_PORT}:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${DB_TXN_DATABASE}
-    volumes:
-      - db_txn_data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - db_data:/data/db
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
 volumes:
-  db_auth_data:
-  db_users_data:
-  db_pkg_mgmt_data:
-  db_prod_mgmt_data:
-  db_txn_data:
+  db_data:

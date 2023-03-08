@@ -13,9 +13,28 @@ In the root directory
 ```sh
 cd monorepo/docker/
 
-# copy the config for dev env to docker folder
-cp ../.env.dev .env
+# run the docker compose file
+./run.sh
+```
 
-# run docker compose in detach mode
-docker compose up  -d
+## To start service
+
+### Run all
+
+In the root directory
+
+```sh
+cd monorepo/
+
+npx nx run-many --target=serve
+```
+
+### Run a specific service
+
+In the root directory
+
+```sh
+cd monorepo/
+
+npx nx serve <service name or service folder name>
 ```

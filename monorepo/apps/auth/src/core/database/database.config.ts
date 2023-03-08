@@ -9,10 +9,10 @@ dotenv.config({
 });
 
 export const dbCfg: IDbConfig = {
-  host: process.env.MONGO_HOST,
+  host: process.env.DB_AUTH_HOST,
   port: process.env.DB_AUTH_PORT,
-  username: process.env.MONGO_INITDB_ROOT_USERNAME,
-  password: process.env.MONGO_INITDB_ROOT_PASSWORD,
+  username: process.env.DB_AUTH_USER,
+  password: process.env.DB_AUTH_PASSWORD,
   database: process.env.DB_AUTH_DATABASE,
 };
 
