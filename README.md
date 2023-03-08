@@ -4,7 +4,9 @@
 
 ### Prerequisite
 
-Docker and docker must be installed and run in your machine
+Docker and docker must be installed and run in your machine.
+
+Eslint and Prettier extension MUST BE INSTALLED
 
 ### Commands
 

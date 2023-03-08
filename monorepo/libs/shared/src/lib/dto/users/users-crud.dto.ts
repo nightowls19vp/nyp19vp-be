@@ -7,8 +7,42 @@ import {
   IsMobilePhone,
   IsString,
   ValidateNested,
-} from 'class-validator/types/decorator/decorators';
+} from 'class-validator';
 import { BaseResDto } from '../base.dto';
+
+class UserSetting {
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true,
+  })
+  @IsBoolean()
+  readonly isProdOutOfStock: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true,
+  })
+  @IsBoolean()
+  readonly isGetCallNoti: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true,
+  })
+  @IsBoolean()
+  readonly isGetMsgNoti: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true,
+  })
+  @IsBoolean()
+  readonly isGetNewsNoti: boolean;
+}
 
 export class CreateUserReqDto {
   id: string;
@@ -53,40 +87,6 @@ export class UpdateUserReqDto extends OmitType(CreateUserReqDto, [
 
 export class UpdateUserResDto extends BaseResDto {}
 
-class UserSetting {
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isProdOutOfStock: Boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetCallNoti: Boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetMsgNoti: Boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetNewsNoti: Boolean;
-}
-
 export class UpdateUserSettingReqDto {
   @ApiProperty()
   @Type(() => UserSetting)
@@ -98,7 +98,7 @@ export class UpdateUserSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto {
   @ApiProperty()
-  img: BigInt;
+  img: bigint;
 }
 
 export class UpdateAvatarResDto extends BaseResDto {}
