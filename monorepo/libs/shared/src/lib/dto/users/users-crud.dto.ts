@@ -2,47 +2,8 @@ import { OmitType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail } from 'class-validator';
-import {
-  IsBoolean,
-  IsMobilePhone,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsMobilePhone, IsString, ValidateNested } from 'class-validator/types/decorator/decorators';
 import { BaseResDto } from '../base.dto';
-
-class UserSetting {
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isProdOutOfStock: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetCallNoti: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetMsgNoti: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    default: true,
-    required: true,
-  })
-  @IsBoolean()
-  readonly isGetNewsNoti: boolean;
-}
 
 export class CreateUserReqDto {
   id: string;
@@ -52,15 +13,15 @@ export class CreateUserReqDto {
     minLength: 3,
     maxLength: 30,
     uniqueItems: true,
-    required: true,
+    required: true
   })
   @IsString()
   name: string;
 
   @ApiProperty({
-    type: Date,
+    type: Date
   })
-  dob: Date;
+  dob: Date
 
   @ApiProperty()
   @IsMobilePhone('vi-VN')
@@ -69,36 +30,68 @@ export class CreateUserReqDto {
   @ApiProperty({
     type: String,
     uniqueItems: true,
-    required: true,
+    required: true
   })
   @IsEmail()
   email: string;
 
   @Type(() => UserSetting)
   @ValidateNested()
-  setting: UserSetting;
+  setting: UserSetting
 }
 
 export class CreateUserResDto extends BaseResDto {}
 
-export class UpdateUserReqDto extends OmitType(CreateUserReqDto, [
-  'email',
-] as const) {}
+export class UpdateUserReqDto extends OmitType(CreateUserReqDto, ['email'] as const) {}
 
 export class UpdateUserResDto extends BaseResDto {}
 
-export class UpdateUserSettingReqDto {
+class UserSetting {
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true
+  })
+  @IsBoolean()
+  readonly isProdOutOfStock: boolean
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true
+  })
+  @IsBoolean()
+  readonly isGetCallNoti: boolean
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true
+  })
+  @IsBoolean()
+  readonly isGetMsgNoti: boolean
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+    required: true
+  })
+  @IsBoolean()
+  readonly isGetNewsNoti: boolean
+}
+
+export class UpdateUserSettingReqDto{
   @ApiProperty()
   @Type(() => UserSetting)
   @ValidateNested()
-  setting: UserSetting;
+  setting: UserSetting
 }
 
 export class UpdateUserSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto {
   @ApiProperty()
-  img: bigint;
+  img: bigint
 }
 
 export class UpdateAvatarResDto extends BaseResDto {}
