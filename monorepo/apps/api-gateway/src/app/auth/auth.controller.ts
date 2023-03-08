@@ -50,10 +50,10 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('logout')
-  logout(@Body() reqDto: LogoutReqDto) {
+  logout(@Body() reqDto: LogoutReqDto): LogoutResDto {
     console.log('logout', reqDto);
 
-    return reqDto;
+    return;
   }
 
   @Post('register')
