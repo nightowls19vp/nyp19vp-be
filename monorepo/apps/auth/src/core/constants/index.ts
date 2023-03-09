@@ -1,0 +1,1 @@
+export const BCRYPT_HASHED_PASSWORD_LENGTH = 72;
