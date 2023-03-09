@@ -1,4 +1,4 @@
-import { OmitType } from '@nestjs/mapped-types';
+import { IntersectionType, PickType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNumberString } from 'class-validator';
@@ -9,40 +9,33 @@ class UserSetting {
   @ApiProperty({
     type: Boolean,
     default: true,
-    required: true
   })
   @IsBoolean()
-  readonly isProdOutOfStock: boolean
+  readonly stockNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
-    required: true
   })
   @IsBoolean()
-  readonly isGetCallNoti: boolean
+  readonly callNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
-    required: true
   })
   @IsBoolean()
-  readonly isGetMsgNoti: boolean
+  readonly msgNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
-    required: true
   })
   @IsBoolean()
-  readonly isGetNewsNoti: boolean
+  readonly newsNoti: boolean
 }
 
-
 export class CreateUserReqDto {
-  id: number;
-
   @ApiProperty({
     type: String,
     minLength: 3,
@@ -70,14 +63,24 @@ export class CreateUserReqDto {
   @IsEmail()
   email: string;
 
+  @ApiProperty()
   @Type(() => UserSetting)
   @ValidateNested()
   setting: UserSetting
 }
 
+export class UserIdDto {
+  _id: string
+}
+
 export class CreateUserResDto extends BaseResDto {}
 
-export class UpdateUserReqDto extends OmitType(CreateUserReqDto, ['email'] as const) {}
+export class UpdateReqDto extends PickType(CreateUserReqDto, ['name', 'dob', 'phone']) {}
+
+export class UpdateUserReqDto extends IntersectionType(
+  UpdateReqDto,
+  UserIdDto
+){}
 
 export class UpdateUserResDto extends BaseResDto {}
 
@@ -92,7 +95,7 @@ export class UpdateUserSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto {
   @ApiProperty()
-  img: bigint
+  avatar: bigint
 }
 
 export class UpdateAvatarResDto extends BaseResDto {}

@@ -1,14 +1,14 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CreateUserReqDto, UpdateUserReqDto } from '@nyp19vp-be/shared';
+import { CreateUserReqDto, CreateUserResDto, kafkaTopic, UpdateUserReqDto, UpdateUserResDto } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
 
 @Controller()
 export class UsersCrudController {
   constructor(private readonly usersCrudService: UsersCrudService) {}
 
-  @MessagePattern('createUsersCrud')
-  create(@Payload() createUserReqDto: CreateUserReqDto) {
+  @MessagePattern(kafkaTopic.USERS.CREATE)
+  create(@Payload() createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
     return this.usersCrudService.create(createUserReqDto);
   }
 
@@ -22,12 +22,9 @@ export class UsersCrudController {
     return this.usersCrudService.findOne(id);
   }
 
-  @MessagePattern('updateUsersCrud')
-  update(@Payload() updateUserReqDto: UpdateUserReqDto) {
-    return this.usersCrudService.update(
-      updateUserReqDto.id,
-      updateUserReqDto
-    );
+  @MessagePattern(kafkaTopic.USERS.UPDATE)
+  update(@Payload() updateUserReqDto: UpdateUserReqDto): Promise<UpdateUserResDto> {
+    return this.usersCrudService.update(updateUserReqDto);
   }
 
   @MessagePattern('removeUsersCrud')

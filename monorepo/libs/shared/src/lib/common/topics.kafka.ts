@@ -8,3 +8,10 @@ export const AUTH = {
   LOGOUT: 'logout',
   REGISTER: 'register',
 };
+
+export const USERS = {
+  CREATE: 'create',
+  READ: 'read',
+  UPDATE: 'update',
+  DELETE: 'delete'
+}
