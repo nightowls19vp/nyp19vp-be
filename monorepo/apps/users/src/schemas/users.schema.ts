@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { UserSetting } from './setting.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema({timestamps: true})
 export class User {
   @Prop({
     unique: true,
@@ -33,29 +33,20 @@ export class User {
 
   @Prop({
     type: String,
+    default: 'https://khoinguonsangtao.vn/wp-content/uploads/2022/07/hinh-avatar-hai-vit-trang-cat-dau-moi.jpg',
     required: false
   })
   avatar: string;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId, ref: 'UserSetting'
+    required: true,
+    default: Object
   })
   setting: UserSetting
 
   @Prop({
     type: Date
   })
-  createdAt: Date
-
-  @Prop({
-    type: Date
-  })
-  updatedAt: Date
-
-  @Prop({
-    type: Date
-  })
-
   deletedAt: Date
 }
 

@@ -11,28 +11,28 @@ class UserSetting {
     default: true,
   })
   @IsBoolean()
-  readonly stockNoti: boolean
+  stockNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
   })
   @IsBoolean()
-  readonly callNoti: boolean
+  callNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
   })
   @IsBoolean()
-  readonly msgNoti: boolean
+  msgNoti: boolean
 
   @ApiProperty({
     type: Boolean,
     default: true,
   })
   @IsBoolean()
-  readonly newsNoti: boolean
+  newsNoti: boolean
 }
 
 export class CreateUserReqDto {
@@ -62,11 +62,6 @@ export class CreateUserReqDto {
   })
   @IsEmail()
   email: string;
-
-  @ApiProperty()
-  @Type(() => UserSetting)
-  @ValidateNested()
-  setting: UserSetting
 }
 
 export class UserIdDto {
@@ -75,21 +70,26 @@ export class UserIdDto {
 
 export class CreateUserResDto extends BaseResDto {}
 
-export class UpdateReqDto extends PickType(CreateUserReqDto, ['name', 'dob', 'phone']) {}
+export class UpdateInfoReqDto extends PickType(CreateUserReqDto, ['name', 'dob', 'phone']) {}
 
 export class UpdateUserReqDto extends IntersectionType(
-  UpdateReqDto,
+  UpdateInfoReqDto,
   UserIdDto
 ){}
 
 export class UpdateUserResDto extends BaseResDto {}
 
-export class UpdateUserSettingReqDto{
+export class UpdateSettingReqDto{
   @ApiProperty()
   @Type(() => UserSetting)
   @ValidateNested()
   setting: UserSetting
 }
+
+export class UpdateUserSettingReqDto extends IntersectionType(
+  UpdateSettingReqDto,
+  UserIdDto
+){}
 
 export class UpdateUserSettingResDto extends BaseResDto {}
 
