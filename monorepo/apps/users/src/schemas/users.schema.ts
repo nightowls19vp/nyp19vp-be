@@ -47,6 +47,16 @@ export class User {
   @Prop({
     type: Date
   })
+  createdAt: Date
+
+  @Prop({
+    type: Date
+  })
+  updatedAt: Date
+
+  @Prop({
+    type: Date
+  })
   deletedAt: Date
 }
 

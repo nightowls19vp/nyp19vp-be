@@ -10,8 +10,12 @@ export const AUTH = {
 };
 
 export const USERS = {
-  CREATE: 'create',
-  READ: 'read',
-  UPDATE: 'update',
-  DELETE: 'delete'
+  CREATE: 'createUser',
+  GET_INFO_BY_ID: 'getUserInfoById',
+  GET_SETTING_BY_ID: 'getUserSettingById',
+  GET_ALL: 'getAllUsers',
+  UPDATE_INFO: 'updateUserInfo',
+  UPDATE_SETTING: 'updateUserSetting',
+  UPDATE_AVATAR: 'updateUserAvatar',
+  DELETE_ONE: 'deleteUser'
 }
