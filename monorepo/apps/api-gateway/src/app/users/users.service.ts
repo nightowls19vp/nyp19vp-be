@@ -5,6 +5,7 @@ import {
   CreateUserResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -40,7 +41,7 @@ export class UsersService {
       this.usersClient.send(kafkaTopic.USERS.GET_SETTING_BY_ID, id)
     );
   }
-  getAllUsers(req: Request) {
+  getAllUsers(req: Request): Promise<GetUsersResDto> {
     return firstValueFrom(this.usersClient.send(kafkaTopic.USERS.GET_ALL, req));
   }
   updateSetting(

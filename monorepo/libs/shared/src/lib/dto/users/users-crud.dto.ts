@@ -76,29 +76,14 @@ class UserId{
   _id: string;
 }
 
-class UserTimestamp{
-  @ApiProperty()
-  createdAt: Date;
-
-  @ApiProperty()
-  updatedAt: Date;
-}
-
-class UserInfoDto extends PartialType(UserTimestamp){
+class UserInfoDto {
   @ApiProperty()
   @Type(() => UserInfoWithoutId)
   @ValidateNested()
   user: UserInfoWithoutId;
 }
 
-class UserSettingDto extends PartialType(UserTimestamp){
-  @ApiProperty()
-  @Type(() => UserSetting)
-  @ValidateNested()
-  setting: UserSetting;
-}
-
-export class UserDto extends PartialType(UserInfoDto){
+class UserSettingDto {
   @ApiProperty()
   @Type(() => UserSetting)
   @ValidateNested()
@@ -109,7 +94,7 @@ export class UsersDto{
   @ApiProperty()
   @Type(() => UserSetting)
   @ValidateNested()
-  users: UserDto[]
+  users: UserInfoDto[]
 }
 
 export class GetUsersResDto extends IntersectionType(BaseResDto, UsersDto) {}
@@ -118,7 +103,7 @@ export class GetUserInfoResDto extends IntersectionType(BaseResDto, UserInfoDto)
 
 export class GetUserSettingResDto extends IntersectionType(BaseResDto, UserSettingDto) {}
 
-export class CreateUserReqDto extends OmitType(UserInfo, ['_id', 'avatar']) {}
+export class CreateUserReqDto extends OmitType(UserInfoWithoutId, ['avatar']) {}
 
 export class CreateUserResDto extends BaseResDto {}
 

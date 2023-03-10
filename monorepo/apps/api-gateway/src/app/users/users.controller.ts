@@ -15,6 +15,7 @@ import {
   CreateUserResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -58,7 +59,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get()
-  async getAll(@Req() req: Request) {
+  async getAll(@Req() req: Request): Promise<GetUsersResDto>{
     console.log('get all users');
 
     return this.usersService.getAllUsers(req);

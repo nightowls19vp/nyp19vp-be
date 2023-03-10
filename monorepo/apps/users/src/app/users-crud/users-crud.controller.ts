@@ -5,6 +5,7 @@ import {
   CreateUserResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -27,7 +28,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_ALL)
-  findAll() {
+  findAll(): Promise<GetUsersResDto> {
     return this.usersCrudService.findAll();
   }
 

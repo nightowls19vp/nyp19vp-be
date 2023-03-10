@@ -5,14 +5,13 @@ import {
   CreateUserResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  GetUsersResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
-  UserDto,
-  UsersDto,
 } from '@nyp19vp-be/shared';
 import { Model, now } from 'mongoose';
 import { User, UserDocument } from '../../schemas/users.schema';
@@ -37,50 +36,40 @@ export class UsersCrudService {
     });
   }
 
-  async findAll() {
-    const users = await this.userModel.find().exec();
-    const userList = new UsersDto();
-
+  async findAll(): Promise<GetUsersResDto> {
+    console.log(`users-svc#get-all-users`);
+    const users = await this.userModel.find({ deletedAt: null }).exec();
+    // eslint-disable-next-line prefer-const
+    let userList = [];
     users.forEach(function (ele) {
-      const user = new UserDto();
-      user.user = ele;
-      user.setting = ele.setting;
-      user.createdAt = ele.createdAt;
-      user.updatedAt = ele.updatedAt;
-      userList.users.push(user);
+      userList.push(ele);
     });
-    return userList;
-    // return Promise.resolve({
-    //   status: 'success',
-    //   msg: `get user #${id} successfully`,
-    //   });
-    // });
+    return Promise.resolve({
+      status: 'success',
+      msg: 'get all users successfully',
+      users: userList
+    });
   }
 
   async findInfoById(id: string): Promise<GetUserInfoResDto> {
     console.log(`users-svc#get-user-by-id: `, id);
     const _id: ObjectId = new ObjectId(id);
-    const user = await this.userModel.findOne({ _id: _id });
-    console.log(user);
+    const user = await this.userModel.findOne({ _id: _id, deletedAt: null });
     return Promise.resolve({
       status: 'success',
       msg: `get user #${id} successfully`,
-      user: user,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      user: user
     });
   }
 
   async findSettingById(id: string): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id: `, id);
     const _id: ObjectId = new ObjectId(id);
-    const user = await this.userModel.findOne({ _id: _id });
+    const user = await this.userModel.findOne({ _id: _id, deletedAt: null });
     return Promise.resolve({
       status: 'success',
       msg: `get user #${id} successfully`,
-      setting: user.setting,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      setting: user.setting
     });
   }
 
@@ -148,3 +137,4 @@ export class UsersCrudService {
     });
   }
 }
+
