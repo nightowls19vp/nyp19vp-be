@@ -15,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DataBaseModule } from '../core/database/database.module';
 import { AccountService } from './services/account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -25,6 +26,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           ? process.env.ENV_FILE
           : CONST.ENV_FILE.DEV,
     }),
+    ClientsModule.register([
+      {
+        name: 'USERS_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'users',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'users-consumer',
+          },
+        },
+      },
+    ]),
     DataBaseModule,
     TypeOrmModule.forFeature([
       AccountEntity,

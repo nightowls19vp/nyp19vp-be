@@ -7,6 +7,9 @@ export const AUTH = {
   LOGIN: 'login',
   LOGOUT: 'logout',
   REGISTER: 'register',
+  AUTHORIZE: 'authorize',
+  CHANGE_PASSWORD: 'changePassword',
+  DELETE_ACCOUNT: 'deleteAccount',
 };
 
 export const USERS = {
@@ -17,5 +20,5 @@ export const USERS = {
   UPDATE_INFO: 'updateUserInfo',
   UPDATE_SETTING: 'updateUserSetting',
   UPDATE_AVATAR: 'updateUserAvatar',
-  DELETE_ONE: 'deleteUser'
-}
+  DELETE_ONE: 'deleteUser',
+};

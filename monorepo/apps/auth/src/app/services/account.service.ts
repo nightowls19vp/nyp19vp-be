@@ -1,12 +1,14 @@
+import { HttpStatus } from '@nestjs/common/enums';
 import { RegisterReqDto, RegisterResDto } from '@nyp19vp-be/shared';
 import { AccountEntity } from './../entities/account.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 
 @Injectable()
 export class AccountService {
   constructor(
+    private dataSource: DataSource,
     @InjectRepository(AccountEntity)
     private accountRespo: Repository<AccountEntity>,
   ) {}
@@ -16,18 +18,35 @@ export class AccountService {
   }
 
   async create(reqDto: RegisterReqDto): Promise<RegisterResDto> {
-    const testAccount: AccountEntity = this.accountRespo.create({
+    const account: AccountEntity = this.accountRespo.create({
       username: reqDto.username,
       hasedPassword: reqDto.password,
     });
 
-    const saveResult = await this.accountRespo.save(testAccount);
+    let saveResult = null;
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    console.log(saveResult);
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      saveResult = await this.accountRespo.save(account);
+
+      // await send user profile to users service
+
+      console.log(saveResult);
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'create account fail',
+        error: error.message,
+      };
+    }
 
     return {
-      status: saveResult ? 'success' : 'fail',
-      msg: saveResult ? 'create account successfully' : 'create account fail',
+      statusCode: saveResult ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
+      message: saveResult
+        ? 'create account successfully'
+        : 'create account fail',
     };
   }
 

@@ -9,7 +9,9 @@ import {
   OnModuleInit,
   Inject,
 } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,
   LoginReqDto,
@@ -21,6 +23,7 @@ import {
 } from '@nyp19vp-be/shared';
 import { AuthService } from './auth.service';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController implements OnModuleInit {
   constructor(
@@ -28,7 +31,7 @@ export class AuthController implements OnModuleInit {
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
   async onModuleInit() {
-    this.authClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.AUTH);
+    // this.authClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.AUTH);
 
     for (const key in kafkaTopic.AUTH) {
       this.authClient.subscribeToResponseOf(kafkaTopic.AUTH[key]);
@@ -42,8 +45,8 @@ export class AuthController implements OnModuleInit {
     console.log('login', reqDto);
 
     return {
-      status: 'success',
-      msg: 'login success with user ' + reqDto.username,
+      statusCode: HttpStatus.OK,
+      message: 'login success with user ' + reqDto.username,
     };
   }
 
@@ -60,4 +63,7 @@ export class AuthController implements OnModuleInit {
 
     return this.authService.register(reqDto);
   }
+
+  // @Get('authorize')
+  // authorize()
 }
