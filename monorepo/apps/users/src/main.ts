@@ -6,6 +6,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { randomUUID } from 'crypto';
 
 import { AppModule } from './app/users.module';
 
@@ -19,10 +20,10 @@ async function bootstrap() {
           brokers: ['localhost:9092'],
         },
         consumer: {
-          groupId: 'users-consumer',
+          groupId: 'users-consumer' + randomUUID(),
         },
       },
-    }
+    },
   );
   app.listen();
 }

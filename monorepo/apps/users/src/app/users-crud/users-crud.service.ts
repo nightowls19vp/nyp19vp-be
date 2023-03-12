@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateUserReqDto,
@@ -32,11 +32,19 @@ export class UsersCrudService {
       phone: createUserReqDto.phone,
       email: createUserReqDto.email,
     });
-    await newUser.save();
-    return Promise.resolve({
-      status: 'success',
-      msg: `create user #${createUserReqDto.email} successfully`,
-    });
+    try {
+      await newUser.save();
+      return Promise.resolve({
+        statusCode: HttpStatus.OK,
+        message: `create user #${createUserReqDto.email} successfully`,
+      });
+    } catch (error) {
+      return Promise.resolve({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `create user #${createUserReqDto.email} fail`,
+        error: error.message,
+      });
+    }
   }
 
   async findAll(): Promise<GetUsersResDto> {
@@ -47,61 +55,63 @@ export class UsersCrudService {
     users.forEach(function (ele) {
       userList.push(ele);
     });
-    if(userList.length != 0 ){
+    if (userList.length != 0) {
       return Promise.resolve({
-        status: 'success',
-        msg: 'get all users successfully',
-        users: userList
+        statusCode: HttpStatus.OK,
+        message: 'get all users successfully',
+        users: userList,
       });
     } else {
       return Promise.resolve({
-        status: 'fail',
-        msg: 'No users found',
-        users: userList
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'No users found',
+        users: userList,
       });
     }
-    
   }
 
-  async findInfoById(id: string): Promise<GetUserInfoResDto>{
+  async findInfoById(id: string): Promise<GetUserInfoResDto> {
     console.log(`users-svc#get-user-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
     const user = await this.userModel.findOne({ _id: _id, deletedAt: null });
-    if(user != null)
+    if (user != null)
       return Promise.resolve({
-        status: 'success',
-        msg: `get user #${id} successfully`,
-        user: user
+        statusCode: HttpStatus.OK,
+        message: `get user #${id} successfully`,
+        user: user,
       });
-    else 
+    else
       return Promise.resolve({
-        status: 'fail',
-        msg: `No user with id: #${id} found`,
-        user: user
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: `No user with id: #${id} found`,
+        user: user,
       });
   }
 
   async findSettingById(id: string): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
-    const user = await this.userModel.findOne({ _id: _id, deletedAt: null }, {setting: 1, _id: 0});
-    if(user != null){
+    const user = await this.userModel.findOne(
+      { _id: _id, deletedAt: null },
+      { setting: 1, _id: 0 },
+    );
+    if (user != null) {
       return Promise.resolve({
-        status: 'success',
-        msg: `get user #${id} successfully`,
-        setting: user.setting
+        statusCode: HttpStatus.OK,
+        message: `get user #${id} successfully`,
+        setting: user.setting,
       });
     } else {
       return Promise.resolve({
-        status: 'fail',
-        msg: `No user with id: #${id} found`,
-        setting: user.setting
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: `No user with id: #${id} found`,
+        setting: user.setting,
       });
     }
   }
 
   async updateInfo(
-    updateUserReqDto: UpdateUserReqDto
+    updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     console.log(`users-svc#udpate-user:`, updateUserReqDto._id);
     const id: ObjectId = new ObjectId(updateUserReqDto._id);
@@ -111,17 +121,17 @@ export class UsersCrudService {
         name: updateUserReqDto.name,
         dob: updateUserReqDto.dob,
         phone: updateUserReqDto.phone,
-      }
+      },
     );
-    console.log(res)
+    console.log(res);
     return Promise.resolve({
-      status: 'success',
-      msg: `update user #${updateUserReqDto._id} successfully`,
+      statusCode: HttpStatus.OK,
+      message: `update user #${updateUserReqDto._id} successfully`,
     });
   }
 
   async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
+    updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     console.log(`users-svc#udpate-setting:`, updateSettingReqDto._id);
     const id: ObjectId = new ObjectId(updateSettingReqDto._id);
@@ -129,26 +139,26 @@ export class UsersCrudService {
       { _id: id },
       {
         setting: updateSettingReqDto,
-      }
+      },
     );
     return Promise.resolve({
-      status: 'success',
-      msg: `update user #${updateSettingReqDto._id} successfully`,
+      statusCode: HttpStatus.OK,
+      message: `update user #${updateSettingReqDto._id} successfully`,
     });
   }
 
   async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
+    updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     console.log(`users-svc#udpate-avatar:`, updateAvatarReqDto._id);
     const id: ObjectId = new ObjectId(updateAvatarReqDto._id);
     await this.userModel.updateOne(
       { _id: id },
-      { avatar: updateAvatarReqDto.avatar }
+      { avatar: updateAvatarReqDto.avatar },
     );
     return Promise.resolve({
-      status: 'success',
-      msg: `update user #${updateAvatarReqDto._id} successfully`,
+      statusCode: HttpStatus.OK,
+      message: `update user #${updateAvatarReqDto._id} successfully`,
     });
   }
 
@@ -157,54 +167,51 @@ export class UsersCrudService {
     const _id: ObjectId = new ObjectId(id);
     await this.userModel.updateOne(
       { _id: _id },
-      { deletedAt: new Date(now())},
-      {new: true}
+      { deletedAt: new Date(now()) },
+      { new: true },
     );
     return Promise.resolve({
-      status: 'success',
-      msg: `delete user #${id} successfully`,
+      statusCode: HttpStatus.OK,
+      message: `delete user #${id} successfully`,
     });
   }
 
-  async updateCart(updateCartReqDto: UpdateCartReqDto): Promise<UpdateCartResDto> {
+  async updateCart(
+    updateCartReqDto: UpdateCartReqDto,
+  ): Promise<UpdateCartResDto> {
     console.log(`update items of user's cart`, updateCartReqDto.cart);
     const _id: ObjectId = new ObjectId(updateCartReqDto._id);
     const cart = this.userModel.updateOne(
       { _id: _id },
       { cart: updateCartReqDto.cart },
-      { new: true }
-    )
+      { new: true },
+    );
     return Promise.resolve({
-      status: 'success',
-      msg: `${cart}`,
+      statusCode: HttpStatus.OK,
+      message: `${cart}`,
     });
   }
 
   async getCart(id: string): Promise<GetCartResDto> {
     console.log(`get items from user's cart`, id);
-    const res = await this.userModel.find(
-      { _id: id },
-      { cart: 1, _id: 0 },
-    )
+    const res = await this.userModel.find({ _id: id }, { cart: 1, _id: 0 });
     // eslint-disable-next-line prefer-const
     let cart = [];
     res.forEach(function (ele) {
       cart.push(ele);
     });
-    if(cart.length != 0){
+    if (cart.length != 0) {
       return Promise.resolve({
-        status: 'success',
-        msg: `get user #${id}'s cart `,
-        cart: cart
+        statusCode: HttpStatus.OK,
+        message: `get user #${id}'s cart `,
+        cart: cart,
       });
     } else {
       return Promise.resolve({
-        status: 'fail',
-        msg: `No items found in user #${id}'s cart`,
-        cart: cart
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: `No items found in user #${id}'s cart`,
+        cart: cart,
       });
     }
-    
   }
 }
-

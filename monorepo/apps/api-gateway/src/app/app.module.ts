@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { randomUUID } from 'crypto';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,7 +21,7 @@ import { UsersModule } from './users/users.module';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'auth-consumer',
+            groupId: 'auth-consumer' + randomUUID(),
           },
         },
       },
@@ -33,7 +34,7 @@ import { UsersModule } from './users/users.module';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'users-consumer',
+            groupId: 'users-consumer' + randomUUID(),
           },
         },
       },

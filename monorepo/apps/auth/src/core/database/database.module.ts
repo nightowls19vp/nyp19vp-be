@@ -26,7 +26,7 @@ console.log({
       entities: [],
       autoLoadEntities: true,
       synchronize: true,
-      logging: true,
+      logging: false,
     }),
   ],
 })

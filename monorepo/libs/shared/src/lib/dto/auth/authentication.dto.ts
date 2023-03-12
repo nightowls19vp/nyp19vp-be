@@ -72,11 +72,10 @@ class UserInfo {
   @ApiProperty({
     description: 'date of birth',
     type: Date,
-    example: '2001-12-01',
     required: false,
     nullable: true,
   })
-  @IsDateString()
+  @Transform(({ value }) => value && new Date(value))
   @IsDate()
   dob: Date;
 

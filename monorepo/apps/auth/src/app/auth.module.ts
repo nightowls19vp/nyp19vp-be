@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { StatusEntity } from './entities/status.entity';
 import { RefreshTokenBlacklistEntity } from './entities/refresh-token-blacklist.entity';
 import { ActionEntity } from './entities/action.entity';
@@ -36,7 +37,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'users-consumer',
+            groupId: 'users-consumer' + randomUUID(),
           },
         },
       },
