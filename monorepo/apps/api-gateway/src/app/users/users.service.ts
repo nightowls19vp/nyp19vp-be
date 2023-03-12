@@ -3,12 +3,15 @@ import { ClientKafka } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
   CreateUserResDto,
+  GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  UpdateCartReqDto,
+  UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
   UpdateUserReqDto,
@@ -31,7 +34,7 @@ export class UsersService {
       this.usersClient.send(kafkaTopic.USERS.UPDATE_INFO, updateUserReqDto)
     );
   }
-  getUserInfoById(id: string): Promise<GetUserInfoResDto> {
+  async getUserInfoById(id: string): Promise<GetUserInfoResDto> {
     return firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
     );
@@ -64,6 +67,16 @@ export class UsersService {
   deleteUser(id: string): Promise<CreateUserResDto> {
     return firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.DELETE_ONE, id)
+    );
+  }
+  updateCart(updateCartReqDto: UpdateCartReqDto): Promise<UpdateCartResDto>{
+    return firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.UPDATE_CART, updateCartReqDto)
+    );
+  }
+  getCart(id: string): Promise<GetCartResDto>{
+    return firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.GET_CART, id)
     );
   }
 }

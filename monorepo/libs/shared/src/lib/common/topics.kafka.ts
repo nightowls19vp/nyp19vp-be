@@ -21,4 +21,6 @@ export const USERS = {
   UPDATE_SETTING: 'updateUserSetting',
   UPDATE_AVATAR: 'updateUserAvatar',
   DELETE_ONE: 'deleteUser',
+  UPDATE_CART: 'updateShoppingCart',
+  GET_CART: 'getShoppingCart',
 };

@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateUserReqDto,
   CreateUserResDto,
+  GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  UpdateCartReqDto,
+  UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
   UpdateUserReqDto,
@@ -44,41 +47,65 @@ export class UsersCrudService {
     users.forEach(function (ele) {
       userList.push(ele);
     });
-    return Promise.resolve({
-      status: 'success',
-      msg: 'get all users successfully',
-      users: userList
-    });
+    if(userList.length != 0 ){
+      return Promise.resolve({
+        status: 'success',
+        msg: 'get all users successfully',
+        users: userList
+      });
+    } else {
+      return Promise.resolve({
+        status: 'fail',
+        msg: 'No users found',
+        users: userList
+      });
+    }
+    
   }
 
-  async findInfoById(id: string): Promise<GetUserInfoResDto> {
-    console.log(`users-svc#get-user-by-id: `, id);
+  async findInfoById(id: string): Promise<GetUserInfoResDto>{
+    console.log(`users-svc#get-user-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
     const user = await this.userModel.findOne({ _id: _id, deletedAt: null });
-    return Promise.resolve({
-      status: 'success',
-      msg: `get user #${id} successfully`,
-      user: user
-    });
+    if(user != null)
+      return Promise.resolve({
+        status: 'success',
+        msg: `get user #${id} successfully`,
+        user: user
+      });
+    else 
+      return Promise.resolve({
+        status: 'fail',
+        msg: `No user with id: #${id} found`,
+        user: user
+      });
   }
 
   async findSettingById(id: string): Promise<GetUserSettingResDto> {
-    console.log(`users-svc#get-setting-by-id: `, id);
+    console.log(`users-svc#get-setting-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
-    const user = await this.userModel.findOne({ _id: _id, deletedAt: null });
-    return Promise.resolve({
-      status: 'success',
-      msg: `get user #${id} successfully`,
-      setting: user.setting
-    });
+    const user = await this.userModel.findOne({ _id: _id, deletedAt: null }, {setting: 1, _id: 0});
+    if(user != null){
+      return Promise.resolve({
+        status: 'success',
+        msg: `get user #${id} successfully`,
+        setting: user.setting
+      });
+    } else {
+      return Promise.resolve({
+        status: 'fail',
+        msg: `No user with id: #${id} found`,
+        setting: user.setting
+      });
+    }
   }
 
   async updateInfo(
     updateUserReqDto: UpdateUserReqDto
   ): Promise<UpdateUserResDto> {
-    console.log(`users-svc#udpate-user: `, updateUserReqDto._id);
+    console.log(`users-svc#udpate-user:`, updateUserReqDto._id);
     const id: ObjectId = new ObjectId(updateUserReqDto._id);
-    await this.userModel.updateOne(
+    const res = await this.userModel.updateOne(
       { _id: id },
       {
         name: updateUserReqDto.name,
@@ -86,6 +113,7 @@ export class UsersCrudService {
         phone: updateUserReqDto.phone,
       }
     );
+    console.log(res)
     return Promise.resolve({
       status: 'success',
       msg: `update user #${updateUserReqDto._id} successfully`,
@@ -95,7 +123,7 @@ export class UsersCrudService {
   async updateSetting(
     updateSettingReqDto: UpdateSettingReqDto
   ): Promise<UpdateSettingResDto> {
-    console.log(`users-svc#udpate-setting: `, updateSettingReqDto._id);
+    console.log(`users-svc#udpate-setting:`, updateSettingReqDto._id);
     const id: ObjectId = new ObjectId(updateSettingReqDto._id);
     await this.userModel.updateOne(
       { _id: id },
@@ -112,7 +140,7 @@ export class UsersCrudService {
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto
   ): Promise<UpdateAvatarResDto> {
-    console.log(`users-svc#udpate-avatar: `, updateAvatarReqDto._id);
+    console.log(`users-svc#udpate-avatar:`, updateAvatarReqDto._id);
     const id: ObjectId = new ObjectId(updateAvatarReqDto._id);
     await this.userModel.updateOne(
       { _id: id },
@@ -125,16 +153,58 @@ export class UsersCrudService {
   }
 
   async removeUser(id: string): Promise<CreateUserResDto> {
-    console.log(`users-svc#delete-user: `, id);
+    console.log(`users-svc#delete-user:`, id);
     const _id: ObjectId = new ObjectId(id);
     await this.userModel.updateOne(
       { _id: _id },
-      { deletedAt: new Date(now()) }
+      { deletedAt: new Date(now())},
+      {new: true}
     );
     return Promise.resolve({
       status: 'success',
       msg: `delete user #${id} successfully`,
     });
+  }
+
+  async updateCart(updateCartReqDto: UpdateCartReqDto): Promise<UpdateCartResDto> {
+    console.log(`update items of user's cart`, updateCartReqDto.cart);
+    const _id: ObjectId = new ObjectId(updateCartReqDto._id);
+    const cart = this.userModel.updateOne(
+      { _id: _id },
+      { cart: updateCartReqDto.cart },
+      { new: true }
+    )
+    return Promise.resolve({
+      status: 'success',
+      msg: `${cart}`,
+    });
+  }
+
+  async getCart(id: string): Promise<GetCartResDto> {
+    console.log(`get items from user's cart`, id);
+    const res = await this.userModel.find(
+      { _id: id },
+      { cart: 1, _id: 0 },
+    )
+    // eslint-disable-next-line prefer-const
+    let cart = [];
+    res.forEach(function (ele) {
+      cart.push(ele);
+    });
+    if(cart.length != 0){
+      return Promise.resolve({
+        status: 'success',
+        msg: `get user #${id}'s cart `,
+        cart: cart
+      });
+    } else {
+      return Promise.resolve({
+        status: 'fail',
+        msg: `No items found in user #${id}'s cart`,
+        cart: cart
+      });
+    }
+    
   }
 }
 
