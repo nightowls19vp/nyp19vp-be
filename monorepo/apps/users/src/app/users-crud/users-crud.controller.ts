@@ -3,12 +3,15 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
   CreateUserResDto,
+  GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  UpdateCartReqDto,
+  UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
   UpdateUserReqDto,
@@ -67,4 +70,15 @@ export class UsersCrudController {
   removeUser(@Payload() id: string): Promise<CreateUserResDto> {
     return this.usersCrudService.removeUser(id);
   }
+
+  @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
+  updateCart(@Payload() updateCartReqDto: UpdateCartReqDto):Promise<UpdateCartResDto> {
+    return this.usersCrudService.updateCart(updateCartReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.GET_CART)
+  getCart(@Payload() id: string):Promise<GetCartResDto> {
+    return this.usersCrudService.getCart(id);
+  }
+
 }

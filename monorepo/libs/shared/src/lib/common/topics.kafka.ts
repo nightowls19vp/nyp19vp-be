@@ -17,5 +17,7 @@ export const USERS = {
   UPDATE_INFO: 'updateUserInfo',
   UPDATE_SETTING: 'updateUserSetting',
   UPDATE_AVATAR: 'updateUserAvatar',
-  DELETE_ONE: 'deleteUser'
+  DELETE_ONE: 'deleteUser',
+  UPDATE_CART: 'updateShoppingCart',
+  GET_CART: 'getShoppingCart'
 }

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Item } from './item.schema';
 import { UserSetting } from './setting.schema';
 
 export type UserDocument = HydratedDocument<User>;
@@ -45,6 +46,12 @@ export class User {
   setting: UserSetting
 
   @Prop({
+    required: true,
+    default: []
+  })
+  cart: Item[]
+
+  @Prop({
     type: Date
   })
   createdAt: Date
@@ -61,3 +68,22 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre('validate', function validate(next) {
+  // eslint-disable-next-line prefer-const
+  let unique = [];
+
+  for (let i = 0, l = this.cart.length; i < l; i++) {
+    // eslint-disable-next-line prefer-const
+    let pkg = this.cart[i].package;
+
+    if (unique.indexOf(pkg) > -1) {
+      return next(new Error('Duplicated sub document!'));
+    }
+
+    unique.push(pkg);
+  }
+
+  next();
+});
+

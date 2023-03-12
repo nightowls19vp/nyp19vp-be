@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Inject,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -13,12 +14,15 @@ import { UsersService } from './users.service';
 import {
   CreateUserReqDto,
   CreateUserResDto,
+  GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  UpdateCartReqDto,
+  UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
   UpdateUserReqDto,
@@ -27,7 +31,6 @@ import {
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import {
-  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiOkResponse,
 } from '@nestjs/swagger';
@@ -49,7 +52,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'Created User' })
+  @ApiCreatedResponse({ description: 'Created User', type: CreateUserResDto })
   async create(
     @Body() createUserReqDto: CreateUserReqDto
   ): Promise<CreateUserResDto> {
@@ -59,32 +62,59 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get()
-  async getAll(@Req() req: Request): Promise<GetUsersResDto>{
+  @ApiOkResponse({ description: 'Got All Users', type: GetUsersResDto })
+  async getAll(@Req() req: Request): Promise<GetUsersResDto> {
     console.log('get all users');
 
-    return this.usersService.getAllUsers(req);
+    const res = await this.usersService.getAllUsers(req);
+    if (res.status == 'success') {
+      return res;
+    } else {
+      throw new NotFoundException('NOT FOUND', {
+        cause: new Error(),
+        description: res.msg,
+      });
+    }
   }
 
-  @Get(':_id')
-  @ApiOkResponse({ description: 'Got User by Id' })
-  async getUserInfoById(@Param('_id') id: string): Promise<GetUserInfoResDto> {
-    console.log(`get user info #${id}`);
-    return this.usersService.getUserInfoById(id);
+  @Get(':id')
+  @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
+  async getUserInfoById(@Param('id') id: string): Promise<GetUserInfoResDto> {
+    const res = await this.usersService.getUserInfoById(id);
+    if (res.status == 'success') {
+      return res;
+    } else {
+      throw new NotFoundException('NOT FOUND', {
+        cause: new Error(),
+        description: res.msg,
+      });
+    }
   }
 
-  @Get(':_id/setting')
+  @Get(':id/setting')
+  @ApiOkResponse({
+    description: 'Got User Setting by Id',
+    type: GetUserSettingResDto,
+  })
   async getUserSettingById(
-    @Param('_id') id: string
+    @Param('id') id: string
   ): Promise<GetUserSettingResDto> {
     console.log(`get user setting #${id}`);
-    return this.usersService.getUserSettingById(id);
+    const res = await this.usersService.getUserSettingById(id);
+    if (res.status == 'success') {
+      return res;
+    } else {
+      throw new NotFoundException('NOT FOUND', {
+        cause: new Error(),
+        description: res.msg,
+      });
+    }
   }
 
-  @Put(':_id')
-  @ApiOkResponse({ description: 'Updated User' })
-  @ApiBadRequestResponse({ description: 'Bad Request Response' })
+  @Put(':id')
+  @ApiOkResponse({ description: 'Updated User', type: UpdateUserResDto })
   async updateUser(
-    @Param('_id') id: string,
+    @Param('id') id: string,
     @Body() updateUserReqDto: UpdateUserReqDto
   ): Promise<UpdateUserResDto> {
     console.log(`update user #${id}`, updateUserReqDto);
@@ -92,11 +122,10 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateUser(updateUserReqDto);
   }
 
-  @Put(':_id/setting')
-  @ApiOkResponse({ description: 'Updated User Setting' })
-  @ApiBadRequestResponse({ description: 'Bad Request Response' })
+  @Put(':id/setting')
+  @ApiOkResponse({ description: 'Updated User Setting', type: UpdateSettingResDto })
   async updateSetting(
-    @Param('_id') id: string,
+    @Param('id') id: string,
     @Body() updateSettingReqDto: UpdateSettingReqDto
   ): Promise<UpdateSettingResDto> {
     console.log(`update user #${id}`, updateSettingReqDto);
@@ -104,11 +133,10 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
-  @Put(':_id/avatar')
-  @ApiOkResponse({ description: 'Updated User Setting' })
-  @ApiBadRequestResponse({ description: 'Bad Request Response' })
+  @Put(':id/avatar')
+  @ApiOkResponse({ description: 'Updated User Setting', type: UpdateAvatarResDto })
   async updateAvatar(
-    @Param('_id') id: string,
+    @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto
   ): Promise<UpdateAvatarResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
@@ -116,9 +144,33 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateAvatar(updateAvatarReqDto);
   }
 
-  @Patch(':_id')
-  async deleteUser(@Param('_id') id: string): Promise<CreateUserResDto> {
+  @Patch(':id')
+  @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
+  async deleteUser(@Param('id') id: string): Promise<CreateUserResDto> {
     return this.usersService.deleteUser(id);
+  }
+
+  @Put(':id/cart')
+  @ApiOkResponse({ description: 'Updated shopping cart', type: UpdateCartResDto })
+  async updateCart(@Param('id') id: string, @Body() updateCartReqDto: UpdateCartReqDto): Promise<UpdateCartResDto> {
+    console.log(`update items of user #${id}'s cart`, updateCartReqDto);
+    updateCartReqDto._id = id;
+    return this.usersService.updateCart(updateCartReqDto);
+  }
+
+  @Get(':id/cart')
+  @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
+  async getCart(@Param('id') id: string): Promise<GetCartResDto> {
+    console.log(`get items of user #${id}'s cart`);
+    const res = await this.usersService.getCart(id);
+    if(res.status == 'success'){
+      return res;
+    } else {
+      throw new NotFoundException('NOT FOUND', {
+        cause: new Error(),
+        description: res.msg,
+      });
+    }
   }
 
   @Get('healthcheck')
