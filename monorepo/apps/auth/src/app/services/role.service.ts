@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class AppService {
+export class RoleService {
   getData(): { message: string } {
-    return { message: 'Welcome to auth!' };
+    return { message: 'Welcome to auth/Role!' };
   }
 }

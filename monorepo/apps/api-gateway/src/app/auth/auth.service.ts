@@ -14,7 +14,7 @@ import { ClientKafka } from '@nestjs/microservices';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
 
   login(reqDto: LoginReqDto): Promise<LoginResDto> {
@@ -27,7 +27,7 @@ export class AuthService {
 
   register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
     return firstValueFrom(
-      this.authClient.send(kafkaTopic.AUTH.REGISTER, reqDto)
+      this.authClient.send(kafkaTopic.AUTH.REGISTER, JSON.stringify(reqDto)),
     );
   }
 }

@@ -1,13 +1,13 @@
 //! THIS ONLY FOR LOCAL DEV
 
 // auth
-db = db.getSiblingDB(process.env.DB_AUTH_DATABASE);
-db.createUser({
-  user: process.env.DB_AUTH_USER,
-  pwd: process.env.DB_AUTH_PASSWORD,
-  roles: [{ role: 'readWrite', db: process.env.DB_AUTH_DATABASE }],
-});
-db.createCollection('init-db');
+// db = db.getSiblingDB(process.env.DB_AUTH_DATABASE);
+// db.createUser({
+//   user: process.env.DB_AUTH_USER,
+//   pwd: process.env.DB_AUTH_PASSWORD,
+//   roles: [{ role: 'readWrite', db: process.env.DB_AUTH_DATABASE }],
+// });
+// db.createCollection('init-db');
 
 // users
 db = db.getSiblingDB(process.env.DB_USERS_DATABASE);

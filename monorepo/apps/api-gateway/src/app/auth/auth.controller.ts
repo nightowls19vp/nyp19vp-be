@@ -25,7 +25,7 @@ import { AuthService } from './auth.service';
 export class AuthController implements OnModuleInit {
   constructor(
     private readonly authService: AuthService,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
   async onModuleInit() {
     this.authClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.AUTH);
@@ -44,8 +44,6 @@ export class AuthController implements OnModuleInit {
     return {
       status: 'success',
       msg: 'login success with user ' + reqDto.username,
-      refreshToken: 'refreshToken123',
-      accessToken: 'accessToken345',
     };
   }
 
