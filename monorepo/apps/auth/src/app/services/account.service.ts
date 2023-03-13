@@ -31,7 +31,7 @@ export class AccountService {
 
     const account: AccountEntity = this.accountRespo.create({
       username: reqDto.username,
-      hasedPassword: reqDto.password,
+      hashedPassword: reqDto.password,
     });
 
     let saveResult = null;

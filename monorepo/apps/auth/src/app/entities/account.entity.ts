@@ -33,7 +33,7 @@ export class AccountEntity {
   @Column({
     name: 'hashed_password',
   })
-  hasedPassword: string;
+  hashedPassword: string;
 
   @CreateDateColumn({
     name: 'created_at',
