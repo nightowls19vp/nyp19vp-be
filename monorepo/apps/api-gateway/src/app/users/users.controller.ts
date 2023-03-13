@@ -15,6 +15,7 @@ import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
+  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
@@ -25,15 +26,14 @@ import {
   UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
+  UpdateTrxHistReqDto,
+  UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
-import {
-  ApiCreatedResponse,
-  ApiOkResponse,
-} from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Patch } from '@nestjs/common/decorators';
 
 @Controller('users')
@@ -66,29 +66,13 @@ export class UsersController implements OnModuleInit {
   async getAll(@Req() req: Request): Promise<GetUsersResDto> {
     console.log('get all users');
 
-    const res = await this.usersService.getAllUsers(req);
-    if (res.status == 'success') {
-      return res;
-    } else {
-      throw new NotFoundException('NOT FOUND', {
-        cause: new Error(),
-        description: res.msg,
-      });
-    }
+    return this.usersService.getAllUsers(req);
   }
 
   @Get(':id')
   @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
   async getUserInfoById(@Param('id') id: string): Promise<GetUserInfoResDto> {
-    const res = await this.usersService.getUserInfoById(id);
-    if (res.status == 'success') {
-      return res;
-    } else {
-      throw new NotFoundException('NOT FOUND', {
-        cause: new Error(),
-        description: res.msg,
-      });
-    }
+    return this.usersService.getUserInfoById(id);
   }
 
   @Get(':id/setting')
@@ -100,15 +84,7 @@ export class UsersController implements OnModuleInit {
     @Param('id') id: string
   ): Promise<GetUserSettingResDto> {
     console.log(`get user setting #${id}`);
-    const res = await this.usersService.getUserSettingById(id);
-    if (res.status == 'success') {
-      return res;
-    } else {
-      throw new NotFoundException('NOT FOUND', {
-        cause: new Error(),
-        description: res.msg,
-      });
-    }
+    return this.usersService.getUserSettingById(id);
   }
 
   @Put(':id')
@@ -123,7 +99,10 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/setting')
-  @ApiOkResponse({ description: 'Updated User Setting', type: UpdateSettingResDto })
+  @ApiOkResponse({
+    description: 'Updated User Setting',
+    type: UpdateSettingResDto,
+  })
   async updateSetting(
     @Param('id') id: string,
     @Body() updateSettingReqDto: UpdateSettingReqDto
@@ -134,7 +113,10 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/avatar')
-  @ApiOkResponse({ description: 'Updated User Setting', type: UpdateAvatarResDto })
+  @ApiOkResponse({
+    description: 'Updated User Setting',
+    type: UpdateAvatarResDto,
+  })
   async updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto
@@ -151,8 +133,14 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/cart')
-  @ApiOkResponse({ description: 'Updated shopping cart', type: UpdateCartResDto })
-  async updateCart(@Param('id') id: string, @Body() updateCartReqDto: UpdateCartReqDto): Promise<UpdateCartResDto> {
+  @ApiOkResponse({
+    description: 'Updated shopping cart',
+    type: UpdateCartResDto,
+  })
+  async updateCart(
+    @Param('id') id: string,
+    @Body() updateCartReqDto: UpdateCartReqDto
+  ): Promise<UpdateCartResDto> {
     console.log(`update items of user #${id}'s cart`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.updateCart(updateCartReqDto);
@@ -162,15 +150,25 @@ export class UsersController implements OnModuleInit {
   @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
   async getCart(@Param('id') id: string): Promise<GetCartResDto> {
     console.log(`get items of user #${id}'s cart`);
-    const res = await this.usersService.getCart(id);
-    if(res.status == 'success'){
-      return res;
-    } else {
-      throw new NotFoundException('NOT FOUND', {
-        cause: new Error(),
-        description: res.msg,
-      });
-    }
+    return this.usersService.getCart(id);
+  }
+
+  @Get(':id/trx')
+  @ApiOkResponse({ description: 'Get transaction history' })
+  async getTrxHist(@Param('id') id: string): Promise<GetTrxHistResDto> {
+    console.log(`get transaction history of from user #${id}`);
+    return this.usersService.getTrxHist(id);
+  }
+
+  @Put(':id/trx')
+  @ApiOkResponse({ description: 'Get transaction history' })
+  async updateTrxHist(
+    @Param('id') id: string,
+    @Body() updateTrxHistReqDto: UpdateTrxHistReqDto
+  ): Promise<UpdateTrxHistResDto> {
+    console.log(`update transaction history of from user #${id}`);
+    updateTrxHistReqDto._id = id;
+    return this.usersService.updateTrxHist(updateTrxHistReqDto);
   }
 
   @Get('healthcheck')

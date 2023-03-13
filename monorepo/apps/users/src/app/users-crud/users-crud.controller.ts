@@ -4,6 +4,7 @@ import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
+  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   GetUsersResDto,
@@ -14,6 +15,8 @@ import {
   UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
+  UpdateTrxHistReqDto,
+  UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
 } from '@nyp19vp-be/shared';
@@ -72,13 +75,26 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
-  updateCart(@Payload() updateCartReqDto: UpdateCartReqDto):Promise<UpdateCartResDto> {
+  updateCart(
+    @Payload() updateCartReqDto: UpdateCartReqDto
+  ): Promise<UpdateCartResDto> {
     return this.usersCrudService.updateCart(updateCartReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_CART)
-  getCart(@Payload() id: string):Promise<GetCartResDto> {
+  getCart(@Payload() id: string): Promise<GetCartResDto> {
     return this.usersCrudService.getCart(id);
   }
 
+  @MessagePattern(kafkaTopic.USERS.GET_TRX)
+  getTrxHist(@Payload() id: string): Promise<GetTrxHistResDto> {
+    return this.usersCrudService.getTrxHist(id);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.GET_TRX)
+  updateTrxHist(
+    @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto
+  ): Promise<UpdateTrxHistResDto> {
+    return this.usersCrudService.updateTrxHist(updateTrxHistReqDto);
+  }
 }

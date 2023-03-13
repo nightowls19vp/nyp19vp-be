@@ -19,5 +19,7 @@ export const USERS = {
   UPDATE_AVATAR: 'updateUserAvatar',
   DELETE_ONE: 'deleteUser',
   UPDATE_CART: 'updateShoppingCart',
-  GET_CART: 'getShoppingCart'
-}
+  GET_CART: 'getShoppingCart',
+  GET_TRX: 'getTransactionHistory',
+  UPDATE_TRX: 'updateTransactionHistory',
+};
