@@ -17,7 +17,13 @@ import { DataBaseModule } from '../core/database/database.module';
 import { AccountService } from './services/account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { AccessJwtStrategy } from './strategies/access-jwt.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,6 +49,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       },
     ]),
     DataBaseModule,
+    PassportModule,
+    JwtModule,
     TypeOrmModule.forFeature([
       AccountEntity,
       StatusEntity,
@@ -53,6 +61,16 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   ],
   controllers: [AuthController],
   providers: [
+    AuthService,
+    AccountService,
+    RoleService,
+    ActionService,
+    RefreshTokenBlacklistService,
+    LocalStrategy,
+    AccessJwtStrategy,
+    RefreshJwtStrategy,
+  ],
+  exports: [
     AuthService,
     AccountService,
     RoleService,

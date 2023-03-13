@@ -18,7 +18,7 @@ export class ActionEntity {
   id: string;
 
   @Column({
-    name: 'aciton_name',
+    name: 'action_name',
   })
   name: string;
 

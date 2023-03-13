@@ -48,23 +48,23 @@ export class AccountService {
         name: reqDto.name,
         phone: reqDto.phone,
       };
-      const createUserRes: CreateUserResDto = await firstValueFrom(
-        this.usersClient.send(
-          kafkaTopic.USERS.CREATE,
-          JSON.stringify(createUserReq),
-        ),
-      );
+      // const createUserRes: CreateUserResDto = await firstValueFrom(
+      //   this.usersClient.send(
+      //     kafkaTopic.USERS.CREATE,
+      //     JSON.stringify(createUserReq),
+      //   ),
+      // );
 
-      console.log('createUserRes', createUserRes);
+      // console.log('createUserRes', createUserRes);
 
-      if (createUserRes.error) {
-        console.log('roll back');
+      // if (createUserRes.error) {
+      //   console.log('roll back');
 
-        throw new Error(createUserRes.error);
-      }
+      //   throw new Error(createUserRes.error);
+      // }
 
       console.log(saveResult);
-
+      await queryRunner.commitTransaction();
       return {
         statusCode: saveResult ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
         message: saveResult
@@ -88,8 +88,8 @@ export class AccountService {
     return `This action returns all accounts`;
   }
 
-  findOne(id: number) {
-    return `This action returns an account`;
+  async findOneBy(option): Promise<AccountEntity> {
+    return this.accountRespo.findOneBy(option);
   }
 
   update() {

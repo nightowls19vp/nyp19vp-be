@@ -1,17 +1,14 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   OnModuleInit,
   Inject,
+  UseFilters,
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,
   LoginReqDto,
@@ -21,6 +18,7 @@ import {
   RegisterReqDto,
   RegisterResDto,
 } from '@nyp19vp-be/shared';
+import { AllGlobalExceptionsFilter } from '../filters/filter';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -41,8 +39,10 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('login')
-  login(@Body() reqDto: LoginReqDto): LoginResDto {
+  async login(@Body() reqDto: LoginReqDto) {
     console.log('login', reqDto);
+
+    return this.authService.login(reqDto);
 
     return {
       statusCode: HttpStatus.OK,

@@ -3,12 +3,20 @@ import { RoleService } from '../services/role.service';
 import { RefreshTokenBlacklistService } from './../services/refresh-token-blacklist.service';
 import { ActionService } from '../services/action.service';
 import { AccountService } from '../services/account.service';
-import { RegisterReqDto, RegisterResDto, kafkaTopic } from '@nyp19vp-be/shared';
-import { Controller, Get, Inject } from '@nestjs/common';
+import {
+  RegisterReqDto,
+  RegisterResDto,
+  kafkaTopic,
+  LoginReqDto,
+  LoginResDto,
+} from '@nyp19vp-be/shared';
+import { Controller, Get, Inject, UseFilters, UseGuards } from '@nestjs/common';
 
 import { AuthService } from '../services/auth.service';
-import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
+import { ExceptionFilter } from '../filters/rpc-exception.filter';
 
 @ApiTags('auth')
 @Controller()
@@ -35,10 +43,16 @@ export class AuthController implements OnModuleInit {
     return this.appService.getData();
   }
 
-  // @MessagePattern(kafkaTopic.HEALT_CHECK.AUTH)
-  // healthcheck() {
-  //   return 'ok  ';
-  // }
+  // @UseFilters(new ExceptionFilter())
+  @UseGuards(LocalAuthGuard)
+  @MessagePattern(kafkaTopic.AUTH.LOGIN)
+  async login(reqDto: LoginReqDto): Promise<LoginResDto> {
+    console.log(reqDto);
+    return {
+      statusCode: 200,
+      message: 'test',
+    };
+  }
 
   @MessagePattern(kafkaTopic.AUTH.REGISTER)
   async register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
