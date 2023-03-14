@@ -1,15 +1,20 @@
+import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BaseResDto {
   @ApiProperty({
-    description: 'Response status',
-    enum: ['success', 'fail'],
+    description: 'Response status code',
   })
-  status: 'success' | 'fail';
+  statusCode: HttpStatus;
 
   @ApiProperty({
     description: 'Response message',
     maxLength: 255,
   })
-  msg: string;
+  message: string;
+
+  @ApiProperty({
+    description: 'Error message',
+  })
+  error?: string;
 }
