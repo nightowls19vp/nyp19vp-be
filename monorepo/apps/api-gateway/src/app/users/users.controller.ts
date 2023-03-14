@@ -42,10 +42,10 @@ export class UsersController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
-    // for (const key in kafkaTopic.USERS) {
-    //   this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
-    // }
+    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
+    for (const key in kafkaTopic.USERS) {
+      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
+    }
     await Promise.all([this.usersClient.connect()]);
   }
 

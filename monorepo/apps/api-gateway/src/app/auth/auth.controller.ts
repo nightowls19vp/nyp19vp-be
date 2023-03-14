@@ -14,6 +14,7 @@ import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  FDLogger,
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
@@ -54,7 +55,10 @@ export class AuthController implements OnModuleInit {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    console.log('login', reqDto);
+    FDLogger.log({
+      type: 'login',
+      reqDto: reqDto,
+    });
 
     const loginResWithTokensDto: LoginResWithTokensDto =
       await this.authService.login(reqDto);
