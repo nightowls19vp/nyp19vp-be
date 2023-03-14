@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@nyp19vp-be/shared": ["libs/shared/src/index.ts"]
-    }
+    },
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", "tmp"]
 }

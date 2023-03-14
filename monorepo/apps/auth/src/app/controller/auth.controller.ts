@@ -1,28 +1,27 @@
+import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
 import { OnModuleInit } from '@nestjs/common/interfaces';
-import { RoleService } from '../services/role.service';
-import { RefreshTokenBlacklistService } from './../services/refresh-token-blacklist.service';
-import { ActionService } from '../services/action.service';
-import { AccountService } from '../services/account.service';
+import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 import {
-  RegisterReqDto,
-  RegisterResDto,
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
+  RegisterReqDto,
+  RegisterResDto,
 } from '@nyp19vp-be/shared';
-import { Controller, Get, Inject, UseFilters, UseGuards } from '@nestjs/common';
 
-import { AuthService } from '../services/auth.service';
-import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
-import { ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
-import { ExceptionFilter } from '../filters/rpc-exception.filter';
+import { AccountService } from '../services/account.service';
+import { ActionService } from '../services/action.service';
+import { AuthService } from '../services/auth.service';
+import { RefreshTokenBlacklistService } from '../services/refresh-token-blacklist.service';
+import { RoleService } from '../services/role.service';
 
 @ApiTags('auth')
 @Controller()
 export class AuthController implements OnModuleInit {
   constructor(
-    private readonly appService: AuthService,
+    private readonly authService: AuthService,
     private readonly accountService: AccountService,
     private readonly roleService: RoleService,
     private readonly actionService: ActionService,
@@ -40,18 +39,13 @@ export class AuthController implements OnModuleInit {
 
   @Get()
   getData() {
-    return this.appService.getData();
+    return this.authService.getData();
   }
 
-  // @UseFilters(new ExceptionFilter())
   @UseGuards(LocalAuthGuard)
   @MessagePattern(kafkaTopic.AUTH.LOGIN)
   async login(reqDto: LoginReqDto): Promise<LoginResDto> {
-    console.log(reqDto);
-    return {
-      statusCode: 200,
-      message: 'test',
-    };
+    return this.authService.login(reqDto);
   }
 
   @MessagePattern(kafkaTopic.AUTH.REGISTER)

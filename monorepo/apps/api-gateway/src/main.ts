@@ -1,13 +1,14 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app/app.module';
-import { ExceptionFilter } from './app/filters/rpc-exception.filter';
+
+// import { ExceptionFilter } from './app/filters/rpc-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalFilters(new ExceptionFilter());
+
   const config = new DocumentBuilder()
     .setTitle('NYP19VP API')
     .setDescription('NYP19VP API for goods management')

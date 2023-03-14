@@ -4,9 +4,15 @@ import ms from 'ms';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common/enums';
 import { JwtService } from '@nestjs/jwt';
+import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LoginReqDto } from '@nyp19vp-be/shared';
+import {
+  LoginReqDto,
+  LoginResDto,
+  LoginResWithTokensDto,
+} from '@nyp19vp-be/shared';
 
 import {
   ACCESS_JWT_COOKIE_NAME,
@@ -32,25 +38,47 @@ export class AuthService {
     return { message: 'Welcome to auth/Auth!' };
   }
 
+  /**
+   * Validate `username` and `password`, return `AccountEntity` object if validated
+   * else throw and `RpcException`
+   * @param username
+   * @param password
+   * @returns `AccountEntity`
+   */
   async validateUser(
     username: string,
     password: string,
-  ): Promise<AccountEntity | null> {
+  ): Promise<AccountEntity> {
     console.log('validateUser', username, password);
 
     const accountFound = await this.accountRespo.findOneBy({
       username: username,
     });
 
+    if (accountFound === null) {
+      const userNotFoundRpcException: LoginResWithTokensDto = {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `user with user name ${username} not found`,
+      };
+      throw new RpcException(userNotFoundRpcException);
+    }
+
     const isPwdMatched = await bcrypt.compare(
       password,
       accountFound.hashedPassword,
     );
 
-    if (isPwdMatched) {
-      return accountFound;
+    console.debug(`isPwdMatched = `, isPwdMatched);
+
+    if (!isPwdMatched) {
+      const userNotFoundRpcException: LoginResWithTokensDto = {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: `password is not matched`,
+      };
+      throw new RpcException(userNotFoundRpcException);
     }
-    return null;
+
+    return accountFound;
   }
 
   decodeToken(token: string): IJwtPayload {
@@ -61,10 +89,7 @@ export class AuthService {
     };
   }
 
-  async login(userDto: LoginReqDto): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  async login(userDto: LoginReqDto): Promise<LoginResWithTokensDto> {
     const accessToken = await this.generateAccessJWT({
       username: userDto.username,
     });
@@ -72,7 +97,12 @@ export class AuthService {
       username: userDto.username,
     });
 
-    return { accessToken, refreshToken };
+    return Promise.resolve({
+      statusCode: HttpStatus.OK,
+      message: 'Login successfully',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   }
 
   /**

@@ -1,24 +1,30 @@
+import { Request, Response } from 'express';
+
 import {
-  Controller,
-  Post,
   Body,
-  OnModuleInit,
+  Controller,
+  HttpException,
   Inject,
-  UseFilters,
+  OnModuleInit,
+  Post,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
+  LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
   RegisterReqDto,
   RegisterResDto,
 } from '@nyp19vp-be/shared';
-import { AllGlobalExceptionsFilter } from '../filters/filter';
+
+// import { AllGlobalExceptionsFilter } from '../filters/filter';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -38,16 +44,40 @@ export class AuthController implements OnModuleInit {
     await Promise.all([this.authClient.connect()]);
   }
 
+  @ApiResponse({
+    description: 'response of login',
+    type: LogoutResDto,
+  })
   @Post('login')
-  async login(@Body() reqDto: LoginReqDto) {
+  async login(
+    @Body() reqDto: LoginReqDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     console.log('login', reqDto);
 
-    return this.authService.login(reqDto);
+    const loginResWithTokensDto: LoginResWithTokensDto =
+      await this.authService.login(reqDto);
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'login success with user ' + reqDto.username,
+    this.authService.setCookie(
+      res,
+      loginResWithTokensDto.accessToken,
+      loginResWithTokensDto.refreshToken,
+    );
+
+    const loginResDto: LoginResDto = {
+      statusCode: loginResWithTokensDto.statusCode,
+      message: loginResWithTokensDto.message,
+      accessToken: loginResWithTokensDto.accessToken,
     };
+
+    if (loginResDto.statusCode !== HttpStatus.OK) {
+      throw new HttpException(loginResDto, loginResDto.statusCode);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(loginResDto);
+      res.end();
+    }
   }
 
   @Post('logout')

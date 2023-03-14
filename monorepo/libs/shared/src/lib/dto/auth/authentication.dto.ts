@@ -1,16 +1,15 @@
-import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsAscii,
   IsDate,
-  IsDateString,
   IsEmail,
   IsPhoneNumber,
   IsStrongPassword,
   Matches,
   NotContains,
-  NotEquals,
 } from 'class-validator';
+
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
 import { BaseResDto } from '../base.dto';
 
@@ -27,7 +26,7 @@ class LocalAuthenticationInfo {
   username: string;
 
   @ApiProperty({
-    description: `Password strength criteria:\n\n\t- Number of characters must be between 8 to 255.\n\n\t- Contain at least 1 charactor in Upper Case\n\n\t- Contain at least 1 Special Character (!, @, #, $, &, *)\n\n\t-  Contain at least 1 numeral (0-9)\n\n\t-  Contain at least 1 letters in lower case`,
+    description: `Password strength criteria:\n\n\t- Number of characters must be between 8 to 255.\n\n\t- Contain at least 1 character in Upper Case\n\n\t- Contain at least 1 Special Character (!, @, #, $, &, *)\n\n\t-  Contain at least 1 numeral (0-9)\n\n\t-  Contain at least 1 letters in lower case`,
     example: 'P@s5__.word',
     nullable: false,
     pattern: `^(?=[.\\S]*[A-Z][.\\S]*)(?=[.\\S]*[0-9][.\\S]*)(?=[.\\S]*[a-z][.\\S]*)[.\\S]{8,255}$`,
@@ -104,7 +103,18 @@ class UserInfo {
 
 export class LoginReqDto extends LocalAuthenticationInfo {}
 
-export class LoginResDto extends BaseResDto {}
+export class LoginResDto extends BaseResDto {
+  @ApiProperty({
+    name: 'access_token',
+    type: String,
+  })
+  accessToken?: string;
+}
+
+export class LoginResWithTokensDto extends LoginResDto {
+  accessToken?: string;
+  refreshToken?: string;
+}
 
 export class LogoutReqDto {}
 

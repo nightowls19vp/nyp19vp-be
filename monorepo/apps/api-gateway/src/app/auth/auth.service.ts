@@ -1,16 +1,25 @@
+import { Response } from 'express';
+import { firstValueFrom } from 'rxjs';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
 import {
+  kafkaTopic,
   LoginReqDto,
-  LoginResDto,
+  LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
   RegisterReqDto,
   RegisterResDto,
 } from '@nyp19vp-be/shared';
-import { kafkaTopic } from '@nyp19vp-be/shared';
-import { Inject, Injectable } from '@nestjs/common';
-import { catchError, firstValueFrom, Observable, throwError } from 'rxjs';
-import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
+
+import {
+  ACCESS_JWT_COOKIE_NAME,
+  ACCESS_JWT_DEFAULT_TTL,
+  REFRESH_JWT_COOKIE_NAME,
+  REFRESH_JWT_DEFAULT_TTL,
+} from './constants/authentication';
+import { toMs } from './utils/ms';
 
 @Injectable()
 export class AuthService {
@@ -18,23 +27,16 @@ export class AuthService {
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
 
-  async login(reqDto: LoginReqDto): Promise<any> {
+  async login(reqDto: LoginReqDto): Promise<LoginResWithTokensDto> {
     try {
-      const temp = await firstValueFrom(
+      return await firstValueFrom(
         this.authClient.send(
           kafkaTopic.AUTH.LOGIN,
           JSON.stringify({ body: reqDto }),
         ),
       );
-
-      console.log('tem1p', temp);
-
-      return {
-        statusCode: 200,
-        message: '@22222',
-      };
     } catch (error) {
-      console.log(error);
+      console.error('error', error);
 
       return error;
     }
@@ -50,5 +52,25 @@ export class AuthService {
     return firstValueFrom(
       this.authClient.send(kafkaTopic.AUTH.REGISTER, JSON.stringify(reqDto)),
     );
+  }
+
+  setCookie(res: Response, accessToken: string, refreshToken: string) {
+    console.log({
+      accessToken,
+      refreshToken,
+    });
+
+    res.cookie(ACCESS_JWT_COOKIE_NAME, accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: toMs(ACCESS_JWT_DEFAULT_TTL),
+    });
+    res.cookie(REFRESH_JWT_COOKIE_NAME, refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: toMs(REFRESH_JWT_DEFAULT_TTL),
+    });
   }
 }
