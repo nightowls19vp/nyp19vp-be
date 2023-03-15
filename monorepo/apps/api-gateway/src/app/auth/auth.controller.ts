@@ -37,17 +37,17 @@ export class AuthController implements OnModuleInit {
     await Promise.all([this.authClient.connect()]);
   }
 
-  @Post('login')
-  login(@Body() reqDto: LoginReqDto): LoginResDto {
-    console.log('login', reqDto);
+  // @Post('login')
+  // login(@Body() reqDto: LoginReqDto): LoginResDto {
+  //   console.log('login', reqDto);
 
-    return {
-      status: 'success',
-      msg: 'login success with user ' + reqDto.username,
-      refreshToken: 'refreshToken123',
-      accessToken: 'accessToken345',
-    };
-  }
+  //   return {
+  //     status: 'success',
+  //     msg: 'login success with user ' + reqDto.username,
+  //     refreshToken: 'refreshToken123',
+  //     accessToken: 'accessToken345',
+  //   };
+  // }
 
   @Post('logout')
   logout(@Body() reqDto: LogoutReqDto): LogoutResDto {
