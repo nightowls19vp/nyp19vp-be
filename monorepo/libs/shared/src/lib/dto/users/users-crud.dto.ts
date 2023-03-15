@@ -8,8 +8,8 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
+  IsDateString,
   IsEmail,
-  IsNumberString,
   IsPhoneNumber,
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
@@ -49,7 +49,7 @@ class UserSetting {
   newsNoti: boolean;
 }
 
-class UserInfo {
+export class UserInfo {
   @ApiProperty({
     description: 'name of user, must be an ascii string',
     type: String,
@@ -68,6 +68,7 @@ class UserInfo {
     type: Date,
     example: '2001-01-01',
   })
+  @IsDateString()
   dob: Date;
 
   @ApiProperty({
@@ -118,7 +119,7 @@ class Items {
 
   @ApiProperty({
     description: 'Price of package at that moment',
-    type: Float64Array,
+    type: Number,
     example: 20.1,
   })
   price: number;

@@ -8,22 +8,22 @@ export class Item {
   @Prop({
     type: String,
     unique: true,
-    required: true
+    required: true,
   })
-  package: string
+  package: string;
 
   @Prop({
-    type: Int32Array,
+    type: Number,
     min: 1,
-    required: true
+    required: true,
   })
-  quantity: number
+  quantity: number;
 
   @Prop({
-    type: Float32Array,
-    required: true
+    type: Number,
+    required: true,
   })
-  price: number
+  price: number;
 }
 
 export const ItemSchema = SchemaFactory.createForClass(Item);

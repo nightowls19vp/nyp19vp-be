@@ -43,6 +43,11 @@ export class UsersCrudController {
     return this.usersCrudService.findInfoById(id);
   }
 
+  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY)
+  findInfoBy(@Payload() option: string): Promise<GetUsersResDto> {
+    return this.usersCrudService.findInfoBy(option);
+  }
+
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
   findSettingById(@Payload() id: string): Promise<GetUserSettingResDto> {
     return this.usersCrudService.findSettingById(id);

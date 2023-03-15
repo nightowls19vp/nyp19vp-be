@@ -1,10 +1,8 @@
-import { firstValueFrom } from 'rxjs';
 import {
   Body,
   Controller,
   Get,
   Inject,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -31,7 +29,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
 } from '@nyp19vp-be/shared';
-import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Patch } from '@nestjs/common/decorators';
@@ -71,8 +69,17 @@ export class UsersController implements OnModuleInit {
 
   @Get(':id')
   @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
-  async getUserInfoById(@Param('id') id: string): Promise<GetUserInfoResDto> {
-    return this.usersService.getUserInfoById(id);
+  async getUserById(@Param('id') id: string): Promise<GetUserInfoResDto> {
+    return this.usersService.getUserById(id);
+  }
+
+  @Get('/findByFilter/:option')
+  @ApiOkResponse({
+    description: 'Got User Setting by Partial<UserInfo>',
+    type: GetUsersResDto,
+  })
+  async getUserBy(@Param('option') option: string): Promise<GetUsersResDto> {
+    return this.usersService.getUserBy(option);
   }
 
   @Get(':id/setting')

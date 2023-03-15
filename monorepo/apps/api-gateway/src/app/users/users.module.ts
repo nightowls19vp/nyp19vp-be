@@ -16,7 +16,7 @@ import { randomUUID } from 'crypto';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'users-consumer', // FIXME,
+            groupId: 'users-consumer' + randomUUID(), // FIXME,
           },
         },
       },

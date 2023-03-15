@@ -57,9 +57,22 @@ export class UsersService {
       });
     }
   }
-  async getUserInfoById(id: string): Promise<GetUserInfoResDto> {
+  async getUserById(id: string): Promise<GetUserInfoResDto> {
     const res = await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
+    );
+    if (res.statusCode == HttpStatus.OK) {
+      return res;
+    } else {
+      throw new HttpException(res.message, res.statusCode, {
+        cause: new Error(res.error),
+        description: res.error,
+      });
+    }
+  }
+  async getUserBy(option: string): Promise<GetUsersResDto> {
+    const res = await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY, option)
     );
     if (res.statusCode == HttpStatus.OK) {
       return res;

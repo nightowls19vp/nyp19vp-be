@@ -34,7 +34,7 @@ export class User {
   @Prop({
     type: String,
     default:
-      'https://khoinguonsangtao.vn/wp-content/uploads/2022/07/hinh-avatar-hai-vit-trang-cat-dau-moi.jpg',
+      'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
     required: false,
   })
   avatar: string;
