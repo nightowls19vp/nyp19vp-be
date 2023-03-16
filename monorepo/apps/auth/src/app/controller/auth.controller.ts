@@ -48,9 +48,9 @@ export class AuthController implements OnModuleInit {
     return this.authService.login(reqDto);
   }
 
-  @MessagePattern(kafkaTopic.AUTH.REGISTER)
+  @MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT)
   async register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
-    console.log('MessagePattern(kafkaTopic.AUTH.REGISTER) ', reqDto);
+    console.log('MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT) ', reqDto);
 
     return this.accountService.create(reqDto);
   }

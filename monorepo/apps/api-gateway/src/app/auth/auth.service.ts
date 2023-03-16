@@ -50,7 +50,10 @@ export class AuthService {
 
   register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
     return firstValueFrom(
-      this.authClient.send(kafkaTopic.AUTH.REGISTER, JSON.stringify(reqDto)),
+      this.authClient.send(
+        kafkaTopic.AUTH.CREATE_ACCOUNT,
+        JSON.stringify(reqDto),
+      ),
     );
   }
 

@@ -1,6 +1,9 @@
 // constants
 export * as CONST from './lib/core/constants';
 
+// authorization
+export * from './lib/authorization';
+
 // common
 export * as kafkaTopic from './lib/common/topics.kafka';
 

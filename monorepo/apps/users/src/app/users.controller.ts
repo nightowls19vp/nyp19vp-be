@@ -13,10 +13,10 @@ export class AppController {
     return this.appService.getData();
   }
 
-  @MessagePattern(kafkaTopic.HEALT_CHECK.USERS)
-  healthcheck(): string {
-    console.log(`user-svc#${kafkaTopic.HEALT_CHECK.USERS}`);
+  // @MessagePattern(kafkaTopic.HEALT_CHECK.USERS)
+  // healthcheck(): string {
+  //   console.log(`user-svc#${kafkaTopic.HEALT_CHECK.USERS}`);
 
-    return 'ok  ';
-  }
+  //   return 'ok  ';
+  // }
 }

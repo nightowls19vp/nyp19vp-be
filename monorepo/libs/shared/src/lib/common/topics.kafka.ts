@@ -6,7 +6,7 @@ export const HEALT_CHECK = {
 export const AUTH = {
   LOGIN: 'login',
   LOGOUT: 'logout',
-  REGISTER: 'register',
+  CREATE_ACCOUNT: 'create_account',
   AUTHORIZE: 'authorize',
   CHANGE_PASSWORD: 'changePassword',
   DELETE_ACCOUNT: 'deleteAccount',
