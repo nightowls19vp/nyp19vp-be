@@ -74,21 +74,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-UserSchema.pre('validate', function validate(next) {
-  // eslint-disable-next-line prefer-const
-  let unique = [];
-
-  for (let i = 0, l = this.cart.length; i < l; i++) {
-    // eslint-disable-next-line prefer-const
-    let pkg = this.cart[i].package;
-
-    if (unique.indexOf(pkg) > -1) {
-      return next(new Error('Duplicated sub document!'));
-    }
-
-    unique.push(pkg);
-  }
-
-  next();
-});

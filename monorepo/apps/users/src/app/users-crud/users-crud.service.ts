@@ -61,7 +61,7 @@ export class UsersCrudService {
         for (const ele of res) {
           userList.push(ele);
         }
-        if (!userList.length) {
+        if (userList.length) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: 'get all users successfully',
@@ -130,7 +130,7 @@ export class UsersCrudService {
         for (const ele of res) {
           users.push(ele);
         }
-        if (!users.length)
+        if (users.length)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user successfully`,
@@ -356,7 +356,7 @@ export class UsersCrudService {
         for (const ele of res) {
           cart.push(ele);
         }
-        if (!cart.length) {
+        if (cart.length) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,
@@ -391,7 +391,7 @@ export class UsersCrudService {
         for (const ele of res) {
           hist.push(ele);
         }
-        if (!hist.length) {
+        if (hist.length) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,
