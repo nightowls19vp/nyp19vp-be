@@ -34,6 +34,7 @@ import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Patch } from '@nestjs/common/decorators';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController implements OnModuleInit {
   constructor(
@@ -50,7 +51,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
-  @ApiTags('Users')
   @ApiCreatedResponse({ description: 'Created User', type: CreateUserResDto })
   async create(
     @Body() createUserReqDto: CreateUserReqDto
@@ -61,7 +61,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get()
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Got All Users', type: GetUsersResDto })
   async getAll(@Req() req: Request): Promise<GetUsersResDto> {
     console.log('get all users');
@@ -70,14 +69,12 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get(':id')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
   async getUserById(@Param('id') id: string): Promise<GetUserInfoResDto> {
     return this.usersService.getUserById(id);
   }
 
   @Get(':id/setting')
-  @ApiTags('Users')
   @ApiOkResponse({
     description: 'Got User Setting by Id',
     type: GetUserSettingResDto,
@@ -90,7 +87,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get(':id/cart')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
   async getCart(@Param('id') id: string): Promise<GetCartResDto> {
     console.log(`get items of user #${id}'s cart`);
@@ -98,7 +94,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get(':id/trx')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Get transaction history' })
   async getTrxHist(@Param('id') id: string): Promise<GetTrxHistResDto> {
     console.log(`get transaction history of from user #${id}`);
@@ -106,7 +101,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Get('/findByFilter/:option')
-  @ApiTags('Users')
   @ApiOkResponse({
     description: 'Got User Setting by Partial<UserInfo>',
     type: GetUsersResDto,
@@ -116,14 +110,12 @@ export class UsersController implements OnModuleInit {
   }
 
   @Patch(':id')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
   async deleteUser(@Param('id') id: string): Promise<CreateUserResDto> {
     return this.usersService.deleteUser(id);
   }
 
   @Put(':id')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Updated User', type: UpdateUserResDto })
   async updateUser(
     @Param('id') id: string,
@@ -135,7 +127,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/setting')
-  @ApiTags('Users')
   @ApiOkResponse({
     description: 'Updated User Setting',
     type: UpdateSettingResDto,
@@ -150,7 +141,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/avatar')
-  @ApiTags('Users')
   @ApiOkResponse({
     description: 'Updated User Setting',
     type: UpdateAvatarResDto,
@@ -165,7 +155,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/cart')
-  @ApiTags('Users')
   @ApiOkResponse({
     description: 'Updated shopping cart',
     type: UpdateCartResDto,
@@ -180,7 +169,6 @@ export class UsersController implements OnModuleInit {
   }
 
   @Put(':id/trx')
-  @ApiTags('Users')
   @ApiOkResponse({ description: 'Get transaction history' })
   async updateTrxHist(
     @Param('id') id: string,
