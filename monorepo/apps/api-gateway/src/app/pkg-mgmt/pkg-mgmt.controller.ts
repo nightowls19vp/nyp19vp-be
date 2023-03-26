@@ -33,6 +33,7 @@ import {
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 
+@ApiTags('Package Management')
 @Controller('pkg-mgmt')
 export class PkgMgmtController implements OnModuleInit {
   constructor(
@@ -54,7 +55,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Post('pkg')
-  @ApiTags('Package Management')
   @ApiCreatedResponse({ description: 'Created Package', type: CreatePkgResDto })
   createPkg(
     @Body() createPkgReqDto: CreatePkgReqDto
@@ -64,7 +64,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('pkg')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Got All Packages', type: GetPkgsResDto })
   getAllPkg(@Req() req: Request): Promise<GetPkgsResDto> {
     console.log('get all packages');
@@ -72,7 +71,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('pkg/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Got All Packages', type: GetPkgResDto })
   getPkgById(@Param('id') id: string): Promise<GetPkgResDto> {
     console.log(`get package #${id}`);
@@ -80,7 +78,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Patch('pkg/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Updated Package', type: CreatePkgResDto })
   deletePkg(@Param('id') id: string): Promise<CreatePkgResDto> {
     console.log(`delete package #${id}`);
@@ -88,7 +85,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('pkg/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Updated Package', type: UpdatePkgResDto })
   updatePkg(
     @Param('id') id: string,
@@ -100,7 +96,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Post('gr')
-  @ApiTags('Package Management')
   @ApiCreatedResponse({ description: 'Created Group', type: CreateGrResDto })
   createGr(@Body() createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
     console.log('create group', createGrReqDto);
@@ -108,7 +103,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('gr')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Get All Groups', type: GetGrsResDto })
   getAllGr(@Req() req: Request): Promise<GetGrsResDto> {
     console.log('Get all groups');
@@ -116,7 +110,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('gr/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Get All Groups', type: GetGrResDto })
   getGrById(@Param('id') id: string): Promise<GetGrResDto> {
     console.log(`Get group #${id}`);
@@ -124,7 +117,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Patch('gr/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({ description: 'Delete Group', type: CreateGrResDto })
   deleteGr(@Param('id') id: string): Promise<CreateGrResDto> {
     console.log(`Delete group #${id}`);
@@ -132,7 +124,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('gr/:id')
-  @ApiTags('Package Management')
   @ApiOkResponse({
     description: `Updated Group's name`,
     type: UpdateGrResDto,
@@ -147,7 +138,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('gr/:id/memb')
-  @ApiTags('Package Management')
   @ApiOkResponse({
     description: `Added new member to group`,
     type: UpdateGrMbResDto,
@@ -162,7 +152,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('gr/:id/memb/rm')
-  @ApiTags('Package Management')
   @ApiOkResponse({
     description: `Removed member from group`,
     type: UpdatePkgResDto,
@@ -177,7 +166,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('gr/:id/pkg')
-  @ApiTags('Package Management')
   @ApiOkResponse({
     description: `Added new package to group`,
     type: UpdatePkgResDto,
@@ -192,7 +180,6 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Put('gr/:id/pkg/rm')
-  @ApiTags('Package Management')
   @ApiOkResponse({
     description: `Remove package from group`,
     type: UpdatePkgResDto,
