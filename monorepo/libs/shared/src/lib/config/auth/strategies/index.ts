@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
+import { ENV_FILE } from '../../../core';
 
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,

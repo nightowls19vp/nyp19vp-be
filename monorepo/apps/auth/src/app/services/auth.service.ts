@@ -1,6 +1,11 @@
+import {
+  config,
+  utils,
+  ValidateUserReqDto,
+  ValidateUserResDto,
+} from '@nyp19vp-be/shared';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import ms from 'ms';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -8,6 +13,7 @@ import { HttpStatus } from '@nestjs/common/enums';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import {
   LoginReqDto,
   LoginResDto,
@@ -22,11 +28,20 @@ import {
 } from '../constants/authentication';
 import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
-import { IJwtPayload } from '../interfaces';
-import { strategyConfig } from '../strategies/strategy.config';
+import { core } from '@nyp19vp-be/shared';
 
 @Injectable()
 export class AuthService {
+  googleLogin(req) {
+    if (!req.user) {
+      return 'No user from google';
+    }
+
+    return {
+      message: 'User information from google',
+      user: req.user,
+    };
+  }
   constructor(
     @InjectRepository(AccountEntity)
     private accountRespo: Repository<AccountEntity>,
@@ -43,18 +58,20 @@ export class AuthService {
    * else throw and `RpcException`
    * @param username
    * @param password
-   * @returns `AccountEntity`
+   * @returns `IUser`
    */
-  async validateUser(
-    username: string,
-    password: string,
-  ): Promise<AccountEntity> {
-    console.log('validateUser', username, password);
+  async validateUser({
+    username,
+    password,
+    loginType,
+  }: ValidateUserReqDto): Promise<ValidateUserResDto> {
+    console.log('validateUser', username, password, loginType);
 
-    const accountFound = await this.accountRespo.findOneBy({
-      username: username,
-    });
+    const accountFound: AccountEntity = null;
 
+    if (loginType === core.ELoginType.email) {
+      //
+    }
     if (accountFound === null) {
       const userNotFoundRpcException: LoginResWithTokensDto = {
         statusCode: HttpStatus.NOT_FOUND,
@@ -78,10 +95,17 @@ export class AuthService {
       throw new RpcException(userNotFoundRpcException);
     }
 
-    return accountFound;
+    return {
+      statusCode: HttpStatus.OK,
+      message: `user ${username}/${loginType} validated`,
+      user: {
+        username: accountFound.username,
+        password: accountFound.hashedPassword,
+      },
+    };
   }
 
-  decodeToken(token: string): IJwtPayload {
+  decodeToken(token: string): core.IJwtPayload {
     return {
       username: this.jwtService.decode(token)['username'] ?? '',
       iat: this.jwtService.decode(token)['iat'] ?? undefined,
@@ -166,18 +190,19 @@ export class AuthService {
     return accessToken;
   }
 
-  generateAccessJWT(payload: IJwtPayload): string {
+  generateAccessJWT(payload: core.IJwtPayload): string {
     return this.jwtService.sign(payload, {
-      expiresIn: strategyConfig.accessJwtTtl, // 10 mins
-      secret: strategyConfig.accessJwtSecret,
+      expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
+      secret: config.auth.strategies.strategyConfig.accessJwtSecret,
     });
   }
 
-  generateRefreshJWT(payload: IJwtPayload): string {
+  generateRefreshJWT(payload: core.IJwtPayload): string {
     return this.jwtService.sign(payload, {
-      expiresIn: strategyConfig.refreshJwtTtl, // 10 days
-      secret: strategyConfig.refreshJwtSecret,
+      expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
+      secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
     });
+    config.auth.strategies.strategyConfig;
   }
 
   // async authorize(userId: string, actionId: string): Promise<boolean> {
@@ -220,13 +245,13 @@ export class AuthService {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: ms(ACCESS_JWT_DEFAULT_TTL),
+      maxAge: utils.toMs(ACCESS_JWT_DEFAULT_TTL),
     });
     res.cookie(REFRESH_JWT_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: ms(REFRESH_JWT_DEFAULT_TTL),
+      maxAge: utils.toMs(REFRESH_JWT_DEFAULT_TTL),
     });
   }
 }

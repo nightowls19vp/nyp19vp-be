@@ -1,6 +1,8 @@
-import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
+import { ValidateUserReqDto } from './../../../../../libs/shared/src/lib/dto/auth/authentication.dto';
+import { Controller, Get, Inject, Req, UseGuards } from '@nestjs/common';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,
@@ -10,7 +12,6 @@ import {
   RegisterResDto,
 } from '@nyp19vp-be/shared';
 
-import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { AccountService } from '../services/account.service';
 import { ActionService } from '../services/action.service';
 import { AuthService } from '../services/auth.service';
@@ -42,7 +43,11 @@ export class AuthController implements OnModuleInit {
     return this.authService.getData();
   }
 
-  @UseGuards(LocalAuthGuard)
+  @MessagePattern(kafkaTopic.AUTH.VALIDATE_USER)
+  async validateUser(reqDto: ValidateUserReqDto): Promise<LoginResDto> {
+    return this.authService.validateUser(reqDto);
+  }
+
   @MessagePattern(kafkaTopic.AUTH.LOGIN)
   async login(reqDto: LoginReqDto): Promise<LoginResDto> {
     return this.authService.login(reqDto);

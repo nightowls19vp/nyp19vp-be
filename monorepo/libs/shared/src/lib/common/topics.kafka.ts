@@ -4,6 +4,9 @@ export const HEALT_CHECK = {
 };
 
 export const AUTH = {
+  VALIDATE_USER: 'validate_user',
+  GOOGLE_AUTH: 'google_auth',
+  GOOGLE_AUTH_REDIRECT: 'google_auth_redirect',
   LOGIN: 'login',
   LOGOUT: 'logout',
   CREATE_ACCOUNT: 'create_account',

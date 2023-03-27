@@ -3,6 +3,7 @@ import {
   IsAscii,
   IsDate,
   IsEmail,
+  IsEnum,
   IsPhoneNumber,
   IsStrongPassword,
   Matches,
@@ -12,6 +13,7 @@ import {
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
 import { BaseResDto } from '../base.dto';
+import { ELoginType, IUser } from '../../core';
 
 class LocalAuthenticationInfo {
   @ApiProperty({
@@ -99,6 +101,15 @@ class UserInfo {
   })
   @IsEmail()
   email: string;
+}
+
+export class ValidateUserReqDto extends LocalAuthenticationInfo {
+  @IsEnum(ELoginType)
+  loginType: ELoginType;
+}
+
+export class ValidateUserResDto extends BaseResDto {
+  user: IUser;
 }
 
 export class LoginReqDto extends LocalAuthenticationInfo {}

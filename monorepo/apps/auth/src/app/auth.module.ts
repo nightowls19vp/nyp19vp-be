@@ -11,17 +11,13 @@ import { Global, Module } from '@nestjs/common';
 
 import { AuthController } from './controller/auth.controller';
 import { AuthService } from './services/auth.service';
-import { CONST } from '@nyp19vp-be/shared';
 import { ConfigModule } from '@nestjs/config';
 import { DataBaseModule } from '../core/database/database.module';
 import { AccountService } from './services/account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AccessJwtStrategy } from './strategies/access-jwt.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
-import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
+import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
 
 @Global()
 @Module({
@@ -29,9 +25,7 @@ import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
-        process.env.NODE_ENV !== 'dev'
-          ? process.env.ENV_FILE
-          : CONST.ENV_FILE.DEV,
+        process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
     }),
     ClientsModule.register([
       {
@@ -49,7 +43,6 @@ import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
       },
     ]),
     DataBaseModule,
-    PassportModule,
     JwtModule,
     TypeOrmModule.forFeature([
       AccountEntity,
@@ -66,9 +59,6 @@ import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
     RoleService,
     ActionService,
     RefreshTokenBlacklistService,
-    LocalStrategy,
-    AccessJwtStrategy,
-    RefreshJwtStrategy,
   ],
   exports: [
     AuthService,

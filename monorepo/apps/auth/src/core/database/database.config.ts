@@ -1,11 +1,11 @@
 import * as dotenv from 'dotenv';
 
-import { CONST } from '@nyp19vp-be/shared';
+import { core } from '@nyp19vp-be/shared';
 import { IDbConfig } from './interfaces/dbConfig.interface';
 
 dotenv.config({
   path:
-    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : CONST.ENV_FILE.DEV,
+    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : core.ENV_FILE.DEV,
 });
 
 console.log({

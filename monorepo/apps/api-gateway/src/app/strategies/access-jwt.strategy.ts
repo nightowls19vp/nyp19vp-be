@@ -5,7 +5,7 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import { ACCESS_JWT_STRATEGY_NAME } from '../constants/authentication';
 import { IJwtPayload } from '../interfaces';
-import { strategyConfig } from './strategy.config';
+import { strategyConfig } from 'libs/shared/src/lib/config/auth/strategies';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(

@@ -6,8 +6,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { LOCAL_STRATEGY_NAME } from '../constants/authentication';
-import { AccountEntity } from '../entities/account.entity';
-import { AuthService } from '../services/auth.service';
+import { core } from '@nyp19vp-be/shared';
+import { AuthService } from '../auth.service';
 
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
@@ -22,13 +22,17 @@ export class LocalStrategy extends PassportStrategy(
     super();
   }
 
-  async validate(username: string, password: string): Promise<AccountEntity> {
+  async validate(username: string, password: string): Promise<core.IUser> {
     console.log({
       username,
       password,
     });
 
-    const user = await this.authService.validateUser(username, password);
+    const user = await this.authService.validateUser(
+      username,
+      password,
+      core.ELoginType.username,
+    );
 
     console.log('LocalStrategy.validate user ', user);
 

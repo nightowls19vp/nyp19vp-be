@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { RoleEntity } from './role.entity';
 import {
   Column,
@@ -27,11 +28,20 @@ export class AccountEntity {
   @Column({
     name: 'username',
     unique: true,
+    default: randomUUID(),
   })
   username: string;
 
   @Column({
+    name: 'username',
+    unique: true,
+    nullable: false,
+  })
+  email: string;
+
+  @Column({
     name: 'hashed_password',
+    nullable: false,
   })
   hashedPassword: string;
 
@@ -52,18 +62,23 @@ export class AccountEntity {
 
   @OneToOne(() => StatusEntity, {
     cascade: true,
+    eager: true,
   })
   @JoinColumn()
   status: StatusEntity;
 
   @ManyToOne(() => RoleEntity, (role) => role.accounts, {
     cascade: true,
+    eager: true,
   })
   role: RoleEntity;
 
   @OneToMany(
     () => RefreshTokenBlacklistEntity,
     (refreshTokenBlacklist) => refreshTokenBlacklist.account,
+    {
+      lazy: true,
+    },
   )
-  refreshTokenBlacklist: RefreshTokenBlacklistEntity[];
+  refreshTokenBlacklist: Promise<RefreshTokenBlacklistEntity[]>;
 }

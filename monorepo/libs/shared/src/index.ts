@@ -1,5 +1,11 @@
+// config
+export * as config from './lib/config';
+
+//utils
+export * as utils from './lib/utils';
+
 // constants
-export * as CONST from './lib/core/constants';
+export * as core from './lib/core';
 
 // authorization
 export * from './lib/authorization';

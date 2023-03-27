@@ -3,15 +3,16 @@ import { Request } from 'express';
 import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { forwardRef, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+
+import { config } from '@nyp19vp-be/shared';
 
 import {
   REFRESH_JWT_COOKIE_NAME,
   REFRESH_JWT_STRATEGY_NAME,
 } from '../constants/authentication';
-import { AuthService } from '../services/auth.service';
-import { strategyConfig } from './strategy.config';
+import { AuthService } from '../auth.service';
 
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
@@ -32,33 +33,33 @@ export class RefreshJwtStrategy extends PassportStrategy(
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: strategyConfig.refreshJwtSecret,
+      secretOrKey: config.auth.strategies.strategyConfig.refreshJwtSecret,
       passReqToCallback: true,
     });
   }
 
   async validate(req: Request, payload: any) {
-    const refreshToken = req.cookies[REFRESH_JWT_COOKIE_NAME];
+    // const refreshToken = req.cookies[REFRESH_JWT_COOKIE_NAME];
 
-    console.log(refreshToken);
+    // console.log(refreshToken);
 
-    const decoded = this.authService.decodeToken(refreshToken);
+    // this.authService.de
 
-    const isTokenValid = await this.authService.validateRefreshToken(
-      decoded.username,
-      refreshToken,
-    );
-    if (!isTokenValid) {
-      console.log('token is in blacklist');
+    // const isTokenValid = await this.authService.validateRefreshToken(
+    //   decoded.username,
+    //   refreshToken,
+    // );
+    // if (!isTokenValid) {
+    //   console.log('token is in blacklist');
 
-      throw new HttpException(
-        {
-          statusCode: 401,
-          message: 'The refresh token is in blacklist',
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    //   throw new HttpException(
+    //     {
+    //       statusCode: 401,
+    //       message: 'The refresh token is in blacklist',
+    //     },
+    //     HttpStatus.UNAUTHORIZED,
+    //   );
+    // }
 
     return payload;
   }

@@ -16,5 +16,3 @@ export const JWT_TOKEN_ERRORS = {
   NOT_BEFORE_ERROR: 'NotBeforeError',
   JWT_ERROR: 'JsonWebTokenError',
 };
-
-export const GOOGLE_STRATEGY_NAME = 'google';

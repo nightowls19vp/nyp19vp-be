@@ -3,12 +3,15 @@ import { Request, Response } from 'express';
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   Inject,
   OnModuleInit,
+  Param,
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
@@ -26,6 +29,8 @@ import {
 
 // import { AllGlobalExceptionsFilter } from '../filters/filter';
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './guards/google.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -42,6 +47,24 @@ export class AuthController implements OnModuleInit {
     }
 
     await Promise.all([this.authClient.connect()]);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) {
+    //
+  }
+
+  @Get('google/:from')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthFrom(@Req() req, @Param('from') from) {
+    //
+  }
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  googleAuthRedirect(@Req() req) {
+    return this.authService.googleLogin(req);
   }
 
   @ApiResponse({
