@@ -69,14 +69,10 @@ export class GoogleStrategy extends PassportStrategy(
       accessToken,
       refreshToken,
     };
-
-    console.log('gg user: ', googleUser);
-
-    const user = await this.authService.googleUserValidate(googleUser);
+    const user = this.authService.googleUserValidate(googleUser);
 
     return {
       ...user,
-      ...googleUser,
     };
   }
 

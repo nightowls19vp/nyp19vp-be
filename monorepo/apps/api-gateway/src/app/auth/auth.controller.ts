@@ -55,24 +55,14 @@ export class AuthController implements OnModuleInit {
     // this route empty
   }
 
-  @Get('google-logins/:from')
-  @UseGuards(GoogleAuthGuard)
-  async googleLogin(@Req() req: Request) {
-    // this route empty
-  }
-
-  @Get('google/:from')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuthFrom(@Req() req, @Param('from') from) {
-    //
-  }
-
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    console.log('gpai auth ctrl: reach redirect');
+
     const auth = this.authService.googleLogin(req);
 
-    return auth;
+    // return auth;
 
     const webUrl = process.env.WEB_URL || 'http://localhost:8080';
 
@@ -80,7 +70,17 @@ export class AuthController implements OnModuleInit {
 
     res.cookie('aaa', JSON.stringify(auth));
 
+    console.log('ádfa');
+
     res.redirect(webUrl);
+
+    return 'a';
+  }
+
+  @Get('google-logins/:from')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthFrom(@Req() req, @Param('from') from) {
+    console.log('frommmmmmm');
   }
 
   @ApiResponse({

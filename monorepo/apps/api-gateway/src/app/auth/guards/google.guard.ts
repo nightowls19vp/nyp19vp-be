@@ -20,7 +20,7 @@ export class GoogleAuthGuard extends AuthGuard(GOOGLE_STRATEGY_NAME) {
     const from = (request.query.state as string)?.replace(/@/g, '/');
 
     const activate = (await super.canActivate(context)) as boolean;
-    request.params.from = from;
+    // request.params.from = from;
     return activate;
   }
 }
