@@ -35,6 +35,14 @@ export class GoogleStrategy extends PassportStrategy(
       scope: ['email', 'profile'],
       passReqToCallback: true,
     });
+
+    console.log('[gg cf]', {
+      clientID: process.env.OAUTH2_GOOGLE_CLIENT_ID,
+      clientSecret: process.env.OAUTH2_GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.OAUTH2_GOOGLE_CALLBACK_URL,
+      scope: ['email', 'profile'],
+      passReqToCallback: true,
+    });
   }
 
   authenticate(req: any, options: any) {

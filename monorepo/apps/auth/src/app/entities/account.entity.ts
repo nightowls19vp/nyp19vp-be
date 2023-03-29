@@ -33,7 +33,7 @@ export class AccountEntity {
   username: string;
 
   @Column({
-    name: 'username',
+    name: 'email',
     unique: true,
     nullable: false,
   })
