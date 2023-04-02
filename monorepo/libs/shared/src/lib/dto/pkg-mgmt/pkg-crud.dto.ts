@@ -1,5 +1,18 @@
-import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
-import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
+import {
+  ApiProperty,
+  IntersectionType,
+  OmitType,
+  PickType,
+} from '@nestjs/swagger';
+import {
+  IsString,
+  IsInt,
+  IsPositive,
+  IsAscii,
+  IsEnum,
+  minLength,
+  min,
+} from 'class-validator';
 import { BaseResDto } from '../base.dto';
 
 export class PackageDto {
@@ -72,12 +85,26 @@ export class UpdatePkgReqDto extends IntersectionType(
 
 export class UpdatePkgResDto extends BaseResDto {}
 
-export class GetPkgsResDto extends BaseResDto {
-  @ApiProperty()
-  packages: PackageDto[];
-}
-
 export class GetPkgResDto extends BaseResDto {
   @ApiProperty()
   package: PackageDto;
+}
+
+export class FilterPkgReqDto extends PickType(PackageDto, [
+  'duration',
+  'noOfMember',
+]) {
+  @ApiProperty({
+    minimum: 100,
+    maximum: 10000,
+  })
+  @IsPositive()
+  price_lb: number;
+
+  @ApiProperty({
+    minimum: 100,
+    maximum: 10000,
+  })
+  @IsPositive()
+  price_gb: number;
 }

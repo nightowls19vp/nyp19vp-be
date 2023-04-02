@@ -8,7 +8,8 @@ import {
   GetGrsResDto,
   GroupDto,
   PackageDto,
-  UpdateGrMbReqDto,
+  AddGrMbReqDto,
+  RmGrMbReqDto,
   UpdateGrMbResDto,
   UpdateGrPkgReqDto,
   UpdateGrPkgResDto,
@@ -198,64 +199,121 @@ export class GrCrudService {
         });
       });
   }
-  async addMemb(updateGrMbReqDto: UpdateGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async addMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<UpdateGrMbResDto> {
     const id = updateGrMbReqDto._id;
-    console.log(`pkg-mgmt-svc#add-new-member-to-group #${id}`);
+    const user_id = updateGrMbReqDto.user;
+    console.log(`pkg-mgmt-svc#add-new-member #${user_id} to-group #${id}`);
     const _id: ObjectId = new ObjectId(id);
     return await this.grModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
-        { $addToSet: { members: updateGrMbReqDto.member } }
+      .findOne(
+        {
+          _id: _id,
+          deletedAt: { $exists: false },
+        },
+        { members: { $elemMatch: { user: user_id } } }
       )
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `add new member to group #${id} successfully`,
-          });
-        else
+      .then(async (checkMemb) => {
+        console.log(checkMemb);
+        if (checkMemb) {
+          if (!checkMemb.members.length) {
+            return await this.grModel
+              .updateOne(
+                { _id: _id },
+                {
+                  $addToSet: {
+                    members: {
+                      user: user_id,
+                      role: 'User',
+                      addedBy: updateGrMbReqDto.addedBy,
+                    },
+                  },
+                }
+              )
+              .then((res) => {
+                if (res.matchedCount && res.modifiedCount)
+                  return Promise.resolve({
+                    statusCode: HttpStatus.OK,
+                    message: `add new member #${user_id} to group #${id} successfully`,
+                  });
+              })
+              .catch((error) => {
+                return Promise.resolve({
+                  statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                  message: error.message,
+                });
+              });
+          } else {
+            return Promise.resolve({
+              statusCode: HttpStatus.CONFLICT,
+              message: `DUPLICATE_KEY: User #${user_id} already exists`,
+              error: 'DUPLICATE KEY ERROR',
+            });
+          }
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
           });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
+        }
       });
   }
-  async rmMemb(updateGrMbReqDto: UpdateGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async rmMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
     const id = updateGrMbReqDto._id;
-    console.log(`pkg-mgmt-svc#remove-member-from-group #${id}`);
+    const user_id = updateGrMbReqDto.user;
+    console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
     const _id: ObjectId = new ObjectId(id);
     return await this.grModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
-        { $pull: { members: updateGrMbReqDto.member } }
+      .findOne(
+        {
+          _id: _id,
+          deletedAt: { $exists: false },
+        },
+        { members: { $elemMatch: { user: user_id } } }
       )
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `remove member from group #${id} successfully`,
-          });
-        else
+      .then(async (checkExists) => {
+        if (checkExists) {
+          if (checkExists.members.length)
+            if (checkExists.members[0].role != 'Super User') {
+              return await this.grModel
+                .updateOne(
+                  { _id: _id },
+                  { $pull: { members: { user: user_id } } }
+                )
+                .then((res) => {
+                  if (res.matchedCount && res.modifiedCount)
+                    return Promise.resolve({
+                      statusCode: HttpStatus.OK,
+                      message: `remove member #${user_id} from group #${id} successfully`,
+                    });
+                })
+                .catch((error) => {
+                  return Promise.resolve({
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: error.message,
+                  });
+                });
+            } else {
+              return Promise.resolve({
+                statusCode: HttpStatus.METHOD_NOT_ALLOWED,
+                message: `Not allowed to remove Super User #${user_id} from group`,
+                error: 'METHOD NOT ALLOWED',
+              });
+            }
+          else {
+            return Promise.resolve({
+              statusCode: HttpStatus.NOT_FOUND,
+              message: `No member #${user_id} found in group #${id}`,
+              error: 'NOT FOUND',
+            });
+          }
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
           });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
+        }
       });
   }
   async rmGrPkg(

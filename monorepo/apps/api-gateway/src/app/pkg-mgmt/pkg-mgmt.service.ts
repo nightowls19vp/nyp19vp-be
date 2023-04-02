@@ -1,7 +1,12 @@
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
-  UpdateGrMbReqDto,
+  AddGrMbReqDto,
+  RmGrMbReqDto,
   UpdateGrMbResDto,
   CreateGrReqDto,
   CreateGrResDto,
@@ -10,7 +15,6 @@ import {
   GetGrResDto,
   GetGrsResDto,
   GetPkgResDto,
-  GetPkgsResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrResDto,
@@ -18,6 +22,7 @@ import {
   UpdatePkgResDto,
   UpdateGrPkgResDto,
   UpdateGrPkgReqDto,
+  PackageDto,
 } from '@nyp19vp-be/shared';
 import { firstValueFrom } from 'rxjs';
 
@@ -43,9 +48,14 @@ export class PkgMgmtService {
     });
   }
 
-  async getAllPkg(req: Request): Promise<GetPkgsResDto> {
+  async getAllPkg(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<PackageDto>> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS, req)
+      this.packageMgmtClient.send(
+        kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS,
+        collectionDto
+      )
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -112,14 +122,7 @@ export class PkgMgmtService {
   async getAllGr(req: Request): Promise<GetGrsResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS, req)
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
-    });
+    );
   }
   async getGrById(id: string): Promise<GetGrResDto> {
     return await firstValueFrom(
@@ -160,9 +163,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async addGrMemb(
-    updateGrMbReqDto: UpdateGrMbReqDto
-  ): Promise<UpdateGrMbResDto> {
+  async addGrMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<UpdateGrMbResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
@@ -177,9 +178,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async rmGrMemb(
-    updateGrMbReqDto: UpdateGrMbReqDto
-  ): Promise<UpdateGrMbResDto> {
+  async rmGrMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB,

@@ -9,11 +9,13 @@ import {
   Inject,
   Req,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import {
-  UpdateGrMbReqDto,
+  AddGrMbReqDto,
+  RmGrMbReqDto,
   UpdateGrMbResDto,
   CreateGrReqDto,
   CreateGrResDto,
@@ -22,7 +24,6 @@ import {
   GetGrResDto,
   GetGrsResDto,
   GetPkgResDto,
-  GetPkgsResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrResDto,
@@ -30,8 +31,15 @@ import {
   UpdatePkgResDto,
   UpdateGrPkgReqDto,
   UpdateGrPkgResDto,
+  PkgCollectionProperties,
+  PackageDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
+import {
+  CollectionDto,
+  CollectionResponse,
+  ValidationPipe,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @ApiTags('Package Management')
 @Controller('pkg-mgmt')
@@ -64,14 +72,18 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('pkg')
-  @ApiOkResponse({ description: 'Got All Packages', type: GetPkgsResDto })
-  getAllPkg(@Req() req: Request): Promise<GetPkgsResDto> {
+  @ApiOkResponse({ description: 'Got All Packages', type: PackageDto })
+  getAllPkg(
+    @Query(new ValidationPipe(PkgCollectionProperties))
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<PackageDto>> {
     console.log('get all packages');
-    return this.pkgMgmtService.getAllPkg(req);
+    console.log(collectionDto);
+    return this.pkgMgmtService.getAllPkg(collectionDto);
   }
 
   @Get('pkg/:id')
-  @ApiOkResponse({ description: 'Got All Packages', type: GetPkgResDto })
+  @ApiOkResponse({ description: 'Got Package', type: GetPkgResDto })
   getPkgById(@Param('id') id: string): Promise<GetPkgResDto> {
     console.log(`get package #${id}`);
     return this.pkgMgmtService.getPkgById(id);
@@ -144,7 +156,7 @@ export class PkgMgmtController implements OnModuleInit {
   })
   addGrMemb(
     @Param('id') id: string,
-    @Body() updateGrMbReqDto: UpdateGrMbReqDto
+    @Body() updateGrMbReqDto: AddGrMbReqDto
   ): Promise<UpdateGrMbResDto> {
     console.log(`add new member to group #${id}`, updateGrMbReqDto);
     updateGrMbReqDto._id = id;
@@ -158,7 +170,7 @@ export class PkgMgmtController implements OnModuleInit {
   })
   rmGrMemb(
     @Param('id') id: string,
-    @Body() updateGrMbReqDto: UpdateGrMbReqDto
+    @Body() updateGrMbReqDto: RmGrMbReqDto
   ): Promise<UpdateGrMbResDto> {
     console.log(`remove member from group #${id}`, updateGrMbReqDto);
     updateGrMbReqDto._id = id;

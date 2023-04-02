@@ -5,11 +5,15 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
-  GetPkgsResDto,
   kafkaTopic,
+  PackageDto,
   UpdatePkgReqDto,
   UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Controller()
 export class PkgCrudController {
@@ -23,8 +27,10 @@ export class PkgCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS)
-  findAllPkgs(): Promise<GetPkgsResDto> {
-    return this.pkgCrudService.findAllPkgs();
+  findAllPkgs(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<PackageDto>> {
+    return this.pkgCrudService.findAllPkgs(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID)

@@ -6,17 +6,14 @@ import {
   Param,
   Post,
   Put,
-  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -28,11 +25,25 @@ import {
   UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
+  UsersCollectionProperties,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Patch } from '@nestjs/common/decorators';
+import {
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Patch, Query } from '@nestjs/common/decorators';
+import {
+  CollectionDto,
+  CollectionResponse,
+  ValidationPipe,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @ApiTags('Users')
 @Controller('users')
@@ -51,26 +62,36 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'Created User', type: CreateUserResDto })
+  @ApiCreatedResponse({ description: 'Created user', type: CreateUserResDto })
+  @ApiInternalServerErrorResponse({ description: 'Bad Request: Duplicate Key' })
   async create(
     @Body() createUserReqDto: CreateUserReqDto
   ): Promise<CreateUserResDto> {
     console.log('createUser', createUserReqDto);
-
     return this.usersService.createUser(createUserReqDto);
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Got All Users', type: GetUsersResDto })
-  async getAll(@Req() req: Request): Promise<GetUsersResDto> {
+  @ApiOperation({
+    description:
+      'Filter MUST: \n\n\t- name(optional): {"name":{"$regex":"(?i)(keyword)(?-i)"}}\n\n\t- phone(optional)\n\n\t\t+ check input @IsPhoneNumber(\'VI\')\n\n\t\t+ search full-text\n\n\t\t+ example: {"phone":"+84987654321"}\n\n\t- email(optional)\n\n\t\t+ check input exists @\n\n\t\t+ example: {"email":{"$regex":"^exam@"}}',
+  })
+  @ApiOkResponse({ description: 'Got All Users' })
+  async getAll(
+    @Query(new ValidationPipe(UsersCollectionProperties))
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
     console.log('get all users');
-
-    return this.usersService.getAllUsers(req);
+    console.log(collectionDto.filter);
+    return this.usersService.getAllUsers(collectionDto);
   }
 
   @Get(':id')
-  @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
+  @ApiOkResponse({ description: 'Got user by Id', type: GetUserInfoResDto })
+  @ApiNotFoundResponse({ description: 'No user found' })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   async getUserById(@Param('id') id: string): Promise<GetUserInfoResDto> {
+    console.log(`get user info by #${id}`);
     return this.usersService.getUserById(id);
   }
 
@@ -91,22 +112,6 @@ export class UsersController implements OnModuleInit {
   async getCart(@Param('id') id: string): Promise<GetCartResDto> {
     console.log(`get items of user #${id}'s cart`);
     return this.usersService.getCart(id);
-  }
-
-  @Get(':id/trx')
-  @ApiOkResponse({ description: 'Get transaction history' })
-  async getTrxHist(@Param('id') id: string): Promise<GetTrxHistResDto> {
-    console.log(`get transaction history of from user #${id}`);
-    return this.usersService.getTrxHist(id);
-  }
-
-  @Get('/findByFilter/:option')
-  @ApiOkResponse({
-    description: 'Got User Setting by Partial<UserInfo>',
-    type: GetUsersResDto,
-  })
-  async getUserBy(@Param('option') option: string): Promise<GetUsersResDto> {
-    return this.usersService.getUserBy(option);
   }
 
   @Patch(':id')
@@ -156,8 +161,12 @@ export class UsersController implements OnModuleInit {
 
   @Put(':id/cart')
   @ApiOkResponse({
-    description: 'Updated shopping cart',
+    description: "Updated user's shopping cart",
     type: UpdateCartResDto,
+  })
+  @ApiOperation({
+    description:
+      'Update all items in cart.\n\nMUST update the entire cart, not add or remove a few items.',
   })
   async updateCart(
     @Param('id') id: string,

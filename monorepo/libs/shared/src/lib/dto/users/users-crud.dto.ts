@@ -116,20 +116,6 @@ class Items {
     example: 1,
   })
   quantity: number;
-
-  @ApiProperty({
-    description: 'Price of package at that moment',
-    type: Number,
-    example: 20.1,
-  })
-  price: number;
-}
-
-class UserInfoDto {
-  @ApiProperty()
-  @Type(() => UserInfo)
-  @ValidateNested()
-  user: UserInfo;
 }
 
 class UserSettingDto {
@@ -139,19 +125,10 @@ class UserSettingDto {
   setting: UserSetting;
 }
 
-export class UsersDto {
+export class TrxHistDto {
   @ApiProperty()
-  @Type(() => UserSetting)
-  @ValidateNested()
-  users: UserInfo[];
-}
-
-class ShoppingHistoryDto {
-  @ApiProperty({
-    type: Array<string>,
-  })
   @IsArray()
-  transaction: string[];
+  trxHist: string[];
 }
 
 export class CartDto {
@@ -160,28 +137,24 @@ export class CartDto {
       {
         package: '640ac2ccf227ec441cd97d7b',
         quantity: 1,
-        price: 17.5,
       },
       {
         package: '640b22084096fa00812fa128',
         quantity: 2,
-        price: 20.1,
       },
     ],
   })
   @Type(() => Items)
-  @ValidateNested()
+  @ValidateNested({ each: true })
+  @IsArray()
   cart: Items[];
 }
 
-export class TrxHistDto {
-  @ApiProperty()
-  trx: string[];
-}
-
-export class GetTrxHistResDto extends IntersectionType(
-  BaseResDto,
-  TrxHistDto
+export class UserDto extends IntersectionType(
+  UserInfo,
+  UserSettingDto,
+  TrxHistDto,
+  CartDto
 ) {}
 
 export class UpdateTrxHistReqDto extends UserId {
@@ -193,12 +166,12 @@ export class UpdateTrxHistReqDto extends UserId {
 
 export class UpdateTrxHistResDto extends BaseResDto {}
 
-export class GetUsersResDto extends IntersectionType(BaseResDto, UsersDto) {}
-
-export class GetUserInfoResDto extends IntersectionType(
-  BaseResDto,
-  UserInfoDto
-) {}
+export class GetUserInfoResDto extends BaseResDto {
+  @ApiProperty()
+  @Type(() => UserInfo)
+  @ValidateNested()
+  user: UserDto;
+}
 
 export class GetUserSettingResDto extends IntersectionType(
   BaseResDto,
@@ -232,18 +205,6 @@ export class UpdateAvatarResDto extends BaseResDto {}
 
 export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}
 
-export class GetShoppingHistoryResDto extends IntersectionType(
-  BaseResDto,
-  ShoppingHistoryDto
-) {}
-
 export class UpdateCartReqDto extends IntersectionType(UserId, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}
-
-export class AddToHistoryReqDto extends IntersectionType(
-  UserId,
-  ShoppingHistoryDto
-) {}
-
-export class AddToHistoryResDto extends BaseResDto {}

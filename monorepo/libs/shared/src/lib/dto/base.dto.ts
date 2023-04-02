@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class BaseResDto {
   @ApiProperty({
     description: 'Response status code',
+    example: HttpStatus.OK,
   })
   statusCode: HttpStatus;
 

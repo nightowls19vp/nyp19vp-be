@@ -2,7 +2,8 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GrCrudService } from './gr-crud.service';
 import {
-  UpdateGrMbReqDto,
+  AddGrMbReqDto,
+  RmGrMbReqDto,
   UpdateGrMbResDto,
   CreateGrReqDto,
   CreateGrResDto,
@@ -46,15 +47,13 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)
   addMemb(
-    @Payload() updateGrMbReqDto: UpdateGrMbReqDto
+    @Payload() updateGrMbReqDto: AddGrMbReqDto
   ): Promise<UpdateGrMbResDto> {
     return this.grCrudService.addMemb(updateGrMbReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB)
-  rmMemb(
-    @Payload() updateGrMbReqDto: UpdateGrMbReqDto
-  ): Promise<UpdateGrMbResDto> {
+  rmMemb(@Payload() updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
     return this.grCrudService.rmMemb(updateGrMbReqDto);
   }
 

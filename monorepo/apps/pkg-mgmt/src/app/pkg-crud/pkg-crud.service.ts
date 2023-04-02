@@ -4,13 +4,18 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
-  GetPkgsResDto,
+  PackageDto,
   UpdatePkgReqDto,
   UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
 import { Model } from 'mongoose';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import { ObjectId } from 'mongodb';
+import {
+  CollectionDto,
+  CollectionResponse,
+  DocumentCollector,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class PkgCrudService {
@@ -43,38 +48,21 @@ export class PkgCrudService {
       });
   }
 
-  async findAllPkgs(): Promise<GetPkgsResDto> {
+  async findAllPkgs(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<PackageDto>> {
     console.log('pkg-mgmt-svc#get-all-packages');
-    return await this.pkgModel
-      .find({ deletedAt: null })
-      .exec()
+    const collector = new DocumentCollector<PackageDocument>(this.pkgModel);
+    return await collector
+      .find(collectionDto)
       .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let pkgs = [];
-        for (const ele of res) {
-          pkgs.push(ele);
-        }
-        if (pkgs.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: 'get all packages successfully',
-            packages: pkgs,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'No packages found',
-            error: 'NOT FOUND',
-            packages: pkgs,
-          });
-        }
-      })
-      .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          packages: null,
+          data: res.data,
+          pagination: res.pagination,
         });
+      })
+      .catch((err) => {
+        throw err;
       });
   }
 

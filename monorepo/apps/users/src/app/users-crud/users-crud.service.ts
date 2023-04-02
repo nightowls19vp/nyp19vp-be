@@ -4,10 +4,8 @@ import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -18,10 +16,16 @@ import {
   UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
 } from '@nyp19vp-be/shared';
 import { Model, now } from 'mongoose';
 import { User, UserDocument } from '../../schemas/users.schema';
 import { ObjectId } from 'mongodb';
+import {
+  CollectionDto,
+  CollectionResponse,
+  DocumentCollector,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class UsersCrudService {
@@ -45,43 +49,27 @@ export class UsersCrudService {
       })
       .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.CONFLICT,
           message: error.message,
         });
       });
   }
 
-  async findAll(): Promise<GetUsersResDto> {
+  async findAll(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
     console.log(`users-svc#get-all-users`);
-    return await this.userModel
-      .find({ deletedAt: null })
-      .exec()
+    const collector = new DocumentCollector<UserDocument>(this.userModel);
+    return await collector
+      .find(collectionDto)
       .then((res) => {
-        const userList = [];
-        for (const ele of res) {
-          userList.push(ele);
-        }
-        if (userList.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: 'get all users successfully',
-            users: userList,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'No users found',
-            error: 'NOT FOUND',
-            users: userList,
-          });
-        }
-      })
-      .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          users: null,
+          data: res.data,
+          pagination: res.pagination,
         });
+      })
+      .catch((err) => {
+        throw err;
       });
   }
 
@@ -89,8 +77,7 @@ export class UsersCrudService {
     console.log(`users-svc#get-user-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
-      .findOne({ _id: _id, deletedAt: null })
-      .exec()
+      .findOne({ _id: _id, deletedAt: { $exists: false } })
       .then((res) => {
         if (!res) {
           return Promise.resolve({
@@ -116,50 +103,14 @@ export class UsersCrudService {
       });
   }
 
-  async findInfoBy(option: string): Promise<GetUsersResDto> {
-    console.log(`users-svc#get-user-by:`, option);
-    return await this.userModel
-      .find({
-        $or: [{ name: option }, { phone: option }, { email: option }],
-        deletedAt: null,
-      })
-      .exec()
-      .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let users = [];
-        for (const ele of res) {
-          users.push(ele);
-        }
-        if (users.length)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user successfully`,
-            users: users,
-          });
-        else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user with optional field found`,
-            error: 'NOT FOUND',
-            users: users,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          users: null,
-        });
-      });
-  }
-
   async findSettingById(id: string): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
-      .findOne({ _id: _id, deletedAt: null }, { setting: 1, _id: 0 })
-      .exec()
+      .findOne(
+        { _id: _id, deletedAt: { $exists: false } },
+        { setting: 1, _id: 0 }
+      )
       .then((res) => {
         if (!res) {
           return Promise.resolve({
@@ -193,7 +144,7 @@ export class UsersCrudService {
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .updateOne(
-        { _id: _id, deletedAt: null },
+        { _id: _id, deletedAt: { $exists: false } },
         {
           name: updateUserReqDto.name,
           dob: updateUserReqDto.dob,
@@ -229,7 +180,7 @@ export class UsersCrudService {
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .updateOne(
-        { _id: _id, deletedAt: null },
+        { _id: _id, deletedAt: { $exists: false } },
         {
           setting: updateSettingReqDto,
         }
@@ -261,7 +212,10 @@ export class UsersCrudService {
     console.log(`users-svc#udpate-avatar:`, id);
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
-      .updateOne({ _id: _id }, { avatar: updateAvatarReqDto.avatar })
+      .updateOne(
+        { _id: _id, deletedAt: { $exists: false } },
+        { avatar: updateAvatarReqDto.avatar }
+      )
       .then((res) => {
         if (res.matchedCount && res.modifiedCount)
           return Promise.resolve({
@@ -287,7 +241,7 @@ export class UsersCrudService {
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .updateOne(
-        { _id: _id, deletedAt: null },
+        { _id: _id, deletedAt: { $exists: false } },
         { deletedAt: new Date(now()) },
         { new: true }
       )
@@ -321,7 +275,7 @@ export class UsersCrudService {
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .updateOne(
-        { _id: _id, deletedAt: null },
+        { _id: _id, deletedAt: { $exists: false } },
         { $set: { cart: updateCartReqDto.cart } },
         { new: true }
       )
@@ -348,26 +302,20 @@ export class UsersCrudService {
   async getCart(id: string): Promise<GetCartResDto> {
     console.log(`get items from user's cart`, id);
     return await this.userModel
-      .find({ _id: id }, { cart: 1, _id: 0 })
-      .exec()
+      .findOne({ _id: id, deletedAt: { $exists: false } }, { cart: 1, _id: 0 })
       .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let cart = [];
-        for (const ele of res) {
-          cart.push(ele);
-        }
-        if (cart.length) {
+        if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,
-            cart: cart,
+            cart: res.cart,
           });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No items found in user #${id}'s cart`,
             error: 'NOT FOUND',
-            cart: cart,
+            cart: res.cart,
           });
         }
       })
@@ -376,41 +324,6 @@ export class UsersCrudService {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
           cart: null,
-        });
-      });
-  }
-
-  async getTrxHist(id: string): Promise<GetTrxHistResDto> {
-    console.log(`get transaction history of from user`, id);
-    return await this.userModel
-      .find({ _id: id }, { cart: 1, _id: 0 })
-      .exec()
-      .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let hist = [];
-        for (const ele of res) {
-          hist.push(ele);
-        }
-        if (hist.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user #${id}'s cart successfully`,
-            trx: hist,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No transacion history of user #${id} found`,
-            error: 'NOT FOUND',
-            trx: hist,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          trx: null,
         });
       });
   }
@@ -426,9 +339,7 @@ export class UsersCrudService {
         { $push: { trxHist: updateTrxHistReqDto.trx } },
         { new: true }
       )
-      .exec()
       .then((res) => {
-        console.log(res);
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `updated user #${_id}'s cart successfully`,

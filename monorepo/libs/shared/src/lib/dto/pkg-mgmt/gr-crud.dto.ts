@@ -143,9 +143,15 @@ export class UpdateGrReqDto extends IntersectionType(
 
 export class UpdateGrResDto extends BaseResDto {}
 
-export class UpdateGrMbReqDto extends IdDto {
-  member: MemberDto;
-}
+export class AddGrMbReqDto extends IntersectionType(
+  IdDto,
+  PickType(MemberDto, ['user', 'addedBy'])
+) {}
+
+export class RmGrMbReqDto extends IntersectionType(
+  IdDto,
+  PickType(MemberDto, ['user'])
+) {}
 
 export class UpdateGrMbResDto extends BaseResDto {}
 

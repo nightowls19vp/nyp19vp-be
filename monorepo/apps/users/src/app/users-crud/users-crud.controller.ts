@@ -1,13 +1,15 @@
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -19,6 +21,7 @@ import {
   UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
 
@@ -34,18 +37,15 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_ALL)
-  findAll(): Promise<GetUsersResDto> {
-    return this.usersCrudService.findAll();
+  findAll(
+    @Payload() collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
+    return this.usersCrudService.findAll(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
   findInfoById(@Payload() id: string): Promise<GetUserInfoResDto> {
     return this.usersCrudService.findInfoById(id);
-  }
-
-  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY)
-  findInfoBy(@Payload() option: string): Promise<GetUsersResDto> {
-    return this.usersCrudService.findInfoBy(option);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
@@ -91,12 +91,7 @@ export class UsersCrudController {
     return this.usersCrudService.getCart(id);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_TRX)
-  getTrxHist(@Payload() id: string): Promise<GetTrxHistResDto> {
-    return this.usersCrudService.getTrxHist(id);
-  }
-
-  @MessagePattern(kafkaTopic.USERS.GET_TRX)
+  @MessagePattern(kafkaTopic.USERS.UPDATE_TRX)
   updateTrxHist(
     @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto
   ): Promise<UpdateTrxHistResDto> {
