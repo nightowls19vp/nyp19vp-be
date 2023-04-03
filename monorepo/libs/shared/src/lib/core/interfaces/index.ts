@@ -1,5 +1,7 @@
+import { ERole } from '../../authorization';
+
 export interface IJwtPayload {
-  username: string;
+  user: IUser;
   iat?: number;
   exp?: number;
 }
@@ -12,4 +14,6 @@ export enum ELoginType {
 export interface IUser {
   username: string;
   password?: string;
+  role: ERole;
+  hashedPassword?: string;
 }

@@ -6,20 +6,25 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ACCESS_JWT_STRATEGY_NAME } from '../constants/authentication';
 import { config, core } from '@nyp19vp-be/shared';
 
+import { Request } from 'express';
+import { AuthService } from '../auth.service';
+import { IUser } from 'libs/shared/src/lib/core';
+
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(
   Strategy,
   ACCESS_JWT_STRATEGY_NAME,
 ) {
-  constructor() {
+  constructor(private readonly authService: AuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: config.auth.strategies.strategyConfig.accessJwtSecret,
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: core.IJwtPayload) {
+  async validate(req: Request, payload: core.IJwtPayload) {
     return payload;
   }
 }

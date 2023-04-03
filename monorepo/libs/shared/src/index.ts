@@ -18,6 +18,8 @@ export * from './lib/shared';
 
 export * from './lib/dto/auth/authentication.dto';
 
+export * from './lib/dto/auth/authorization.dto';
+
 export * from './lib/dto/users/users-crud.dto';
 
 export * from './lib/dto/pkg-mgmt/pkg-crud.dto';

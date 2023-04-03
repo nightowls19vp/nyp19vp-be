@@ -1,8 +1,7 @@
 import { ValidateUserReqDto } from './../../../../../libs/shared/src/lib/dto/auth/authentication.dto';
-import { Controller, Get, Inject, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,

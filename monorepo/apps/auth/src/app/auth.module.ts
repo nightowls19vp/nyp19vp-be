@@ -18,6 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtModule } from '@nestjs/jwt';
 import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
+import { DbModule } from './db/db.module';
 
 @Global()
 @Module({
@@ -51,6 +52,7 @@ import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
       ActionEntity,
       RefreshTokenBlacklistEntity,
     ]),
+    DbModule,
   ],
   controllers: [AuthController],
   providers: [

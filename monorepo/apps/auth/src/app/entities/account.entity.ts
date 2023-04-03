@@ -71,6 +71,9 @@ export class AccountEntity {
     cascade: true,
     eager: true,
   })
+  @JoinColumn({
+    name: 'role_id',
+  })
   role: RoleEntity;
 
   @OneToMany(

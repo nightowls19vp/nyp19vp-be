@@ -1,5 +1,6 @@
 import {
   config,
+  ERole,
   utils,
   ValidateUserReqDto,
   ValidateUserResDto,
@@ -20,15 +21,13 @@ import {
   LoginResWithTokensDto,
 } from '@nyp19vp-be/shared';
 
-import {
-  ACCESS_JWT_COOKIE_NAME,
-  ACCESS_JWT_DEFAULT_TTL,
-  REFRESH_JWT_COOKIE_NAME,
-  REFRESH_JWT_DEFAULT_TTL,
-} from '../constants/authentication';
 import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
 import { core } from '@nyp19vp-be/shared';
+import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
+import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
+import { log } from 'console';
+import { RoleEntity } from '../entities/role.entity';
 
 @Injectable()
 export class AuthService {
@@ -45,10 +44,30 @@ export class AuthService {
   constructor(
     @InjectRepository(AccountEntity)
     private accountRespo: Repository<AccountEntity>,
+    @InjectRepository(AccountEntity)
+    private roleRespo: Repository<RoleEntity>,
     private jwtService: JwtService,
     @InjectRepository(RefreshTokenBlacklistEntity)
     private refreshTokenBlacklistRepository: Repository<RefreshTokenBlacklistEntity>,
-  ) {}
+  ) {
+    this.initDb();
+  }
+
+  async initDb() {
+    for (const roleName in ERole) {
+      console.log('[initDb]', roleName);
+
+      const roleEtt: RoleEntity = this.roleRespo.create({
+        name: roleName as ERole,
+      });
+
+      try {
+        await this.roleRespo.save(roleEtt);
+      } catch (error) {
+        //
+      }
+    }
+  }
   getData(): { message: string } {
     return { message: 'Welcome to auth/Auth!' };
   }
@@ -63,15 +82,21 @@ export class AuthService {
   async validateUser({
     username,
     password,
-    loginType,
   }: ValidateUserReqDto): Promise<ValidateUserResDto> {
-    console.log('validateUser', username, password, loginType);
+    console.log('validateUser', username, password);
 
-    const accountFound: AccountEntity = null;
+    const accountFound: AccountEntity = await this.accountRespo.findOne({
+      where: [
+        {
+          username: username,
+        },
+        {
+          email: username,
+        },
+      ],
+    });
 
-    if (loginType === core.ELoginType.email) {
-      //
-    }
+    log('X.accountFound', accountFound);
     if (accountFound === null) {
       const userNotFoundRpcException: LoginResWithTokensDto = {
         statusCode: HttpStatus.NOT_FOUND,
@@ -97,28 +122,58 @@ export class AuthService {
 
     return {
       statusCode: HttpStatus.OK,
-      message: `user ${username}/${loginType} validated`,
+      message: `user ${username} validated`,
       user: {
         username: accountFound.username,
-        password: accountFound.hashedPassword,
+        hashedPassword: accountFound.hashedPassword,
+        role: accountFound.role.name,
       },
     };
   }
 
   decodeToken(token: string): core.IJwtPayload {
+    const decodeResult = this.jwtService.decode(token);
+
+    if (
+      decodeResult?.['user']?.username ||
+      decodeResult?.['user']?.hashedPassword ||
+      decodeResult?.['user']?.role ||
+      ![ERole.admin, ERole.user].includes(decodeResult?.['user']?.role) ||
+      decodeResult?.['iat'] ||
+      decodeResult?.['exp']
+    ) {
+      const rpcExc: BaseResDto = {
+        message: 'Jwt paload error',
+        statusCode: HttpStatus.UNAUTHORIZED,
+      };
+
+      throw new RpcException(rpcExc);
+    }
+
     return {
-      username: this.jwtService.decode(token)['username'] ?? '',
-      iat: this.jwtService.decode(token)['iat'] ?? undefined,
-      exp: this.jwtService.decode(token)['exp'] ?? undefined,
+      user: {
+        username: decodeResult['user'].username,
+        password: null,
+        hashedPassword: decodeResult['user'].hashedPassword,
+        role: decodeResult['user'].role,
+      },
+      iat: decodeResult['iat'] ?? undefined,
+      exp: decodeResult['exp'] ?? undefined,
     };
   }
 
   async login(userDto: LoginReqDto): Promise<LoginResWithTokensDto> {
-    const accessToken = await this.generateAccessJWT({
+    const validateUserRes: ValidateUserResDto = await this.validateUser({
       username: userDto.username,
+      password: userDto.password,
+      loginType: ELoginType.email,
+    });
+
+    const accessToken = await this.generateAccessJWT({
+      user: validateUserRes.user,
     });
     const refreshToken = await this.generateRefreshJWT({
-      username: userDto.username,
+      user: validateUserRes.user,
     });
 
     return Promise.resolve({
@@ -140,7 +195,7 @@ export class AuthService {
       console.log(decoded);
 
       const account = await this.accountRespo.findOneBy({
-        username: decoded.username,
+        username: decoded.user.username,
       });
 
       if (!account) {
@@ -182,10 +237,8 @@ export class AuthService {
     return !isTokenInBlacklist;
   }
 
-  refreshAccessToken(username: string): string {
-    const accessToken = this.generateAccessJWT({
-      username: username,
-    });
+  refreshAccessToken(payload: core.IJwtPayload): string {
+    const accessToken = this.generateAccessJWT(payload);
 
     return accessToken;
   }
@@ -202,7 +255,6 @@ export class AuthService {
       expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
       secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
     });
-    config.auth.strategies.strategyConfig;
   }
 
   // async authorize(userId: string, actionId: string): Promise<boolean> {
@@ -234,24 +286,4 @@ export class AuthService {
 
   //   return isAuthorized;
   // }
-
-  setCookie(res: Response, accessToken: string, refreshToken: string) {
-    console.log({
-      accessToken,
-      refreshToken,
-    });
-
-    res.cookie(ACCESS_JWT_COOKIE_NAME, accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: utils.toMs(ACCESS_JWT_DEFAULT_TTL),
-    });
-    res.cookie(REFRESH_JWT_COOKIE_NAME, refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: utils.toMs(REFRESH_JWT_DEFAULT_TTL),
-    });
-  }
 }

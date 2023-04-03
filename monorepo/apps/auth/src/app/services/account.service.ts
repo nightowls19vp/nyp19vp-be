@@ -1,4 +1,4 @@
-import { CreateUserReqDto, CreateUserResDto } from '@nyp19vp-be/shared';
+import { CreateUserReqDto, CreateUserResDto, ERole } from '@nyp19vp-be/shared';
 import { firstValueFrom } from 'rxjs';
 import { HttpStatus } from '@nestjs/common/enums';
 import { kafkaTopic, RegisterReqDto, RegisterResDto } from '@nyp19vp-be/shared';
@@ -9,6 +9,10 @@ import { Repository, DataSource } from 'typeorm';
 import { ClientKafka } from '@nestjs/microservices';
 
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
+import { RandomGenerator } from 'typeorm/util/RandomGenerator';
+import { RoleEntity } from '../entities/role.entity';
+import { log } from 'console';
 
 @Injectable()
 export class AccountService {
@@ -16,8 +20,34 @@ export class AccountService {
     private dataSource: DataSource,
     @InjectRepository(AccountEntity)
     private accountRespo: Repository<AccountEntity>,
+    @InjectRepository(AccountEntity)
+    private roleRespo: Repository<RoleEntity>,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) {}
+  ) {
+    // create admin
+    this.createAdmin();
+  }
+
+  async createAdmin() {
+    const roleAdmin = this.roleRespo.create({
+      name: ERole.admin,
+    });
+
+    const account: AccountEntity = this.accountRespo.create({
+      username: process.env.ADMIN_USERNAME || 'admin',
+      hashedPassword: process.env.ADMIN_PASSWORD || 'admin',
+      email: process.env.ADMIN_EMAIL || 'admin',
+      role: roleAdmin,
+    });
+
+    try {
+      await this.accountRespo.save(account);
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log('[AUTH-SVC] create admin successfully', account);
+  }
 
   getData(): { message: string } {
     return { message: 'Welcome to auth/Account service!' };
@@ -29,9 +59,15 @@ export class AccountService {
 
     reqDto.password = hash;
 
+    const roleUser = await this.roleRespo.findOneBy({
+      name: ERole.user,
+    });
+
     const account: AccountEntity = this.accountRespo.create({
       username: reqDto.username,
       hashedPassword: reqDto.password,
+      email: reqDto.email,
+      role: roleUser,
     });
 
     let saveResult = null;
@@ -48,20 +84,20 @@ export class AccountService {
         name: reqDto.name,
         phone: reqDto.phone,
       };
-      // const createUserRes: CreateUserResDto = await firstValueFrom(
-      //   this.usersClient.send(
-      //     kafkaTopic.USERS.CREATE,
-      //     JSON.stringify(createUserReq),
-      //   ),
-      // );
+      const createUserRes: CreateUserResDto = await firstValueFrom(
+        this.usersClient.send(
+          kafkaTopic.USERS.CREATE,
+          JSON.stringify(createUserReq),
+        ),
+      );
 
-      // console.log('createUserRes', createUserRes);
+      console.log('createUserRes', createUserRes);
 
-      // if (createUserRes.error) {
-      //   console.log('roll back');
+      if (createUserRes.error) {
+        console.log('roll back');
 
-      //   throw new Error(createUserRes.error);
-      // }
+        throw new Error(createUserRes.error);
+      }
 
       console.log(saveResult);
       await queryRunner.commitTransaction();
@@ -98,5 +134,9 @@ export class AccountService {
 
   remove(id: number) {
     return `This action removes an account`;
+  }
+
+  socialSignup(user: any) {
+    //
   }
 }

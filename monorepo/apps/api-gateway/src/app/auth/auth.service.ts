@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  ERole,
   kafkaTopic,
   LoginReqDto,
   LoginResWithTokensDto,
@@ -13,6 +14,8 @@ import {
   RegisterResDto,
   ValidateUserReqDto,
   ValidateUserResDto,
+  AuthorizeReqDto,
+  AuthorizeResDto,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -56,7 +59,7 @@ export class AuthService {
 
     const testUser: IUser = {
       username: googleUser.email,
-      password: null,
+      role: ERole.user,
     };
 
     return testUser;
@@ -80,11 +83,6 @@ export class AuthService {
       loginType,
     };
 
-    this.authClient.send(
-      kafkaTopic.AUTH.VALIDATE_USER,
-      JSON.stringify(validateUserReqDto),
-    );
-
     const validateUserResDto: ValidateUserResDto = await firstValueFrom(
       this.authClient.send(
         kafkaTopic.AUTH.VALIDATE_USER,
@@ -102,10 +100,7 @@ export class AuthService {
   async login(reqDto: LoginReqDto): Promise<LoginResWithTokensDto> {
     try {
       return await firstValueFrom(
-        this.authClient.send(
-          kafkaTopic.AUTH.LOGIN,
-          JSON.stringify({ body: reqDto }),
-        ),
+        this.authClient.send(kafkaTopic.AUTH.LOGIN, JSON.stringify(reqDto)),
       );
     } catch (error) {
       console.error('error', error);
@@ -147,5 +142,26 @@ export class AuthService {
       sameSite: 'strict',
       maxAge: toMs(REFRESH_JWT_DEFAULT_TTL),
     });
+  }
+
+  async authorize(
+    accessToken: string,
+    requiredRoles: ERole[],
+  ): Promise<boolean> {
+    const authorizeReqDto: AuthorizeReqDto = {
+      jwt: accessToken,
+      roles: requiredRoles,
+    };
+
+    return true;
+
+    const authorizeResult: AuthorizeResDto = await firstValueFrom(
+      this.authClient.send(
+        kafkaTopic.AUTH.AUTHORIZE,
+        JSON.stringify(authorizeReqDto),
+      ),
+    );
+
+    return authorizeResult.result;
   }
 }

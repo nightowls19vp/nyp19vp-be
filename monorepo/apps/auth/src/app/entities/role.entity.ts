@@ -10,20 +10,24 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AccountEntity } from './account.entity';
+import { ERole } from '@nyp19vp-be/shared';
 
 @Entity({
   name: 'roles',
 })
 export class RoleEntity {
-  @PrimaryGeneratedColumn({
+  @PrimaryGeneratedColumn('increment', {
     name: 'id',
   })
-  id: string;
+  id: number;
 
   @Column({
     name: 'role_name',
+    type: 'enum',
+    enum: ERole,
+    default: ERole.user,
   })
-  name: string;
+  name: ERole;
 
   @CreateDateColumn({
     name: 'created_at',
