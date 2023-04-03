@@ -1,11 +1,22 @@
-import { ApiProperty, IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsEmail, IsNumberString } from 'class-validator';
+import {
+  ApiProperty,
+  IntersectionType,
+  OmitType,
+  PickType,
+} from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsAscii,
+  IsDateString,
+  IsEmail,
+  IsPhoneNumber,
+} from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto } from '../base.dto';
 
 export class UserId {
-  _id: string
+  _id: string;
 }
 
 class UserSetting {
@@ -38,61 +49,73 @@ class UserSetting {
   newsNoti: boolean;
 }
 
-class UserInfo {
+export class UserInfo {
   @ApiProperty({
+    description: 'name of user, must be an ascii string',
     type: String,
-    minLength: 3,
-    maxLength: 30,
-    uniqueItems: true,
-    required: true
+    example: 'night owl',
+    required: true,
+    nullable: false,
+    minLength: 1,
+    maxLength: 255,
   })
   @IsString()
+  @IsAscii()
   name: string;
 
   @ApiProperty({
-    type: Date
+    description: 'date of birth of user',
+    type: Date,
+    example: '2001-01-01',
   })
+  @IsDateString()
   dob: Date;
 
-  @ApiProperty()
-  @IsNumberString()
+  @ApiProperty({
+    description:
+      'phone number of user, must be an valid VIETNAMESE phone number',
+    example: '0987654321',
+    minimum: 10,
+    maximum: 12,
+    required: true,
+    nullable: false,
+  })
+  @Transform(({ value }) => value.replace(/^0/, '+84'))
+  @IsPhoneNumber('VI')
   phone: string;
 
   @ApiProperty({
-    type: String,
-    uniqueItems: true,
-    required: true
+    description: 'Email of user, must be an ascii string',
+    example: 'example@ex.com',
+    required: true,
+    nullable: false,
+    minLength: 1,
+    maxLength: 255,
   })
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Avatar of user. It could be embbed link or upload file',
+  })
   avatar: string;
 }
 
 class Items {
   @ApiProperty({
-      type: String
+    description: 'Package ID',
+    type: String,
+    example: '640ac2ccf227ec441cd97d7b',
   })
   package: string;
 
   @ApiProperty({
-      type: Number,
-      minimum: 1,
+    description: 'Quantity of package',
+    type: Number,
+    minimum: 1,
+    example: 1,
   })
   quantity: number;
-
-  @ApiProperty({
-      type: Float64Array
-  })
-  price: number;
-}
-
-class UserInfoDto {
-  @ApiProperty()
-  @Type(() => UserInfo)
-  @ValidateNested()
-  user: UserInfo;
 }
 
 class UserSettingDto {
@@ -102,58 +125,86 @@ class UserSettingDto {
   setting: UserSetting;
 }
 
-export class UsersDto{
+export class TrxHistDto {
   @ApiProperty()
-  @Type(() => UserSetting)
-  @ValidateNested()
-  users: UserInfo[]
-}
-
-class ShoppingHistoryDto {
-  @ApiProperty({
-      type: Array<string>
-  })
   @IsArray()
-  transaction: string[]
+  trxHist: string[];
 }
 
 export class CartDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: [
+      {
+        package: '640ac2ccf227ec441cd97d7b',
+        quantity: 1,
+      },
+      {
+        package: '640b22084096fa00812fa128',
+        quantity: 2,
+      },
+    ],
+  })
   @Type(() => Items)
-  @ValidateNested()
-  cart: Items[]
+  @ValidateNested({ each: true })
+  @IsArray()
+  cart: Items[];
 }
 
-export class GetUsersResDto extends IntersectionType(BaseResDto, UsersDto) {}
+export class UserDto extends IntersectionType(
+  UserInfo,
+  UserSettingDto,
+  TrxHistDto,
+  CartDto
+) {}
 
-export class GetUserInfoResDto extends IntersectionType(BaseResDto, UserInfoDto) {}
+export class UpdateTrxHistReqDto extends UserId {
+  @ApiProperty({
+    description: 'Transaction Id paid by user',
+  })
+  trx: string;
+}
 
-export class GetUserSettingResDto extends IntersectionType(BaseResDto, UserSettingDto) {}
+export class UpdateTrxHistResDto extends BaseResDto {}
+
+export class GetUserInfoResDto extends BaseResDto {
+  @ApiProperty()
+  @Type(() => UserInfo)
+  @ValidateNested()
+  user: UserDto;
+}
+
+export class GetUserSettingResDto extends IntersectionType(
+  BaseResDto,
+  UserSettingDto
+) {}
 
 export class CreateUserReqDto extends OmitType(UserInfo, ['avatar']) {}
 
 export class CreateUserResDto extends BaseResDto {}
 
-export class UpdateUserReqDto extends IntersectionType(UserId, OmitType(UserInfo, ['email', 'avatar'])) {}
+export class UpdateUserReqDto extends IntersectionType(
+  UserId,
+  OmitType(UserInfo, ['email', 'avatar'])
+) {}
 
 export class UpdateUserResDto extends BaseResDto {}
 
-export class UpdateSettingReqDto extends IntersectionType(UserId, UserSetting){}
+export class UpdateSettingReqDto extends IntersectionType(
+  UserId,
+  UserSetting
+) {}
 
 export class UpdateSettingResDto extends BaseResDto {}
 
-export class UpdateAvatarReqDto extends IntersectionType(UserId, PickType(UserInfo, ['avatar'])) {}
+export class UpdateAvatarReqDto extends IntersectionType(
+  UserId,
+  PickType(UserInfo, ['avatar'])
+) {}
 
 export class UpdateAvatarResDto extends BaseResDto {}
 
 export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}
 
-export class GetShoppingHistoryResDto extends IntersectionType(BaseResDto, ShoppingHistoryDto) {}
-
 export class UpdateCartReqDto extends IntersectionType(UserId, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}
-
-export class AddToHistoryReqDto extends IntersectionType(UserId, ShoppingHistoryDto) {}
-
-export class AddToHistoryResDto extends BaseResDto {}

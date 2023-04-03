@@ -9,11 +9,11 @@ dotenv.config({
 });
 
 export const dbCfg: IDbConfig = {
-  host: process.env.DB_USERS_HOST,
-  port: process.env.DB_USERS_PORT,
-  username: process.env.DB_USERS_USER,
-  password: process.env.DB_USERS_PASSWORD,
-  database: process.env.DB_USERS_DATABASE,
+  host: process.env.DB_PKG_MGMT_HOST,
+  port: process.env.DB_PKG_MGMT_PORT,
+  username: process.env.DB_PKG_MGMT_USER,
+  password: process.env.DB_PKG_MGMT_PASSWORD,
+  database: process.env.DB_PKG_MGMT_DATABASE,
 };
 
 export const getMongoConnectionString = (dbCfg: IDbConfig) => {

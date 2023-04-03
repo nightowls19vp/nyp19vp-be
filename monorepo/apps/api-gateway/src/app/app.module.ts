@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { UsersModule } from './users/users.module';
     ]),
     AuthModule,
     UsersModule,
+    PkgMgmtModule,
   ],
   controllers: [AppController],
   providers: [AppService],

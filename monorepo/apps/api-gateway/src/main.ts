@@ -14,6 +14,8 @@ async function bootstrap() {
     .setDescription('NYP19VP API for goods management')
     .setVersion('1.0')
     .addServer('api')
+    .addTag('Package Management')
+    .addTag('Users')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

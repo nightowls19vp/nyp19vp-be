@@ -5,6 +5,7 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@forlagshuset/nestjs-mongoose-paginate": "github:MyrtilleKim/nestjs-mongoose-paginate",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
