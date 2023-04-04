@@ -4,7 +4,9 @@ import {
   IsDate,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsPhoneNumber,
+  IsString,
   IsStrongPassword,
   Matches,
   NotContains,
@@ -137,6 +139,30 @@ export class RegisterReqDto extends IntersectionType(
 ) {}
 
 export class RegisterResDto extends BaseResDto {}
+
+export class SocialSignupReqDto {
+  @IsNotEmpty()
+  @IsString()
+  platform: string;
+
+  @IsNotEmpty()
+  @IsString()
+  platformId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  photo: string;
+}
+
+export class SocialSignupResDto extends RegisterResDto {}
 
 export class ChangePasswordReqDto extends LocalAuthenticationInfo {
   @ApiProperty({

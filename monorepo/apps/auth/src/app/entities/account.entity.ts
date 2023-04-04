@@ -15,6 +15,7 @@ import {
 import { StatusEntity } from './status.entity';
 import { RefreshTokenBlacklistEntity } from './refresh-token-blacklist.entity';
 import { ACCOUNT } from '../constants/entities';
+import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 
 @Entity({
   name: ACCOUNT,
@@ -45,20 +46,10 @@ export class AccountEntity {
   })
   hashedPassword: string;
 
-  @CreateDateColumn({
-    name: 'created_at',
+  @Column(() => TimestampEmbeddedEntity, {
+    prefix: false,
   })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    name: 'updated_at',
-  })
-  updatedAt: Date;
-
-  @DeleteDateColumn({
-    name: 'deleted_at',
-  })
-  deletedAt: Date;
+  timestamp: TimestampEmbeddedEntity;
 
   @OneToOne(() => StatusEntity, {
     cascade: true,

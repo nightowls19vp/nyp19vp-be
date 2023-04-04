@@ -12,6 +12,9 @@ import {
   LogoutResDto,
   RegisterReqDto,
   RegisterResDto,
+  SocialSignupReqDto,
+  SocialSignupResDto,
+  UsersDto,
   ValidateUserReqDto,
   ValidateUserResDto,
   AuthorizeReqDto,
@@ -46,7 +49,12 @@ export class AuthService {
     };
   }
 
-  googleUserValidate(googleUser: {
+  /** Validate that have this Google Account been registered
+   * If not do sign up
+   * @param googleUser
+   * @returns user
+   */
+  async googleUserValidate(googleUser: {
     provider: string;
     providerId: string;
     name: string;
@@ -54,7 +62,7 @@ export class AuthService {
     photo: string;
     accessToken: string;
     refreshToken: string;
-  }) {
+  }): Promise<UsersDto> {
     console.log('gg vlt user', googleUser);
 
     const testUser: IUser = {
@@ -62,11 +70,26 @@ export class AuthService {
       role: ERole.user,
     };
 
-    return testUser;
+    const socialSignupReqDto: SocialSignupReqDto = {
+      platform: googleUser.provider,
+      platformId: googleUser.providerId,
+      name: googleUser.name,
+      email: googleUser.email,
+      photo: googleUser.photo,
+    };
+
+    const resDto: SocialSignupResDto = await firstValueFrom(
+      this.authClient.send(
+        kafkaTopic.AUTH.GOOGLE_AUTH,
+        JSON.stringify(socialSignupReqDto),
+      ),
+    );
+
+    return resDto;
   }
 
   /**
-   * Validate a user by his/her username(email)/password. Return `IUser` if sucess else `null`
+   * Validate a user by his/her username(email)/password. Return `IUser` if success else `null`
    * @param username username, email
    * @param password password
    * @param loginType enum value `username` or `email`

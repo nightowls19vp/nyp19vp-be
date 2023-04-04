@@ -11,9 +11,10 @@ import {
 } from 'typeorm';
 import { AccountEntity } from './account.entity';
 import { ERole } from '@nyp19vp-be/shared';
+import { ROLE } from '../constants/entities';
 
 @Entity({
-  name: 'roles',
+  name: ROLE,
 })
 export class RoleEntity {
   @PrimaryGeneratedColumn('increment', {
