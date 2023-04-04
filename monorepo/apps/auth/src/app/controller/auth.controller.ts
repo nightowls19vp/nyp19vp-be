@@ -9,6 +9,7 @@ import {
   LoginResDto,
   RegisterReqDto,
   RegisterResDto,
+  SocialSignupReqDto,
 } from '@nyp19vp-be/shared';
 
 import { AccountService } from '../services/account.service';
@@ -57,5 +58,12 @@ export class AuthController implements OnModuleInit {
     console.log('MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT) ', reqDto);
 
     return this.accountService.create(reqDto);
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.SOCIAL_SIGN_UP)
+  async(reqDto: SocialSignupReqDto): Promise<RegisterResDto> {
+    console.log('MessagePattern(kafkaTopic.AUTH.SOCIAL_SIGN_UP) ', reqDto);
+
+    return this.accountService.socialSignup(reqDto);
   }
 }

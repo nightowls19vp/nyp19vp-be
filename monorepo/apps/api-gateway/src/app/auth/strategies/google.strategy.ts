@@ -12,6 +12,8 @@ import dotenv from 'dotenv';
 import { GOOGLE_STRATEGY_NAME } from '../constants/authentication';
 import { AuthService } from '../auth.service';
 
+import { Request } from 'express';
+
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : core.ENV_FILE.DEV,
 });
@@ -54,44 +56,27 @@ export class GoogleStrategy extends PassportStrategy(
   }
 
   async validate(
-    req: any, // if passReqToCallback: true then this line is required else this should be cleaned.
+    req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: Profile,
-    params: GoogleCallbackParameters,
+    profile: any,
+    done: VerifyCallback,
   ): Promise<any> {
+    console.log('gg vlt pf', profile);
+
+    const { name, emails, photos } = profile;
+
     const googleUser = {
       provider: 'google',
       providerId: profile?.id,
-      name: profile.displayName,
-      email: profile?.emails[0].value,
-      photo: profile?.photos[0].value,
+      name: name,
+      email: emails[0].value,
+      photo: photos[0].value,
       accessToken,
       refreshToken,
     };
     const user = this.authService.googleUserValidate(googleUser);
 
-    return {
-      ...user,
-    };
+    done(null, user);
   }
-
-  // async validate(
-  //   accessToken: string,
-  //   refreshToken: string,
-  //   profile: any,
-  //   done: VerifyCallback,
-  // ): Promise<any> {
-  //   console.log('gg vlt pf', profile);
-
-  //   const { name, emails, photos } = profile;
-  //   const user = {
-  //     email: emails[0].value,
-  //     firstName: name.givenName,
-  //     lastName: name.familyName,
-  //     picture: photos[0].value,
-  //     accessToken,
-  //   };
-  //   done(null, user);
-  // }
 }

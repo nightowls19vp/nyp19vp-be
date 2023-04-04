@@ -1,4 +1,10 @@
-import { CreateUserReqDto, CreateUserResDto, ERole } from '@nyp19vp-be/shared';
+import {
+  CreateUserReqDto,
+  CreateUserResDto,
+  ERole,
+  SocialSignupReqDto,
+  SocialSignupResDto,
+} from '@nyp19vp-be/shared';
 import { firstValueFrom } from 'rxjs';
 import { HttpStatus } from '@nestjs/common/enums';
 import { kafkaTopic, RegisterReqDto, RegisterResDto } from '@nyp19vp-be/shared';
@@ -136,7 +142,16 @@ export class AccountService {
     return `This action removes an account`;
   }
 
-  socialSignup(user: any) {
-    //
+  async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
+    const registerResDto: RegisterResDto = await this.create({
+      email: user.email,
+      dob: null,
+      name: user.name,
+      password: randomUUID(),
+      phone: null,
+      username: user.email,
+    });
+
+    return null;
   }
 }

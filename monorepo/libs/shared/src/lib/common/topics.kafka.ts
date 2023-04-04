@@ -14,19 +14,7 @@ export const AUTH = {
   AUTHORIZE: 'authorize',
   CHANGE_PASSWORD: 'changePassword',
   DELETE_ACCOUNT: 'deleteAccount',
-};
-
-export const USERS = {
-  CREATE: 'createUser',
-  GET_INFO_BY_ID: 'getUserInfoById',
-  GET_SETTING_BY_ID: 'getUserSettingById',
-  GET_ALL: 'getAllUsers',
-  UPDATE_INFO: 'updateUserInfo',
-  UPDATE_SETTING: 'updateUserSetting',
-  UPDATE_AVATAR: 'updateUserAvatar',
-  DELETE_ONE: 'deleteUser',
-  UPDATE_CART: 'updateShoppingCart',
-  GET_CART: 'getShoppingCart',
+  SOCIAL_SIGN_UP: 'social_sign_up',
 };
 
 export const USERS = {

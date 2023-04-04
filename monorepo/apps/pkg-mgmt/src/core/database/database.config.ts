@@ -2,10 +2,10 @@ import * as dotenv from 'dotenv';
 
 import { IDbConfig } from './interfaces/dbConfig.interface';
 
-import { CONST } from '@nyp19vp-be/shared';
+import { core } from '@nyp19vp-be/shared';
 dotenv.config({
   path:
-    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : CONST.ENV_FILE.DEV,
+    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : core.ENV_FILE.DEV,
 });
 
 export const dbCfg: IDbConfig = {
@@ -21,7 +21,7 @@ export const getMongoConnectionString = (dbCfg: IDbConfig) => {
 
   console.log(
     'connection string: ',
-    `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}`
+    `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}`,
   );
 
   return `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}`;

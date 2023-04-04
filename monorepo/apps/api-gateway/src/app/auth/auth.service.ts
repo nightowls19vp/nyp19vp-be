@@ -14,11 +14,11 @@ import {
   RegisterResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
-  UsersDto,
   ValidateUserReqDto,
   ValidateUserResDto,
   AuthorizeReqDto,
   AuthorizeResDto,
+  UserDto,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -31,11 +31,13 @@ import { toMs } from './utils/ms';
 import { ELoginType, IUser } from 'libs/shared/src/lib/core/interfaces';
 
 import { Request } from 'express';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
+    private readonly userService: UsersService,
   ) {}
 
   googleLogin(req: Request) {
@@ -62,13 +64,8 @@ export class AuthService {
     photo: string;
     accessToken: string;
     refreshToken: string;
-  }): Promise<UsersDto> {
+  }): Promise<UserDto> {
     console.log('gg vlt user', googleUser);
-
-    const testUser: IUser = {
-      username: googleUser.email,
-      role: ERole.user,
-    };
 
     const socialSignupReqDto: SocialSignupReqDto = {
       platform: googleUser.provider,
@@ -80,12 +77,12 @@ export class AuthService {
 
     const resDto: SocialSignupResDto = await firstValueFrom(
       this.authClient.send(
-        kafkaTopic.AUTH.GOOGLE_AUTH,
+        kafkaTopic.AUTH.SOCIAL_SIGN_UP,
         JSON.stringify(socialSignupReqDto),
       ),
     );
 
-    return resDto;
+    return resDto as any;
   }
 
   /**
