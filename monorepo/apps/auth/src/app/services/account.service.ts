@@ -26,7 +26,7 @@ export class AccountService {
     private dataSource: DataSource,
     @InjectRepository(AccountEntity)
     private accountRespo: Repository<AccountEntity>,
-    @InjectRepository(AccountEntity)
+    @InjectRepository(RoleEntity)
     private roleRespo: Repository<RoleEntity>,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {
@@ -90,6 +90,9 @@ export class AccountService {
         name: reqDto.name,
         phone: reqDto.phone,
       };
+
+      console.log(createUserReq);
+
       const createUserRes: CreateUserResDto = await firstValueFrom(
         this.usersClient.send(
           kafkaTopic.USERS.CREATE,

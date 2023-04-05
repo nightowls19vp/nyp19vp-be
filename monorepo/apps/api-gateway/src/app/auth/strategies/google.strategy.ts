@@ -59,19 +59,16 @@ export class GoogleStrategy extends PassportStrategy(
     req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: Profile,
     done: VerifyCallback,
   ): Promise<any> {
     console.log('gg vlt pf', profile);
-
-    const { name, emails, photos } = profile;
-
     const googleUser = {
       provider: 'google',
       providerId: profile?.id,
-      name: name,
-      email: emails[0].value,
-      photo: photos[0].value,
+      name: profile.displayName,
+      email: profile.emails[0].value,
+      photo: profile.photos[0].value,
       accessToken,
       refreshToken,
     };
