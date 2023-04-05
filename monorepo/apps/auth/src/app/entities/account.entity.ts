@@ -1,21 +1,21 @@
 import { randomUUID } from 'crypto';
-import { RoleEntity } from './role.entity';
 import {
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
-import { StatusEntity } from './status.entity';
-import { RefreshTokenBlacklistEntity } from './refresh-token-blacklist.entity';
+
 import { ACCOUNT } from '../constants/entities';
+import { RefreshTokenBlacklistEntity } from './refresh-token-blacklist.entity';
+import { RoleEntity } from './role.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
+
+import { StatusEntity } from './status.entity';
+import { SocialMediaAccountEntity } from './social-media-account.entity';
 
 @Entity({
   name: ACCOUNT,
@@ -51,15 +51,14 @@ export class AccountEntity {
   })
   timestamp: TimestampEmbeddedEntity;
 
-  @OneToOne(() => StatusEntity, {
+  @OneToOne(() => StatusEntity, (status) => status.account, {
     cascade: true,
     eager: true,
   })
-  @JoinColumn()
   status: StatusEntity;
 
-  @ManyToOne(() => RoleEntity, (role) => role.accounts, {
-    cascade: true,
+  @ManyToOne(() => RoleEntity, {
+    cascade: false,
     eager: true,
   })
   @JoinColumn({
@@ -75,4 +74,14 @@ export class AccountEntity {
     },
   )
   refreshTokenBlacklist: Promise<RefreshTokenBlacklistEntity[]>;
+
+  @OneToMany(
+    () => SocialMediaAccountEntity,
+    (socialMediaAccount) => socialMediaAccount.account,
+    {
+      lazy: true,
+      cascade: true,
+    },
+  )
+  socialAccounts: Promise<SocialMediaAccountEntity[]>;
 }

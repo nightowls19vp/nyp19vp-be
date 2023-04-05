@@ -18,7 +18,8 @@ import {
   ValidateUserResDto,
   AuthorizeReqDto,
   AuthorizeResDto,
-  UserDto,
+  ELoginType,
+  IUser,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -28,45 +29,21 @@ import {
   REFRESH_JWT_DEFAULT_TTL,
 } from './constants/authentication';
 import { toMs } from './utils/ms';
-import { ELoginType, IUser } from 'libs/shared/src/lib/core/interfaces';
 
-import { Request } from 'express';
-import { UsersService } from '../users/users.service';
+import { ISocialUser } from './interfaces/social-user.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
-    private readonly userService: UsersService,
   ) {}
-
-  googleLogin(req: Request) {
-    if (!req.user) {
-      return 'No user from google';
-    }
-
-    return {
-      message: 'User information from google',
-      user: req.user,
-    };
-  }
 
   /** Validate that have this Google Account been registered
    * If not do sign up
    * @param googleUser
    * @returns user
    */
-  async googleUserValidate(googleUser: {
-    provider: string;
-    providerId: string;
-    name: string;
-    email: string;
-    photo: string;
-    accessToken: string;
-    refreshToken: string;
-  }): Promise<UserDto> {
-    console.log('gg vlt user', googleUser);
-
+  async googleSignUp(googleUser: ISocialUser): Promise<SocialSignupResDto> {
     const socialSignupReqDto: SocialSignupReqDto = {
       platform: googleUser.provider,
       platformId: googleUser.providerId,
@@ -82,7 +59,7 @@ export class AuthService {
       ),
     );
 
-    return resDto as any;
+    return resDto;
   }
 
   /**

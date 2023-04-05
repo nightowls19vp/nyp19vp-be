@@ -1,4 +1,3 @@
-import { ActionEntity } from './action.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,18 +8,21 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AccountEntity } from './account.entity';
-import { ERole } from '@nyp19vp-be/shared';
-import { ROLE } from '../constants/entities';
+
+import {ERole} from '@nyp19vp-be/shared';
+
+import {ROLE} from '../constants/entities';
+import {AccountEntity} from './account.entity';
+import {ActionEntity} from './action.entity';
 
 @Entity({
   name: ROLE,
 })
 export class RoleEntity {
   @PrimaryGeneratedColumn('increment', {
-    name: 'id',
+    name: 'role_id',
   })
-  id: number;
+  roleId: number;
 
   @Column({
     name: 'role_name',
@@ -45,9 +47,9 @@ export class RoleEntity {
   })
   deletedAt: Date;
 
-  @OneToMany(() => AccountEntity, (account) => account.role)
-  accounts: AccountEntity[];
-
-  @ManyToMany(() => ActionEntity, (action) => action.roles)
-  actions: ActionEntity[];
+  @ManyToMany(() => ActionEntity, (action) => action.roles, {
+    eager: false,
+    lazy: true
+  })
+  actions: Promise<ActionEntity[]>;
 }

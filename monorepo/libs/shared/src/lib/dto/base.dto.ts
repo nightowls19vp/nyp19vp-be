@@ -15,6 +15,11 @@ export class BaseResDto {
   message: string;
 
   @ApiProperty({
+    type: Object,
+  })
+  data?: unknown;
+
+  @ApiProperty({
     description: 'Error message',
   })
   error?: string;

@@ -7,10 +7,10 @@ import {
   HttpException,
   Inject,
   OnModuleInit,
-  Param,
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
@@ -25,12 +25,14 @@ import {
   LogoutResDto,
   RegisterReqDto,
   RegisterResDto,
+  SocialSignupResDto,
 } from '@nyp19vp-be/shared';
 
 // import { AllGlobalExceptionsFilter } from '../filters/filter';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { GoogleAuthGuard } from './guards/google.guard';
+import { SocialUser } from './decorators/social-user.decorator';
+import { ISocialUser } from './interfaces/social-user.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -39,6 +41,7 @@ export class AuthController implements OnModuleInit {
     private readonly authService: AuthService,
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
+
   async onModuleInit() {
     // this.authClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.AUTH);
 
@@ -49,38 +52,38 @@ export class AuthController implements OnModuleInit {
     await Promise.all([this.authClient.connect()]);
   }
 
-  @Get('google')
+  @Get('google/:from')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req) {
+  async googleAuth() {
     // this route empty
   }
 
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @SocialUser() googleUser: ISocialUser,
+  ) {
+    if (!googleUser) {
+      throw new UnauthorizedException();
+    }
+
     console.log('gpai auth ctrl: reach redirect');
+    const webUrl =
+      req.params.from || process.env.WEB_URL || 'http://localhost:8080';
 
-    const auth = this.authService.googleLogin(req);
+    const signupResDto: SocialSignupResDto =
+      await this.authService.googleSignUp(googleUser);
 
-    // return auth;
-
-    const webUrl = process.env.WEB_URL || 'http://localhost:8080';
-
-    this.authService.setCookie(res, 'aaaa', 'bbbb');
-
-    res.cookie('aaa', JSON.stringify(auth));
-
-    console.log('ádfa');
-
+    if (signupResDto.statusCode === HttpStatus.OK) {
+      this.authService.setCookie(
+        res,
+        signupResDto.data.accessToken,
+        signupResDto.data.refreshToken,
+      );
+    }
     res.redirect(webUrl);
-
-    return 'a';
-  }
-
-  @Get('google-logins/:from')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuthFrom(@Req() req, @Param('from') from) {
-    console.log('frommmmmmm');
   }
 
   @ApiResponse({

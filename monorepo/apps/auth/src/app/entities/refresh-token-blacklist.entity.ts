@@ -1,6 +1,8 @@
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+
 import { REFRESH_TOKEN_BLACKLIST } from '../constants/entities/index';
-import { Entity, ManyToOne, Column, JoinColumn, PrimaryColumn } from 'typeorm';
 import { AccountEntity } from './account.entity';
+
 @Entity({
   name: REFRESH_TOKEN_BLACKLIST,
 })

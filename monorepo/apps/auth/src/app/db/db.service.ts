@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { log } from 'console';
+import {Injectable} from '@nestjs/common';
 
 @Injectable()
 export class DbService {
   constructor() {
-    log('heloooooooooooo');
+
   }
 }

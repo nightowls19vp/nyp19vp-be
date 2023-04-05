@@ -16,18 +16,26 @@ import { ClientKafka } from '@nestjs/microservices';
 
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { RandomGenerator } from 'typeorm/util/RandomGenerator';
 import { RoleEntity } from '../entities/role.entity';
-import { log } from 'console';
+import { E_STATUS, StatusEntity } from '../entities/status.entity';
+import { SocialMediaAccountEntity } from '../entities/social-media-account.entity';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class AccountService {
   constructor(
     private dataSource: DataSource,
     @InjectRepository(AccountEntity)
-    private accountRespo: Repository<AccountEntity>,
+    private accountRepo: Repository<AccountEntity>,
+    @InjectRepository(StatusEntity)
+    private statusRepo: Repository<StatusEntity>,
     @InjectRepository(RoleEntity)
-    private roleRespo: Repository<RoleEntity>,
+    private roleRepo: Repository<RoleEntity>,
+    @InjectRepository(SocialMediaAccountEntity)
+    private socialMediaAccountEntityRepo: Repository<SocialMediaAccountEntity>,
+
+    private readonly authService: AuthService,
+
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {
     // create admin
@@ -35,19 +43,34 @@ export class AccountService {
   }
 
   async createAdmin() {
-    const roleAdmin = this.roleRespo.create({
+    const roleAdmin = this.roleRepo.create({
       name: ERole.admin,
     });
 
-    const account: AccountEntity = this.accountRespo.create({
-      username: process.env.ADMIN_USERNAME || 'admin',
-      hashedPassword: process.env.ADMIN_PASSWORD || 'admin',
-      email: process.env.ADMIN_EMAIL || 'admin',
+    const username = process.env.ADMIN_USERNAME || 'admin',
+      hashedPassword = process.env.ADMIN_PASSWORD || 'admin',
+      email = process.env.ADMIN_EMAIL || 'admin@email.com';
+
+    let account = await this.accountRepo.findOneBy({
+      username: username,
+    });
+
+    if (account) {
+      return;
+    }
+
+    account = this.accountRepo.create({
+      username: username,
+      hashedPassword: hashedPassword,
+      email: email,
       role: roleAdmin,
+      status: {
+        name: E_STATUS.ACTIVE,
+      },
     });
 
     try {
-      await this.accountRespo.save(account);
+      account = await this.accountRepo.save(account);
     } catch (error) {
       console.log(error);
     }
@@ -59,21 +82,26 @@ export class AccountService {
     return { message: 'Welcome to auth/Account service!' };
   }
 
-  async create(reqDto: RegisterReqDto): Promise<RegisterResDto> {
+  async create(
+    reqDto: RegisterReqDto,
+    platform: string = null,
+    platformId: string = null,
+  ): Promise<RegisterResDto> {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(reqDto.password, salt);
 
     reqDto.password = hash;
 
-    const roleUser = await this.roleRespo.findOneBy({
+    const roleUser = await this.roleRepo.findOneBy({
       name: ERole.user,
     });
 
-    const account: AccountEntity = this.accountRespo.create({
+    const account: AccountEntity = this.accountRepo.create({
       username: reqDto.username,
-      hashedPassword: reqDto.password,
+      hashedPassword: !reqDto ? null : reqDto.password, // set password to null
       email: reqDto.email,
       role: roleUser,
+      status: this.statusRepo.create(),
     });
 
     let saveResult = null;
@@ -93,6 +121,19 @@ export class AccountService {
 
       console.log(createUserReq);
 
+      if (platform && platformId) {
+        const socialMediaAccount: SocialMediaAccountEntity =
+          this.socialMediaAccountEntityRepo.create({
+            account: saveResult,
+            platform: platform,
+            platform_id: platformId,
+          });
+
+        saveResult = await queryRunner.manager.save<SocialMediaAccountEntity>(
+          socialMediaAccount,
+        );
+      }
+
       const createUserRes: CreateUserResDto = await firstValueFrom(
         this.usersClient.send(
           kafkaTopic.USERS.CREATE,
@@ -111,7 +152,7 @@ export class AccountService {
       console.log(saveResult);
       await queryRunner.commitTransaction();
       return {
-        statusCode: saveResult ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
+        statusCode: saveResult ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST,
         message: saveResult
           ? 'create account successfully'
           : 'create account fail',
@@ -134,7 +175,7 @@ export class AccountService {
   }
 
   async findOneBy(option): Promise<AccountEntity> {
-    return this.accountRespo.findOneBy(option);
+    return this.accountRepo.findOneBy(option);
   }
 
   update() {
@@ -145,16 +186,44 @@ export class AccountService {
     return `This action removes an account`;
   }
 
+  // It will create a new account, new social medial account too
   async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    const registerResDto: RegisterResDto = await this.create({
+    // find the social account
+    const socialMediaAccount: SocialMediaAccountEntity =
+      await this.socialMediaAccountEntityRepo.findOne({
+        where: [
+          {
+            platform: user.platform,
+            platform_id: user.platformId,
+          },
+        ],
+      });
+
+    if (socialMediaAccount) {
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Already link',
+        user: {
+          username: socialMediaAccount.account.username,
+          hashedPassword: socialMediaAccount.account.hashedPassword,
+          role: socialMediaAccount.account.role.name,
+        },
+      };
+    }
+
+    const resDto: RegisterResDto = await this.create({
+      username: user.email,
       email: user.email,
       dob: null,
       name: user.name,
-      password: randomUUID(),
+      password: null,
       phone: null,
-      username: user.email,
     });
 
+    //
+    if (resDto.statusCode === HttpStatus.CREATED) {
+      //
+    }
     return null;
   }
 }

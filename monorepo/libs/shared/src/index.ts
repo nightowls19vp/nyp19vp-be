@@ -5,7 +5,7 @@ export * as config from './lib/config';
 export * as utils from './lib/utils';
 
 // constants
-export * as core from './lib/core';
+export * from './lib/core';
 
 // authorization
 export * from './lib/authorization';

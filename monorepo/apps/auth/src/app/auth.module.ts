@@ -17,8 +17,9 @@ import { AccountService } from './services/account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtModule } from '@nestjs/jwt';
-import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
 import { DbModule } from './db/db.module';
+import { SocialMediaAccountEntity } from './entities/social-media-account.entity';
+import { ENV_FILE } from '@nyp19vp-be/shared';
 
 @Global()
 @Module({
@@ -47,6 +48,7 @@ import { DbModule } from './db/db.module';
     JwtModule,
     TypeOrmModule.forFeature([
       AccountEntity,
+      SocialMediaAccountEntity,
       StatusEntity,
       RoleEntity,
       ActionEntity,

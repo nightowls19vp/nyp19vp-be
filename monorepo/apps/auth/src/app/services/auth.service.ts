@@ -6,7 +6,6 @@ import {
   ValidateUserResDto,
 } from '@nyp19vp-be/shared';
 import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -15,18 +14,12 @@ import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import {
-  LoginReqDto,
-  LoginResDto,
-  LoginResWithTokensDto,
-} from '@nyp19vp-be/shared';
+import { LoginReqDto, LoginResWithTokensDto } from '@nyp19vp-be/shared';
 
 import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
-import { core } from '@nyp19vp-be/shared';
 import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
 import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
-import { log } from 'console';
 import { RoleEntity } from '../entities/role.entity';
 
 @Injectable()
@@ -43,12 +36,12 @@ export class AuthService {
   }
   constructor(
     @InjectRepository(AccountEntity)
-    private accountRespo: Repository<AccountEntity>,
+    private accountRepo: Repository<AccountEntity>,
     @InjectRepository(AccountEntity)
-    private roleRespo: Repository<RoleEntity>,
+    private roleRepo: Repository<RoleEntity>,
     private jwtService: JwtService,
     @InjectRepository(RefreshTokenBlacklistEntity)
-    private refreshTokenBlacklistRepository: Repository<RefreshTokenBlacklistEntity>,
+    private refreshTokenBlacklistRepo: Repository<RefreshTokenBlacklistEntity>,
   ) {
     this.initDb();
   }
@@ -57,12 +50,12 @@ export class AuthService {
     for (const roleName in ERole) {
       console.log('[initDb]', roleName);
 
-      const roleEtt: RoleEntity = this.roleRespo.create({
+      const roleEtt: RoleEntity = this.roleRepo.create({
         name: roleName as ERole,
       });
 
       try {
-        await this.roleRespo.save(roleEtt);
+        await this.roleRepo.save(roleEtt);
       } catch (error) {
         //
       }
@@ -85,7 +78,7 @@ export class AuthService {
   }: ValidateUserReqDto): Promise<ValidateUserResDto> {
     console.log('validateUser', username, password);
 
-    const accountFound: AccountEntity = await this.accountRespo.findOne({
+    const accountFound: AccountEntity = await this.accountRepo.findOne({
       where: [
         {
           username: username,
@@ -96,7 +89,6 @@ export class AuthService {
       ],
     });
 
-    log('X.accountFound', accountFound);
     if (accountFound === null) {
       const userNotFoundRpcException: LoginResWithTokensDto = {
         statusCode: HttpStatus.NOT_FOUND,
@@ -131,7 +123,7 @@ export class AuthService {
     };
   }
 
-  decodeToken(token: string): core.IJwtPayload {
+  decodeToken(token: string): IJwtPayload {
     const decodeResult = this.jwtService.decode(token);
 
     if (
@@ -194,7 +186,7 @@ export class AuthService {
       const decoded = this.decodeToken(refreshToken);
       console.log(decoded);
 
-      const account = await this.accountRespo.findOneBy({
+      const account = await this.accountRepo.findOneBy({
         username: decoded.user.username,
       });
 
@@ -202,14 +194,14 @@ export class AuthService {
         return false;
       }
 
-      const refreshTokenRecord = this.refreshTokenBlacklistRepository.create({
+      const refreshTokenRecord = this.refreshTokenBlacklistRepo.create({
         account: account,
         userId: account.id,
         token: refreshToken,
         expiredAt: new Date(decoded.exp * 1e3),
       });
 
-      await this.refreshTokenBlacklistRepository.save(refreshTokenRecord);
+      await this.refreshTokenBlacklistRepo.save(refreshTokenRecord);
 
       console.log('add token', refreshTokenRecord.token, ' to blacklist');
 
@@ -226,7 +218,7 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<boolean> {
-    const token = await this.refreshTokenBlacklistRepository.findOneBy({
+    const token = await this.refreshTokenBlacklistRepo.findOneBy({
       token: refreshToken,
     });
 
@@ -237,20 +229,20 @@ export class AuthService {
     return !isTokenInBlacklist;
   }
 
-  refreshAccessToken(payload: core.IJwtPayload): string {
+  refreshAccessToken(payload: IJwtPayload): string {
     const accessToken = this.generateAccessJWT(payload);
 
     return accessToken;
   }
 
-  generateAccessJWT(payload: core.IJwtPayload): string {
+  generateAccessJWT(payload: IJwtPayload): string {
     return this.jwtService.sign(payload, {
       expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
       secret: config.auth.strategies.strategyConfig.accessJwtSecret,
     });
   }
 
-  generateRefreshJWT(payload: core.IJwtPayload): string {
+  generateRefreshJWT(payload: IJwtPayload): string {
     return this.jwtService.sign(payload, {
       expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
       secret: config.auth.strategies.strategyConfig.refreshJwtSecret,

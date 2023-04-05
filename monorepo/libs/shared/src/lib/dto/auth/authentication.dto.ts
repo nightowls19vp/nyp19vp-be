@@ -162,7 +162,14 @@ export class SocialSignupReqDto {
   photo: string;
 }
 
-export class SocialSignupResDto extends RegisterResDto {}
+export class SocialSignupResDto extends RegisterResDto {
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+
+  user: IUser;
+}
 
 export class ChangePasswordReqDto extends LocalAuthenticationInfo {
   @ApiProperty({

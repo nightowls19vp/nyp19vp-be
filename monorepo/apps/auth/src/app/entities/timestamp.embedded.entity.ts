@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { CreateDateColumn, DeleteDateColumn, UpdateDateColumn } from 'typeorm';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TimestampEmbeddedEntity {
   @ApiProperty({

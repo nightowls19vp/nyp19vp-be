@@ -1,21 +1,16 @@
 import { PassportStrategy } from '@nestjs/passport';
-import {
-  GoogleCallbackParameters,
-  Profile,
-  Strategy,
-  VerifyCallback,
-} from 'passport-google-oauth20';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
-import { core } from '@nyp19vp-be/shared';
 
 import dotenv from 'dotenv';
 import { GOOGLE_STRATEGY_NAME } from '../constants/authentication';
 import { AuthService } from '../auth.service';
 
 import { Request } from 'express';
+import { ENV_FILE } from '@nyp19vp-be/shared';
 
 dotenv.config({
-  path: process.env.ENV_FILE ? process.env.ENV_FILE : core.ENV_FILE.DEV,
+  path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
 console.log({
@@ -72,8 +67,7 @@ export class GoogleStrategy extends PassportStrategy(
       accessToken,
       refreshToken,
     };
-    const user = this.authService.googleUserValidate(googleUser);
 
-    done(null, user);
+    done(null, googleUser);
   }
 }

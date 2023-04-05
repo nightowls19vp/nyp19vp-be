@@ -1,5 +1,14 @@
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
+
 import { AccountEntity } from './account.entity';
-import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 
 export enum E_STATUS {
   ACTIVE = 'active',
@@ -10,15 +19,19 @@ export enum E_STATUS {
   name: 'status',
 })
 export class StatusEntity {
-  @OneToOne(() => AccountEntity, (account) => account.status)
-  @JoinColumn({
-    name  : "account_id"
+  @OneToOne(() => AccountEntity, (account) => account.status, {
+    onDelete: 'CASCADE',
+    eager: false,
   })
+  @JoinColumn({
+    name: 'account_id',
+  })
+  account: AccountEntity;
 
   @PrimaryColumn({
-    name: "account_id"
+    name: 'account_id',
   })
-  account_id: string
+  account_id: string;
 
   @Column({
     name: 'status',
