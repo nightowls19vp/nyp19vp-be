@@ -9,11 +9,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import {ERole} from '@nyp19vp-be/shared';
+import { ERole } from '@nyp19vp-be/shared';
 
-import {ROLE} from '../constants/entities';
-import {AccountEntity} from './account.entity';
-import {ActionEntity} from './action.entity';
+import { ROLE } from '../constants/entities';
+import { AccountEntity } from './account.entity';
+import { ActionEntity } from './action.entity';
 
 @Entity({
   name: ROLE,
@@ -30,7 +30,7 @@ export class RoleEntity {
     enum: ERole,
     default: ERole.user,
   })
-  name: ERole;
+  roleName: ERole;
 
   @CreateDateColumn({
     name: 'created_at',
@@ -49,7 +49,7 @@ export class RoleEntity {
 
   @ManyToMany(() => ActionEntity, (action) => action.roles, {
     eager: false,
-    lazy: true
+    lazy: true,
   })
   actions: Promise<ActionEntity[]>;
 }

@@ -164,11 +164,9 @@ export class SocialSignupReqDto {
 
 export class SocialSignupResDto extends CreateAccountResDto {
   data?: {
-    accessToken?: string;
-    refreshToken?: string;
+    accessToken: string;
+    refreshToken: string;
   };
-
-  user: IUser;
 }
 
 export class ChangePasswordReqDto extends LocalAuthenticationInfo {

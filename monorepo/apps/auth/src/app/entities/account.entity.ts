@@ -84,4 +84,11 @@ export class AccountEntity {
     },
   )
   socialAccounts: Promise<SocialAccountEntity[]>;
+
+  @Column({
+    type: Boolean,
+    default: true,
+    nullable: false,
+  })
+  isFirstInit: boolean;
 }

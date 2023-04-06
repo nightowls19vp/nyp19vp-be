@@ -51,7 +51,7 @@ export class AuthService {
       console.log('[initDb]', roleName);
 
       const roleEtt: RoleEntity = this.roleRepo.create({
-        name: roleName as ERole,
+        roleName: roleName as ERole,
       });
 
       try {
@@ -118,7 +118,7 @@ export class AuthService {
       user: {
         username: accountFound.username,
         hashedPassword: accountFound.hashedPassword,
-        role: accountFound.role.name,
+        role: accountFound.role.roleName,
       },
     };
   }
@@ -144,13 +144,11 @@ export class AuthService {
 
     return {
       user: {
-        username: decodeResult['user'].username,
-        password: null,
-        hashedPassword: decodeResult['user'].hashedPassword,
-        role: decodeResult['user'].role,
+        username: decodeResult?.['user']?.username ?? null,
+        role: decodeResult?.['user']?.role ?? null,
       },
-      iat: decodeResult['iat'] ?? undefined,
-      exp: decodeResult['exp'] ?? undefined,
+      iat: decodeResult?.['iat'] ?? null,
+      exp: decodeResult?.['exp'] ?? null,
     };
   }
 

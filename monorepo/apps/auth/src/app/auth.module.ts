@@ -11,7 +11,7 @@ import { Global, Module } from '@nestjs/common';
 
 import { AuthController } from './controller/auth.controller';
 import { AuthService } from './services/auth.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataBaseModule } from '../core/database/database.module';
 import { AccountService } from './services/account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,10 +20,43 @@ import { JwtModule } from '@nestjs/jwt';
 import { DbModule } from './db/db.module';
 import { SocialAccountEntity } from './entities/social-media-account.entity';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+import { join } from 'path';
+
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Global()
 @Module({
   imports: [
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => {
+        return {
+          transport: {
+            host: config.get('MAIL_HOST'),
+            secure: config.get('NODE_ENV') !== ENV_FILE.DEV,
+            auth: {
+              user: config.get('MAIL_USER'),
+              pass: config.get('MAIL_PASSWORD'),
+            },
+            tls: {
+              rejectUnauthorized: config.get('NODE_ENV') === ENV_FILE.DEV,
+            },
+          },
+          defaults: {
+            from: config.get('MAIL_FROM'),
+          },
+          template: {
+            dir: join(__dirname, 'templates/email'),
+            adapter: new HandlebarsAdapter(),
+            options: {
+              strict: true,
+            },
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:

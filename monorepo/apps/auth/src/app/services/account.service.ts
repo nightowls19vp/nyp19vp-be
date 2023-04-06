@@ -49,7 +49,7 @@ export class AccountService {
 
   async createAdmin() {
     const roleAdmin = this.roleRepo.create({
-      name: ERole.admin,
+      roleName: ERole.admin,
     });
 
     const username = process.env.ADMIN_USERNAME || 'admin',
@@ -98,7 +98,7 @@ export class AccountService {
     reqDto.password = hash;
 
     const roleUser = await this.roleRepo.findOneBy({
-      name: ERole.user,
+      roleName: ERole.user,
     });
 
     const account: AccountEntity = this.accountRepo.create({
@@ -192,50 +192,72 @@ export class AccountService {
   }
 
   // It will create a new account, new social medial account too
-  async socialSignup(user: SocialSignupReqDto): Promise<AccountEntity> {
+  async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
     // find the user who use this email to signup
-    const socialMediaAccount: SocialAccountEntity =
-      await this.socialAccRepo.findOne({
-        where: [
-          {
-            platform: user.platform,
-            platformId: user.platformId,
-          },
-        ],
+    let socialAccount: SocialAccountEntity = await this.socialAccRepo.findOne({
+      where: [
+        {
+          platform: user.platform,
+          platformId: user.platformId,
+        },
+      ],
+    });
+
+    let statusCode = HttpStatus.UNAUTHORIZED;
+
+    if (socialAccount) {
+      statusCode = HttpStatus.OK;
+    } else {
+      const roleUser = await this.roleRepo.findOneBy({
+        roleName: ERole.user,
       });
 
-    if (socialMediaAccount) {
-      return socialMediaAccount.account;
-    }
+      let account: AccountEntity = this.accountRepo.create({
+        username: user.email,
+        hashedPassword: randomUUID(),
+        email: user.email,
+        role: roleUser,
+        status: this.statusRepo.create(),
+      });
 
-    const roleUser = await this.roleRepo.findOneBy({
-      name: ERole.user,
-    });
+      socialAccount = this.socialAccRepo.create({
+        account: account,
+        platform: user.platform,
+        platformId: user.platformId,
+      });
 
-    let account: AccountEntity = this.accountRepo.create({
-      username: user.email,
-      hashedPassword: null,
-      email: user.email,
-      role: roleUser,
-      status: this.statusRepo.create(),
-    });
+      (await account.socialAccounts).push(socialAccount);
 
-    const socialAccount = this.socialAccRepo.create({
-      account: account,
-      platform: user.platform,
-      platformId: user.platformId,
-    });
+      try {
+        account = await this.accountRepo.save(account);
 
-    (await account.socialAccounts).push(socialAccount);
-
-    try {
-      account = await this.accountRepo.save(account);
-    }catch(err){
-      return {
-        null
+        statusCode = HttpStatus.CREATED;
+      } catch (err) {
+        return {
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'unauthorized',
+          error: err,
+        };
       }
     }
 
-    return null;
+    return {
+      statusCode: statusCode,
+      message: 'Login success',
+      data: {
+        accessToken: this.authService.generateAccessJWT({
+          user: {
+            username: socialAccount.account.username,
+            role: socialAccount.account.role.roleName,
+          },
+        }),
+        refreshToken: this.authService.generateRefreshJWT({
+          user: {
+            username: socialAccount.account.username,
+            role: socialAccount.account.role.roleName,
+          },
+        }),
+      },
+    };
   }
 }
