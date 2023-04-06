@@ -23,8 +23,8 @@ import {
   LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
-  RegisterReqDto,
-  RegisterResDto,
+  CreateAccountReqDto,
+  CreateAccountResDto,
   SocialSignupResDto,
 } from '@nyp19vp-be/shared';
 
@@ -130,7 +130,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('register')
-  register(@Body() reqDto: RegisterReqDto): Promise<RegisterResDto> {
+  register(@Body() reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
     console.log('register', reqDto);
 
     return this.authService.register(reqDto);

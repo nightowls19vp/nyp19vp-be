@@ -133,12 +133,12 @@ export class LogoutReqDto {}
 
 export class LogoutResDto extends BaseResDto {}
 
-export class RegisterReqDto extends IntersectionType(
+export class CreateAccountReqDto extends IntersectionType(
   LocalAuthenticationInfo,
   UserInfo,
 ) {}
 
-export class RegisterResDto extends BaseResDto {}
+export class CreateAccountResDto extends BaseResDto {}
 
 export class SocialSignupReqDto {
   @IsNotEmpty()
@@ -162,7 +162,7 @@ export class SocialSignupReqDto {
   photo: string;
 }
 
-export class SocialSignupResDto extends RegisterResDto {
+export class SocialSignupResDto extends CreateAccountResDto {
   data?: {
     accessToken?: string;
     refreshToken?: string;

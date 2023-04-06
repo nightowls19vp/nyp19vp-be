@@ -10,8 +10,8 @@ import {
   LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
-  RegisterReqDto,
-  RegisterResDto,
+  CreateAccountReqDto,
+  CreateAccountResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
   ValidateUserReqDto,
@@ -112,7 +112,7 @@ export class AuthService {
     );
   }
 
-  register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
+  register(reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
     return firstValueFrom(
       this.authClient.send(
         kafkaTopic.AUTH.CREATE_ACCOUNT,

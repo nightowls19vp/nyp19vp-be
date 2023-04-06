@@ -7,7 +7,11 @@ import {
 } from '@nyp19vp-be/shared';
 import { firstValueFrom } from 'rxjs';
 import { HttpStatus } from '@nestjs/common/enums';
-import { kafkaTopic, RegisterReqDto, RegisterResDto } from '@nyp19vp-be/shared';
+import {
+  kafkaTopic,
+  CreateAccountReqDto,
+  CreateAccountResDto,
+} from '@nyp19vp-be/shared';
 import { AccountEntity } from './../entities/account.entity';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,8 +22,9 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { RoleEntity } from '../entities/role.entity';
 import { E_STATUS, StatusEntity } from '../entities/status.entity';
-import { SocialMediaAccountEntity } from '../entities/social-media-account.entity';
+import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
+import { platform } from 'os';
 
 @Injectable()
 export class AccountService {
@@ -31,8 +36,8 @@ export class AccountService {
     private statusRepo: Repository<StatusEntity>,
     @InjectRepository(RoleEntity)
     private roleRepo: Repository<RoleEntity>,
-    @InjectRepository(SocialMediaAccountEntity)
-    private socialMediaAccountEntityRepo: Repository<SocialMediaAccountEntity>,
+    @InjectRepository(SocialAccountEntity)
+    private socialAccRepo: Repository<SocialAccountEntity>,
 
     private readonly authService: AuthService,
 
@@ -83,10 +88,10 @@ export class AccountService {
   }
 
   async create(
-    reqDto: RegisterReqDto,
+    reqDto: CreateAccountReqDto,
     platform: string = null,
     platformId: string = null,
-  ): Promise<RegisterResDto> {
+  ): Promise<CreateAccountResDto> {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(reqDto.password, salt);
 
@@ -122,14 +127,14 @@ export class AccountService {
       console.log(createUserReq);
 
       if (platform && platformId) {
-        const socialMediaAccount: SocialMediaAccountEntity =
-          this.socialMediaAccountEntityRepo.create({
+        const socialMediaAccount: SocialAccountEntity =
+          this.socialAccRepo.create({
             account: saveResult,
             platform: platform,
-            platform_id: platformId,
+            platformId: platformId,
           });
 
-        saveResult = await queryRunner.manager.save<SocialMediaAccountEntity>(
+        saveResult = await queryRunner.manager.save<SocialAccountEntity>(
           socialMediaAccount,
         );
       }
@@ -187,43 +192,50 @@ export class AccountService {
   }
 
   // It will create a new account, new social medial account too
-  async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    // find the social account
-    const socialMediaAccount: SocialMediaAccountEntity =
-      await this.socialMediaAccountEntityRepo.findOne({
+  async socialSignup(user: SocialSignupReqDto): Promise<AccountEntity> {
+    // find the user who use this email to signup
+    const socialMediaAccount: SocialAccountEntity =
+      await this.socialAccRepo.findOne({
         where: [
           {
             platform: user.platform,
-            platform_id: user.platformId,
+            platformId: user.platformId,
           },
         ],
       });
 
     if (socialMediaAccount) {
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Already link',
-        user: {
-          username: socialMediaAccount.account.username,
-          hashedPassword: socialMediaAccount.account.hashedPassword,
-          role: socialMediaAccount.account.role.name,
-        },
-      };
+      return socialMediaAccount.account;
     }
 
-    const resDto: RegisterResDto = await this.create({
-      username: user.email,
-      email: user.email,
-      dob: null,
-      name: user.name,
-      password: null,
-      phone: null,
+    const roleUser = await this.roleRepo.findOneBy({
+      name: ERole.user,
     });
 
-    //
-    if (resDto.statusCode === HttpStatus.CREATED) {
-      //
+    let account: AccountEntity = this.accountRepo.create({
+      username: user.email,
+      hashedPassword: null,
+      email: user.email,
+      role: roleUser,
+      status: this.statusRepo.create(),
+    });
+
+    const socialAccount = this.socialAccRepo.create({
+      account: account,
+      platform: user.platform,
+      platformId: user.platformId,
+    });
+
+    (await account.socialAccounts).push(socialAccount);
+
+    try {
+      account = await this.accountRepo.save(account);
+    }catch(err){
+      return {
+        null
+      }
     }
+
     return null;
   }
 }

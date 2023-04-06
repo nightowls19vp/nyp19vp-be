@@ -11,8 +11,8 @@ import {
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
-  RegisterReqDto,
-  RegisterResDto,
+  CreateAccountReqDto,
+  CreateAccountResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
 } from '@nyp19vp-be/shared';
@@ -60,7 +60,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT)
-  async register(reqDto: RegisterReqDto): Promise<RegisterResDto> {
+  async register(reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
     console.log('MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT) ', reqDto);
 
     return this.accountService.create(reqDto);
@@ -72,18 +72,7 @@ export class AuthController implements OnModuleInit {
     const resDto = await this.accountService.socialSignup(reqDto);
 
     if (resDto.statusCode === HttpStatus.CREATED) {
-      const accessToken = this.authService.generateAccessJWT({
-        user: {},
-      });
-
-      return {
-        statusCode: loginResDto.statusCode,
-        message: loginResDto.message,
-        data: {
-          accessToken: loginResDto.accessToken,
-          refreshToken: loginResDto.refreshToken,
-        },
-      };
+      return null;
     } else {
       throw new RpcException(resDto);
     }

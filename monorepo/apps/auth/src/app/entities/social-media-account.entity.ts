@@ -6,7 +6,7 @@ import { AccountEntity } from './account.entity';
 @Entity({
   name: SOCIAL_MEDIA_ACCOUNT,
 })
-export class SocialMediaAccountEntity {
+export class SocialAccountEntity {
   @PrimaryColumn({
     name: 'platform',
     nullable: false,
@@ -16,7 +16,7 @@ export class SocialMediaAccountEntity {
   @PrimaryColumn({
     name: 'platform_id',
   })
-  platform_id: string;
+  platformId: string;
 
   @ManyToOne(() => AccountEntity, (user) => user.socialAccounts)
   @JoinColumn({

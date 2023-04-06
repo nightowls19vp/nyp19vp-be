@@ -4,11 +4,11 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { ACCESS_JWT_STRATEGY_NAME } from '../constants/authentication';
-import { config, core } from '@nyp19vp-be/shared';
+import { config } from '@nyp19vp-be/shared';
 
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
-import { IUser } from 'libs/shared/src/lib/core';
+import { IJwtPayload, IUser } from 'libs/shared/src/lib/core';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(
@@ -24,7 +24,7 @@ export class AccessJwtStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: core.IJwtPayload) {
+  async validate(req: Request, payload: IJwtPayload) {
     return payload;
   }
 }

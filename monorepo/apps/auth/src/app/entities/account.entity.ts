@@ -15,7 +15,7 @@ import { RoleEntity } from './role.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 
 import { StatusEntity } from './status.entity';
-import { SocialMediaAccountEntity } from './social-media-account.entity';
+import { SocialAccountEntity } from './social-media-account.entity';
 
 @Entity({
   name: ACCOUNT,
@@ -76,12 +76,12 @@ export class AccountEntity {
   refreshTokenBlacklist: Promise<RefreshTokenBlacklistEntity[]>;
 
   @OneToMany(
-    () => SocialMediaAccountEntity,
+    () => SocialAccountEntity,
     (socialMediaAccount) => socialMediaAccount.account,
     {
       lazy: true,
       cascade: true,
     },
   )
-  socialAccounts: Promise<SocialMediaAccountEntity[]>;
+  socialAccounts: Promise<SocialAccountEntity[]>;
 }
