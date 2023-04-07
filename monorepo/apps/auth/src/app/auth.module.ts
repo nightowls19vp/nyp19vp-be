@@ -1,29 +1,28 @@
 import { randomUUID } from 'crypto';
-import { StatusEntity } from './entities/status.entity';
-import { RefreshTokenBlacklistEntity } from './entities/refresh-token-blacklist.entity';
-import { ActionEntity } from './entities/action.entity';
-import { RoleEntity } from './entities/role.entity';
-import { AccountEntity } from './entities/account.entity';
-import { RefreshTokenBlacklistService } from './services/refresh-token-blacklist.service';
-import { ActionService } from './services/action.service';
-import { RoleService } from './services/role.service';
-import { Global, Module } from '@nestjs/common';
-
-import { AuthController } from './controller/auth.controller';
-import { AuthService } from './services/auth.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DataBaseModule } from '../core/database/database.module';
-import { AccountService } from './services/account.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { JwtModule } from '@nestjs/jwt';
-import { DbModule } from './db/db.module';
-import { SocialAccountEntity } from './entities/social-media-account.entity';
-import { ENV_FILE } from '@nyp19vp-be/shared';
 import { join } from 'path';
 
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { Global, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ENV_FILE } from '@nyp19vp-be/shared';
+
+import { DataBaseModule } from '../core/database/database.module';
+import { AuthController } from './controller/auth.controller';
+import { DbModule } from './db/db.module';
+import { AccountEntity } from './entities/account.entity';
+import { RefreshTokenBlacklistEntity } from './entities/refresh-token-blacklist.entity';
+import { RoleEntity } from './entities/role.entity';
+import { SocialAccountEntity } from './entities/social-media-account.entity';
+import { StatusEmbeddedEntity } from './entities/status.entity';
+import { AccountService } from './services/account.service';
+import { ActionService } from './services/action.service';
+import { AuthService } from './services/auth.service';
+import { RefreshTokenBlacklistService } from './services/refresh-token-blacklist.service';
+import { RoleService } from './services/role.service';
 
 @Global()
 @Module({
@@ -82,9 +81,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     TypeOrmModule.forFeature([
       AccountEntity,
       SocialAccountEntity,
-      StatusEntity,
       RoleEntity,
-      ActionEntity,
       RefreshTokenBlacklistEntity,
     ]),
     DbModule,

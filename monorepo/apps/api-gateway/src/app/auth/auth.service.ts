@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
@@ -52,14 +52,22 @@ export class AuthService {
       photo: googleUser.photo,
     };
 
-    const resDto: SocialSignupResDto = await firstValueFrom(
-      this.authClient.send(
-        kafkaTopic.AUTH.SOCIAL_SIGN_UP,
-        JSON.stringify(socialSignupReqDto),
-      ),
-    );
+    try {
+      const resDto: SocialSignupResDto = await firstValueFrom(
+        this.authClient
+          .send(
+            kafkaTopic.AUTH.SOCIAL_SIGN_UP,
+            JSON.stringify(socialSignupReqDto),
+          )
+          .pipe(timeout(toMs('5s'))),
+      );
+      console.log('resDto success', resDto);
+      return resDto;
+    } catch (error) {
+      console.error('timeout', error);
 
-    return resDto;
+      return null;
+    }
   }
 
   /**

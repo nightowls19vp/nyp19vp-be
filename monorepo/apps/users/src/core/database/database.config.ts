@@ -1,11 +1,11 @@
 import * as dotenv from 'dotenv';
 
+import { ENV_FILE } from '@nyp19vp-be/shared';
+
 import { IDbConfig } from './interfaces/dbConfig.interface';
 
-import { core } from '@nyp19vp-be/shared';
 dotenv.config({
-  path:
-    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : core.ENV_FILE.DEV,
+  path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
 export const dbCfg: IDbConfig = {

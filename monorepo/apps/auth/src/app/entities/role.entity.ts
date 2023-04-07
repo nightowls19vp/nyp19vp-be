@@ -1,19 +1,10 @@
 import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
 } from 'typeorm';
 
 import { ERole } from '@nyp19vp-be/shared';
 
 import { ROLE } from '../constants/entities';
-import { AccountEntity } from './account.entity';
-import { ActionEntity } from './action.entity';
 
 @Entity({
   name: ROLE,
@@ -46,10 +37,4 @@ export class RoleEntity {
     name: 'deleted_at',
   })
   deletedAt: Date;
-
-  @ManyToMany(() => ActionEntity, (action) => action.roles, {
-    eager: false,
-    lazy: true,
-  })
-  actions: Promise<ActionEntity[]>;
 }

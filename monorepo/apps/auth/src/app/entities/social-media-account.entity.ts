@@ -18,7 +18,9 @@ export class SocialAccountEntity {
   })
   platformId: string;
 
-  @ManyToOne(() => AccountEntity, (user) => user.socialAccounts)
+  @ManyToOne(() => AccountEntity, (account) => account.socialAccounts, {
+    eager: true,
+  })
   @JoinColumn({
     name: 'account_id',
   })

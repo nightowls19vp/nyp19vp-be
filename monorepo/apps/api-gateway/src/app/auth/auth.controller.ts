@@ -33,6 +33,7 @@ import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './guards/google.guard';
 import { SocialUser } from './decorators/social-user.decorator';
 import { ISocialUser } from './interfaces/social-user.interface';
+import { SocialAccountReqDto } from './dto/social-account.req.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -52,7 +53,7 @@ export class AuthController implements OnModuleInit {
     await Promise.all([this.authClient.connect()]);
   }
 
-  @Get('google/:from')
+  @Get('oauth2/google/:from')
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     // this route empty
@@ -84,6 +85,25 @@ export class AuthController implements OnModuleInit {
       );
     }
     res.redirect(webUrl);
+  }
+
+  @Post('create-social-account')
+  async createSocialAccount(
+    @Body() reqDto: SocialAccountReqDto,
+  ): Promise<SocialSignupResDto> {
+    console.log('createSocialAccount', reqDto);
+
+    const resDto = await this.authService.googleSignUp(reqDto);
+
+    console.log('resDto', resDto);
+
+    if (!resDto) {
+      throw new HttpException(
+        'Cannot create social account',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return resDto;
   }
 
   @ApiResponse({

@@ -1,88 +1,41 @@
-import {
-  CreateUserReqDto,
-  CreateUserResDto,
-  ERole,
-  SocialSignupReqDto,
-  SocialSignupResDto,
-} from '@nyp19vp-be/shared';
-import { firstValueFrom } from 'rxjs';
-import { HttpStatus } from '@nestjs/common/enums';
-import {
-  kafkaTopic,
-  CreateAccountReqDto,
-  CreateAccountResDto,
-} from '@nyp19vp-be/shared';
-import { AccountEntity } from './../entities/account.entity';
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { ClientKafka } from '@nestjs/microservices';
-
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { platform } from 'os';
+import { firstValueFrom } from 'rxjs';
+import { DataSource, Repository } from 'typeorm';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common/enums';
+import { ClientKafka } from '@nestjs/microservices';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+    CreateAccountReqDto, CreateAccountResDto, CreateUserReqDto, CreateUserResDto, ERole, kafkaTopic,
+    SocialSignupReqDto, SocialSignupResDto
+} from '@nyp19vp-be/shared';
+
+import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
-import { E_STATUS, StatusEntity } from '../entities/status.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
-import { platform } from 'os';
 
 @Injectable()
 export class AccountService {
   constructor(
     private dataSource: DataSource,
+
     @InjectRepository(AccountEntity)
     private accountRepo: Repository<AccountEntity>,
-    @InjectRepository(StatusEntity)
-    private statusRepo: Repository<StatusEntity>,
+
     @InjectRepository(RoleEntity)
     private roleRepo: Repository<RoleEntity>,
+
     @InjectRepository(SocialAccountEntity)
     private socialAccRepo: Repository<SocialAccountEntity>,
 
     private readonly authService: AuthService,
 
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) {
-    // create admin
-    this.createAdmin();
-  }
-
-  async createAdmin() {
-    const roleAdmin = this.roleRepo.create({
-      roleName: ERole.admin,
-    });
-
-    const username = process.env.ADMIN_USERNAME || 'admin',
-      hashedPassword = process.env.ADMIN_PASSWORD || 'admin',
-      email = process.env.ADMIN_EMAIL || 'admin@email.com';
-
-    let account = await this.accountRepo.findOneBy({
-      username: username,
-    });
-
-    if (account) {
-      return;
-    }
-
-    account = this.accountRepo.create({
-      username: username,
-      hashedPassword: hashedPassword,
-      email: email,
-      role: roleAdmin,
-      status: {
-        name: E_STATUS.ACTIVE,
-      },
-    });
-
-    try {
-      account = await this.accountRepo.save(account);
-    } catch (error) {
-      console.log(error);
-    }
-
-    console.log('[AUTH-SVC] create admin successfully', account);
-  }
-
+  ) {}
   getData(): { message: string } {
     return { message: 'Welcome to auth/Account service!' };
   }
@@ -106,7 +59,6 @@ export class AccountService {
       hashedPassword: !reqDto ? null : reqDto.password, // set password to null
       email: reqDto.email,
       role: roleUser,
-      status: this.statusRepo.create(),
     });
 
     let saveResult = null;
@@ -193,7 +145,43 @@ export class AccountService {
 
   // It will create a new account, new social medial account too
   async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    // find the user who use this email to signup
+    // find the account with this email
+    let account: AccountEntity = await this.accountRepo.findOneBy({
+      email: user.email,
+    });
+
+    if (account) {
+      // find the social account with this platform and platformId
+      const socialAccounts = (await account.socialAccounts).filter(
+        (socialAccount) =>
+          socialAccount.platform === user.platform &&
+          socialAccount.platformId === user.platformId,
+      );
+
+      // if the social account is existed, return the access token and refresh token
+      if (socialAccounts.length > 0) {
+        return {
+          statusCode: HttpStatus.OK,
+          message: 'login successfully',
+          data: {
+            accessToken: this.authService.generateAccessJWT({
+              user: {
+                username: account.username,
+                role: account.role.roleName,
+              },
+            }),
+            refreshToken: this.authService.generateRefreshJWT({
+              user: {
+                username: account.username,
+                role: account.role.roleName,
+              },
+            }),
+          },
+        };
+      }
+    }
+
+    // if the social account is not existed, create a new account and a new social account
     let socialAccount: SocialAccountEntity = await this.socialAccRepo.findOne({
       where: [
         {
@@ -205,59 +193,75 @@ export class AccountService {
 
     let statusCode = HttpStatus.UNAUTHORIZED;
 
-    if (socialAccount) {
+    if (socialAccount && socialAccount.account) {
       statusCode = HttpStatus.OK;
     } else {
-      const roleUser = await this.roleRepo.findOneBy({
-        roleName: ERole.user,
-      });
+      const queryRunner = this.dataSource.createQueryRunner();
 
-      let account: AccountEntity = this.accountRepo.create({
-        username: user.email,
-        hashedPassword: randomUUID(),
-        email: user.email,
-        role: roleUser,
-        status: this.statusRepo.create(),
-      });
-
-      socialAccount = this.socialAccRepo.create({
-        account: account,
-        platform: user.platform,
-        platformId: user.platformId,
-      });
-
-      (await account.socialAccounts).push(socialAccount);
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      AccountEntity;
 
       try {
-        account = await this.accountRepo.save(account);
+        const roleUser = await this.roleRepo.findOneBy({
+          roleName: ERole.user,
+        });
 
+        const password = randomUUID();
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        account = this.accountRepo.create({
+          username: user.email,
+          hashedPassword: hashedPassword,
+          email: user.email,
+          role: roleUser,
+        });
+
+        account = await queryRunner.manager.save<AccountEntity>(account);
+
+        socialAccount = this.socialAccRepo.create({
+          account: account,
+          platform: user.platform,
+          platformId: user.platformId,
+        });
+
+        socialAccount = await queryRunner.manager.save<SocialAccountEntity>(
+          socialAccount,
+        );
+        await queryRunner.commitTransaction();
+
+        console.log('socialAccount', socialAccount);
         statusCode = HttpStatus.CREATED;
-      } catch (err) {
+
+        return {
+          statusCode: statusCode,
+          message: 'Login success',
+          data: {
+            accessToken: this.authService.generateAccessJWT({
+              user: {
+                username: socialAccount.account.username,
+                role: socialAccount.account.role.roleName,
+              },
+            }),
+            refreshToken: this.authService.generateRefreshJWT({
+              user: {
+                username: socialAccount.account.username,
+                role: socialAccount.account.role.roleName,
+              },
+            }),
+          },
+        };
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
         return {
           statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'unauthorized',
-          error: err,
+          message: 'create account fail',
+          error: error.message,
         };
+      } finally {
+        // you need to release a queryRunner which was manually instantiated
+        await queryRunner.release();
       }
     }
-
-    return {
-      statusCode: statusCode,
-      message: 'Login success',
-      data: {
-        accessToken: this.authService.generateAccessJWT({
-          user: {
-            username: socialAccount.account.username,
-            role: socialAccount.account.role.roleName,
-          },
-        }),
-        refreshToken: this.authService.generateRefreshJWT({
-          user: {
-            username: socialAccount.account.username,
-            role: socialAccount.account.role.roleName,
-          },
-        }),
-      },
-    };
   }
 }

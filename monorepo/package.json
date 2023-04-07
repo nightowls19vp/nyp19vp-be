@@ -25,7 +25,7 @@
     "kafkajs": "^2.2.4",
     "mongoose": "^6.10.1",
     "ms": "^2.1.3",
-    "mysql2": "^3.2.0",
+    "mysql2": "^3.1.2",
     "nodemailer": "^6.9.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
@@ -33,11 +33,9 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
     "tslib": "^2.3.0",
-    "typeorm": "^0.3.12"
+    "typeorm": "^0.3.13"
   },
   "devDependencies": {
-    "@types/ms": "^0.7.31",
-    "@types/nodemailer": "^6.4.7",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
     "@nrwl/eslint-plugin-nx": "15.8.1",
@@ -51,7 +49,9 @@
     "@nrwl/workspace": "15.8.1",
     "@types/bcrypt": "^5.0.0",
     "@types/jest": "^29.4.0",
+    "@types/ms": "^0.7.31",
     "@types/node": "~18.7.1",
+    "@types/nodemailer": "^6.4.7",
     "@types/passport-jwt": "^3.0.8",
     "@types/passport-local": "^1.0.35",
     "@types/validator": "^13.7.13",

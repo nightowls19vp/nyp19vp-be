@@ -1,21 +1,14 @@
 import { randomUUID } from 'crypto';
 import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
+    Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn
 } from 'typeorm';
 
 import { ACCOUNT } from '../constants/entities';
 import { RefreshTokenBlacklistEntity } from './refresh-token-blacklist.entity';
 import { RoleEntity } from './role.entity';
-import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
-
-import { StatusEntity } from './status.entity';
 import { SocialAccountEntity } from './social-media-account.entity';
+import { StatusEmbeddedEntity } from './status.entity';
+import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 
 @Entity({
   name: ACCOUNT,
@@ -51,11 +44,10 @@ export class AccountEntity {
   })
   timestamp: TimestampEmbeddedEntity;
 
-  @OneToOne(() => StatusEntity, (status) => status.account, {
-    cascade: true,
-    eager: true,
+  @Column(() => StatusEmbeddedEntity, {
+    prefix: false,
   })
-  status: StatusEntity;
+  status: StatusEmbeddedEntity;
 
   @ManyToOne(() => RoleEntity, {
     cascade: false,
@@ -84,11 +76,4 @@ export class AccountEntity {
     },
   )
   socialAccounts: Promise<SocialAccountEntity[]>;
-
-  @Column({
-    type: Boolean,
-    default: true,
-    nullable: false,
-  })
-  isFirstInit: boolean;
 }
