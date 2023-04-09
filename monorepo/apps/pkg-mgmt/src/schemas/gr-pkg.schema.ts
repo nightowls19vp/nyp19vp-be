@@ -24,9 +24,9 @@ export class GrPkg {
   endDate: Date;
 
   @Prop({
-    type: Date,
+    type: String,
   })
-  remainingTime: Date;
+  remainingTime: string;
 
   @Prop({
     type: String,

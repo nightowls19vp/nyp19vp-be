@@ -7,12 +7,17 @@ import {
   Param,
   OnModuleInit,
   Inject,
-  Req,
   Put,
   Query,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
@@ -22,7 +27,6 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetGrResDto,
-  GetGrsResDto,
   GetPkgResDto,
   kafkaTopic,
   UpdateGrReqDto,
@@ -33,6 +37,9 @@ import {
   UpdateGrPkgResDto,
   PkgCollectionProperties,
   PackageDto,
+  GrCollectionProperties,
+  GroupDto,
+  ParseObjectIdPipe,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -40,6 +47,7 @@ import {
   CollectionResponse,
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { Types } from 'mongoose';
 
 @ApiTags('Package Management')
 @Controller('pkg-mgmt')
@@ -82,16 +90,28 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.getAllPkg(collectionDto);
   }
 
+  @Get('pkg/txn')
+  findManyPkg(@Query('list') list: string[]): Promise<PackageDto[]> {
+    console.log('find many package by id');
+    return this.pkgMgmtService.findManyPkg(list);
+  }
+
   @Get('pkg/:id')
   @ApiOkResponse({ description: 'Got Package', type: GetPkgResDto })
-  getPkgById(@Param('id') id: string): Promise<GetPkgResDto> {
+  @ApiParam({ name: 'id', type: String })
+  getPkgById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetPkgResDto> {
     console.log(`get package #${id}`);
     return this.pkgMgmtService.getPkgById(id);
   }
 
   @Patch('pkg/:id')
   @ApiOkResponse({ description: 'Updated Package', type: CreatePkgResDto })
-  deletePkg(@Param('id') id: string): Promise<CreatePkgResDto> {
+  @ApiParam({ name: 'id', type: String })
+  deletePkg(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreatePkgResDto> {
     console.log(`delete package #${id}`);
     return this.pkgMgmtService.deletePkg(id);
   }
@@ -115,22 +135,32 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('gr')
-  @ApiOkResponse({ description: 'Get All Groups', type: GetGrsResDto })
-  getAllGr(@Req() req: Request): Promise<GetGrsResDto> {
+  @ApiOperation({ description: 'Filter MUST:\n\n\t- name(Optional): \n\n\t- ' })
+  @ApiOkResponse({ description: 'Get All Groups', type: GroupDto })
+  getAllGr(
+    @Query(new ValidationPipe(GrCollectionProperties))
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<GroupDto>> {
     console.log('Get all groups');
-    return this.pkgMgmtService.getAllGr(req);
+    return this.pkgMgmtService.getAllGr(collectionDto);
   }
 
   @Get('gr/:id')
-  @ApiOkResponse({ description: 'Get All Groups', type: GetGrResDto })
-  getGrById(@Param('id') id: string): Promise<GetGrResDto> {
+  @ApiOkResponse({ description: 'Get group by Id', type: GetGrResDto })
+  @ApiParam({ name: 'id', type: String })
+  getGrById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetGrResDto> {
     console.log(`Get group #${id}`);
     return this.pkgMgmtService.getGrById(id);
   }
 
   @Patch('gr/:id')
   @ApiOkResponse({ description: 'Delete Group', type: CreateGrResDto })
-  deleteGr(@Param('id') id: string): Promise<CreateGrResDto> {
+  @ApiParam({ name: 'id', type: String })
+  deleteGr(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateGrResDto> {
     console.log(`Delete group #${id}`);
     return this.pkgMgmtService.deleteGr(id);
   }
@@ -197,7 +227,7 @@ export class PkgMgmtController implements OnModuleInit {
     type: UpdatePkgResDto,
   })
   rmGrPkg(
-    @Param('id') id: string,
+    @Param('id', new ParseObjectIdPipe()) id,
     @Body() updateGrPkgReqDto: UpdateGrPkgReqDto
   ): Promise<UpdateGrPkgResDto> {
     console.log(`Remove package from group #${id}`, updateGrPkgReqDto);

@@ -20,9 +20,9 @@ export class Member {
   role: string;
 
   @Prop({
-    type: Date,
+    type: String,
   })
-  addedBy: Date;
+  addedBy: string;
 
   @Prop({
     type: Date,

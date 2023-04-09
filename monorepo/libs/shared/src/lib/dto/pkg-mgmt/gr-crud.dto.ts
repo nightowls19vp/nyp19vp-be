@@ -1,15 +1,17 @@
 import { ApiProperty, PickType, IntersectionType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
   IsEnum,
   IsISO8601,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { BaseResDto } from '../base.dto';
 import { IdDto, PackageDto } from './pkg-crud.dto';
+import { ObjectId } from 'mongodb';
 
 class MemberDto {
   @ApiProperty({
@@ -17,6 +19,7 @@ class MemberDto {
     nullable: true,
     required: true,
   })
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
   user: string;
 
   @ApiProperty({
@@ -28,7 +31,8 @@ class MemberDto {
     default: 'User',
   })
   @IsEnum(['User', 'Super User'])
-  role: string;
+  @IsOptional()
+  role?: string;
 
   @ApiProperty({
     type: String,
@@ -36,7 +40,9 @@ class MemberDto {
     nullable: true,
     required: false,
   })
-  addedBy: string;
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  @IsOptional()
+  addedBy?: string;
 }
 
 class GrPkgDto {
@@ -102,7 +108,7 @@ export class GroupDto {
 export class CreateGrReqDto extends PickType(GroupDto, ['name']) {
   @ApiProperty({
     example: {
-      packageId: '',
+      packageId: '642925cf9d2a83d281bbc4fc',
       startDate: new Date(),
     },
   })
@@ -112,12 +118,9 @@ export class CreateGrReqDto extends PickType(GroupDto, ['name']) {
   };
 
   @ApiProperty({
-    example: [
-      {
-        user: '',
-        role: 'Super User',
-      },
-    ],
+    example: {
+      user: '6425a5f3f1757ad283e82b23',
+    },
   })
   @ValidateNested()
   @Type(() => MemberDto)
@@ -125,11 +128,6 @@ export class CreateGrReqDto extends PickType(GroupDto, ['name']) {
 }
 
 export class CreateGrResDto extends BaseResDto {}
-
-export class GetGrsResDto extends BaseResDto {
-  @ApiProperty()
-  groups: GroupDto[];
-}
 
 export class GetGrResDto extends BaseResDto {
   @ApiProperty()

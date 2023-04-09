@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
+import { TxnModule } from './txn/txn.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
     AuthModule,
     UsersModule,
     PkgMgmtModule,
+    TxnModule,
   ],
   controllers: [AppController],
   providers: [AppService],

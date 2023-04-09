@@ -2,6 +2,7 @@ export const HEALT_CHECK = {
   AUTH: 'HC_AUTH',
   USERS: 'HC_USER',
   PACKAGE_MGMT: 'HC_PACKAGE_MGMT',
+  TXN: 'HC_TXN',
 };
 
 export const AUTH = {
@@ -22,12 +23,14 @@ export const USERS = {
   UPDATE_CART: 'updateShoppingCart',
   GET_CART: 'getShoppingCart',
   UPDATE_TRX: 'updateTransactionHistory',
+  CHECKOUT: 'checkOut',
 };
 
 export const PACKAGE_MGMT = {
   CREATE_PKG: 'createPackage',
   GET_ALL_PKGS: 'getAllPackages',
   GET_PKG_BY_ID: 'getPackageById',
+  GET_MANY_PKG: 'getManyPackage',
   UPDATE_PKG: 'updatePackage',
   DELETE_PKG: 'deletePackage',
   CREATE_GR: 'createGroup',
@@ -39,4 +42,8 @@ export const PACKAGE_MGMT = {
   RM_GR_MEMB: 'removeMemberFromGroup',
   ADD_GR_PKG: 'addPackageToGroup',
   RM_GR_PKG: 'removePackageFromGroup',
+};
+
+export const TXN = {
+  CHECKOUT: 'checkOut',
 };

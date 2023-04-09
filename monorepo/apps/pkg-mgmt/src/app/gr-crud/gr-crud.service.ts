@@ -5,7 +5,6 @@ import {
   CreateGrReqDto,
   CreateGrResDto,
   GetGrResDto,
-  GetGrsResDto,
   GroupDto,
   PackageDto,
   AddGrMbReqDto,
@@ -16,10 +15,15 @@ import {
   UpdateGrReqDto,
   UpdateGrResDto,
 } from '@nyp19vp-be/shared';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { ObjectId } from 'mongodb';
 import { Package, PackageDocument } from '../../schemas/package.schema';
+import {
+  CollectionDto,
+  CollectionResponse,
+  DocumentCollector,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class GrCrudService {
@@ -36,9 +40,14 @@ export class GrCrudService {
       { duration: 1, _id: 0 }
     );
     const end: Date = addDays(start, pkg.duration);
-    const newPkg = new this.grModel({
+    const newGr = new this.grModel({
       name: createGrReqDto.name,
-      members: createGrReqDto.member,
+      members: [
+        {
+          user: createGrReqDto.member.user,
+          role: 'Super User',
+        },
+      ],
       packages: [
         {
           package: pkgId,
@@ -49,7 +58,7 @@ export class GrCrudService {
         },
       ],
     });
-    return await newPkg
+    return await newGr
       .save()
       .then(() => {
         return Promise.resolve({
@@ -65,50 +74,29 @@ export class GrCrudService {
       });
   }
 
-  async findAllGrs(): Promise<GetGrsResDto> {
+  async findAllGrs(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<GroupDto>> {
     console.log('pkg-mgmt-svc#get-all-groups');
-    return await this.grModel
-      .find({ deletedAt: null })
-      .populate({
-        path: 'packages',
-        populate: { path: 'package', model: 'Package' },
-      })
-      .exec()
+    const collector = new DocumentCollector<GroupDocument>(this.grModel);
+    return await collector
+      .find(collectionDto)
       .then((res) => {
-        let grs = [];
-        for (const ele of res) {
-          grs.push(mapGrSchemaToGrDto(ele));
-        }
-        if (grs.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: 'get all groups successfully',
-            groups: grs,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'No groups found',
-            error: 'NOT FOUND',
-            groups: grs,
-          });
-        }
-      })
-      .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          groups: null,
+          data: res.data,
+          pagination: res.pagination,
         });
+      })
+      .catch((err) => {
+        throw err;
       });
   }
 
-  async findGrById(id: string): Promise<GetGrResDto> {
+  async findGrById(id: Types.ObjectId): Promise<GetGrResDto> {
     console.log(`pkg-mgmt-svc#get-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
     return this.grModel
       .findOne({
-        _id: _id,
+        _id: id,
         deletedAt: null,
       })
       .populate({
@@ -173,12 +161,10 @@ export class GrCrudService {
       });
   }
 
-  async removeGr(id: string): Promise<CreateGrResDto> {
+  async removeGr(id: Types.ObjectId): Promise<CreateGrResDto> {
     console.log(`pkg-mgmt-svc#delete-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
     return await this.grModel
-      .updateOne({ _id: _id, deletedAt: null }, { deletedAt: new Date() })
-      .exec()
+      .updateOne({ _id: id, deletedAt: null }, { deletedAt: new Date() })
       .then((res) => {
         if (res.matchedCount && res.modifiedCount)
           return Promise.resolve({
@@ -213,7 +199,6 @@ export class GrCrudService {
         { members: { $elemMatch: { user: user_id } } }
       )
       .then(async (checkMemb) => {
-        console.log(checkMemb);
         if (checkMemb) {
           if (!checkMemb.members.length) {
             return await this.grModel
