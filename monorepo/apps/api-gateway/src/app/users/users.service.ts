@@ -28,13 +28,13 @@ import { firstValueFrom } from 'rxjs';
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
   async createUser(
-    createUserReqDto: CreateUserReqDto
+    createUserReqDto: CreateUserReqDto,
   ): Promise<CreateUserResDto> {
     const res = await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CREATE, createUserReqDto)
+      this.usersClient.send(kafkaTopic.USERS.CREATE, createUserReqDto),
     );
     if (res.statusCode == HttpStatus.CREATED) {
       return res;
@@ -46,10 +46,10 @@ export class UsersService {
     }
   }
   async updateUser(
-    updateUserReqDto: UpdateUserReqDto
+    updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     const res = await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_INFO, updateUserReqDto)
+      this.usersClient.send(kafkaTopic.USERS.UPDATE_INFO, updateUserReqDto),
     );
     if (res.statusCode == HttpStatus.OK) {
       return res;
@@ -62,7 +62,22 @@ export class UsersService {
   }
   async getUserById(id: string): Promise<GetUserInfoResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
+      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+
+  async getUserByEmail(email: string): Promise<GetUserInfoResDto> {
+    return await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, email),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -76,7 +91,7 @@ export class UsersService {
   }
   async getUserSettingById(id: string): Promise<GetUserSettingResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_SETTING_BY_ID, id)
+      this.usersClient.send(kafkaTopic.USERS.GET_SETTING_BY_ID, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -89,20 +104,20 @@ export class UsersService {
     });
   }
   async getAllUsers(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_ALL, collectionDto)
+      this.usersClient.send(kafkaTopic.USERS.GET_ALL, collectionDto),
     );
   }
   async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
+    updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     return await firstValueFrom(
       this.usersClient.send(
         kafkaTopic.USERS.UPDATE_SETTING,
-        updateSettingReqDto
-      )
+        updateSettingReqDto,
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -115,10 +130,10 @@ export class UsersService {
     });
   }
   async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
+    updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_AVATAR, updateAvatarReqDto)
+      this.usersClient.send(kafkaTopic.USERS.UPDATE_AVATAR, updateAvatarReqDto),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -132,7 +147,7 @@ export class UsersService {
   }
   async deleteUser(id: string): Promise<CreateUserResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.DELETE_ONE, id)
+      this.usersClient.send(kafkaTopic.USERS.DELETE_ONE, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -145,10 +160,10 @@ export class UsersService {
     });
   }
   async updateCart(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_CART, updateCartReqDto)
+      this.usersClient.send(kafkaTopic.USERS.UPDATE_CART, updateCartReqDto),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -162,7 +177,7 @@ export class UsersService {
   }
   async getCart(id: string): Promise<GetCartResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_CART, id)
+      this.usersClient.send(kafkaTopic.USERS.GET_CART, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -175,10 +190,10 @@ export class UsersService {
     });
   }
   async updateTrxHist(
-    updateTrxHistReqDto: UpdateTrxHistReqDto
+    updateTrxHistReqDto: UpdateTrxHistReqDto,
   ): Promise<UpdateTrxHistResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+      this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;

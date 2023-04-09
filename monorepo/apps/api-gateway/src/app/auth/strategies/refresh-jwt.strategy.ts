@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { ENV_FILE } from 'libs/shared/src/lib/core/constants';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { config } from '@nyp19vp-be/shared';
@@ -13,6 +13,7 @@ import {
   REFRESH_JWT_STRATEGY_NAME,
 } from '../constants/authentication';
 import { AuthService } from '../auth.service';
+import { getRefreshToken } from '../utils/get-jwt-token';
 
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
@@ -29,7 +30,15 @@ export class RefreshJwtStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          return request?.cookies?.[REFRESH_JWT_COOKIE_NAME];
+          const refreshToken = getRefreshToken(request);
+
+          console.log('refreshToken', refreshToken);
+
+          if (!refreshToken) {
+            throw new UnauthorizedException();
+          }
+
+          return refreshToken;
         },
       ]),
       ignoreExpiration: false,

@@ -16,3 +16,6 @@ export const JWT_TOKEN_ERRORS = {
   NOT_BEFORE_ERROR: 'NotBeforeError',
   JWT_ERROR: 'JsonWebTokenError',
 };
+
+export const SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME = 'access_token';
+export const SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME = 'refresh_token';

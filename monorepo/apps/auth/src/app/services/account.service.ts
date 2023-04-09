@@ -1,7 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { platform } from 'os';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -9,14 +8,22 @@ import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-    CreateAccountReqDto, CreateAccountResDto, CreateUserReqDto, CreateUserResDto, ERole, kafkaTopic,
-    SocialSignupReqDto, SocialSignupResDto
+  CreateAccountReqDto,
+  CreateAccountResDto,
+  CreateUserReqDto,
+  CreateUserResDto,
+  ERole,
+  kafkaTopic,
+  SocialSignupReqDto,
+  SocialSignupResDto,
 } from '@nyp19vp-be/shared';
 
 import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
+import { time } from 'console';
+import { toMs } from 'libs/shared/src/lib/utils';
 
 @Injectable()
 export class AccountService {
@@ -228,6 +235,14 @@ export class AccountService {
         socialAccount = await queryRunner.manager.save<SocialAccountEntity>(
           socialAccount,
         );
+
+        const createUserReq: CreateUserReqDto = {
+          email: user.email ?? null,
+          dob: null,
+          name: user.name ?? null,
+          phone: null,
+        };
+
         await queryRunner.commitTransaction();
 
         console.log('socialAccount', socialAccount);
@@ -235,7 +250,7 @@ export class AccountService {
 
         return {
           statusCode: statusCode,
-          message: 'Login success',
+          message: 'SignUp successfully',
           data: {
             accessToken: this.authService.generateAccessJWT({
               user: {
@@ -263,5 +278,37 @@ export class AccountService {
         await queryRunner.release();
       }
     }
+  }
+
+  /** Create user info
+   * Return user info if success else throw error
+   * @param reqDto
+   * @returns
+   */
+  async createUserInfo(reqDto: CreateUserReqDto): Promise<CreateUserResDto> {
+    const createUserInfoRes: CreateUserResDto = await firstValueFrom(
+      this.usersClient
+        .send(
+          kafkaTopic.USERS.CREATE,
+          JSON.stringify({
+            email: reqDto.email,
+            dob: reqDto.dob,
+            name: reqDto.name,
+            phone: reqDto.dob,
+          }),
+        )
+        .pipe(timeout(toMs('5s'))),
+    );
+
+    console.log(createUserInfoRes);
+
+    if (
+      !createUserInfoRes.statusCode.toString().startsWith('2') ||
+      createUserInfoRes.error
+    ) {
+      throw new Error(createUserInfoRes.error || 'create user fail');
+    }
+
+    return createUserInfoRes;
   }
 }

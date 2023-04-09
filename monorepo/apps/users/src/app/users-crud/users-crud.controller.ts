@@ -31,14 +31,14 @@ export class UsersCrudController {
 
   @MessagePattern(kafkaTopic.USERS.CREATE)
   create(
-    @Payload() createUserReqDto: CreateUserReqDto
+    @Payload() createUserReqDto: CreateUserReqDto,
   ): Promise<CreateUserResDto> {
     return this.usersCrudService.create(createUserReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_ALL)
   findAll(
-    @Payload() collectionDto: CollectionDto
+    @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     return this.usersCrudService.findAll(collectionDto);
   }
@@ -48,6 +48,11 @@ export class UsersCrudController {
     return this.usersCrudService.findInfoById(id);
   }
 
+  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
+  findInfoByEmail(@Payload() email: string): Promise<GetUserInfoResDto> {
+    return this.usersCrudService.findInfoByEmail(email);
+  }
+
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
   findSettingById(@Payload() id: string): Promise<GetUserSettingResDto> {
     return this.usersCrudService.findSettingById(id);
@@ -55,21 +60,21 @@ export class UsersCrudController {
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_INFO)
   updateInfo(
-    @Payload() updateUserReqDto: UpdateUserReqDto
+    @Payload() updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     return this.usersCrudService.updateInfo(updateUserReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_SETTING)
   updateSetting(
-    @Payload() updateSettingReqDto: UpdateSettingReqDto
+    @Payload() updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     return this.usersCrudService.updateSetting(updateSettingReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_AVATAR)
   updateAvatar(
-    @Payload() updateAvatarReqDto: UpdateAvatarReqDto
+    @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
@@ -81,7 +86,7 @@ export class UsersCrudController {
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
   updateCart(
-    @Payload() updateCartReqDto: UpdateCartReqDto
+    @Payload() updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     return this.usersCrudService.updateCart(updateCartReqDto);
   }
@@ -93,7 +98,7 @@ export class UsersCrudController {
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_TRX)
   updateTrxHist(
-    @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto
+    @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto,
   ): Promise<UpdateTrxHistResDto> {
     return this.usersCrudService.updateTrxHist(updateTrxHistReqDto);
   }

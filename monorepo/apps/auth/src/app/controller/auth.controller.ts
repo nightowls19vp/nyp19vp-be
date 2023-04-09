@@ -1,9 +1,9 @@
-import { ValidateUserReqDto } from './../../../../../libs/shared/src/lib/dto/auth/authentication.dto';
 import { Controller, Get, HttpStatus, Inject } from '@nestjs/common';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import {
   ClientKafka,
   MessagePattern,
+  Payload,
   RpcException,
 } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
@@ -15,6 +15,9 @@ import {
   CreateAccountResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
+  LogoutReqDto,
+  LogoutResDto,
+  ValidateUserReqDto,
 } from '@nyp19vp-be/shared';
 
 import { AccountService } from '../services/account.service';
@@ -59,6 +62,11 @@ export class AuthController implements OnModuleInit {
     return this.authService.login(reqDto);
   }
 
+  @MessagePattern(kafkaTopic.AUTH.LOGOUT)
+  async logout(@Payload() reqDto: LogoutReqDto): Promise<LoginResDto> {
+    return this.authService.logout(reqDto.refreshToken);
+  }
+
   @MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT)
   async register(reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
     console.log('MessagePattern(kafkaTopic.AUTH.CREATE_ACCOUNT) ', reqDto);
@@ -71,10 +79,6 @@ export class AuthController implements OnModuleInit {
     console.log('MessagePattern(kafkaTopic.AUTH.SOCIAL_SIGN_UP) ', reqDto);
     const resDto = await this.accountService.socialSignup(reqDto);
 
-    if (resDto.statusCode === HttpStatus.CREATED) {
-      return null;
-    } else {
-      throw new RpcException(resDto);
-    }
+    return resDto;
   }
 }

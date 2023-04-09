@@ -26,8 +26,13 @@ export class User {
   email: string;
 
   @Prop({
-    unique: true,
+    unique: false,
     type: String,
+    partialFilterExpression: {
+      phone: {
+        $type: 'string',
+      },
+    },
   })
   phone: string;
 

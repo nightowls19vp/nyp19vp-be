@@ -1,5 +1,5 @@
+import { SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME } from './../constants/authentication/index';
 import { Request, Response } from 'express';
-
 import {
   Body,
   Controller,
@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   kafkaTopic,
   LoginReqDto,
@@ -34,6 +34,10 @@ import { GoogleAuthGuard } from './guards/google.guard';
 import { SocialUser } from './decorators/social-user.decorator';
 import { ISocialUser } from './interfaces/social-user.interface';
 import { SocialAccountReqDto } from './dto/social-account.req.dto';
+import { UserDto } from '@nyp19vp-be/shared';
+import { AccessJwtAuthGuard, RefreshJwtAuthGuard } from './guards/jwt.guard';
+import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { getRefreshToken } from './utils/get-jwt-token';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -143,10 +147,14 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('logout')
-  logout(@Body() reqDto: LogoutReqDto): LogoutResDto {
-    console.log('logout', reqDto);
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
+  @UseGuards(RefreshJwtAuthGuard)
+  async logout(@Req() req: Request): Promise<LogoutResDto> {
+    const refreshToken = getRefreshToken(req);
 
-    return;
+    return this.authService.logout({
+      refreshToken,
+    });
   }
 
   @Post('register')
@@ -156,6 +164,10 @@ export class AuthController implements OnModuleInit {
     return this.authService.register(reqDto);
   }
 
-  // @Get('authorize')
-  // authorize()
+  @Get('validate')
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  validate(@Req() req: Request): Express.User {
+    return req.user;
+  }
 }

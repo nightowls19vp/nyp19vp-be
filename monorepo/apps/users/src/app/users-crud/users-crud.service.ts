@@ -56,7 +56,7 @@ export class UsersCrudService {
   }
 
   async findAll(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     console.log(`users-svc#get-all-users`);
     const collector = new DocumentCollector<UserDocument>(this.userModel);
@@ -103,13 +103,41 @@ export class UsersCrudService {
       });
   }
 
+  async findInfoByEmail(email: string): Promise<GetUserInfoResDto> {
+    return await this.userModel
+      .findOne({ email: email, deletedAt: { $exists: false } })
+      .then((res) => {
+        if (!res) {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user with id: #${email} found`,
+            error: 'NOT FOUND',
+            user: res,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `get user #${email} successfully`,
+            user: res,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          user: null,
+        });
+      });
+  }
+
   async findSettingById(id: string): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
     const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .findOne(
         { _id: _id, deletedAt: { $exists: false } },
-        { setting: 1, _id: 0 }
+        { setting: 1, _id: 0 },
       )
       .then((res) => {
         if (!res) {
@@ -137,7 +165,7 @@ export class UsersCrudService {
   }
 
   async updateInfo(
-    updateUserReqDto: UpdateUserReqDto
+    updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     const id = updateUserReqDto._id;
     console.log(`users-svc#udpate-user:`, id);
@@ -149,7 +177,7 @@ export class UsersCrudService {
           name: updateUserReqDto.name,
           dob: updateUserReqDto.dob,
           phone: updateUserReqDto.phone,
-        }
+        },
       )
       .then((res) => {
         if (res.matchedCount && res.modifiedCount) {
@@ -173,7 +201,7 @@ export class UsersCrudService {
   }
 
   async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
+    updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     const id = updateSettingReqDto._id;
     console.log(`users-svc#udpate-setting:`, id);
@@ -183,7 +211,7 @@ export class UsersCrudService {
         { _id: _id, deletedAt: { $exists: false } },
         {
           setting: updateSettingReqDto,
-        }
+        },
       )
       .then((res) => {
         if (res.matchedCount && res.modifiedCount)
@@ -206,7 +234,7 @@ export class UsersCrudService {
   }
 
   async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
+    updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     const id = updateAvatarReqDto._id;
     console.log(`users-svc#udpate-avatar:`, id);
@@ -214,7 +242,7 @@ export class UsersCrudService {
     return await this.userModel
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
-        { avatar: updateAvatarReqDto.avatar }
+        { avatar: updateAvatarReqDto.avatar },
       )
       .then((res) => {
         if (res.matchedCount && res.modifiedCount)
@@ -243,7 +271,7 @@ export class UsersCrudService {
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
         { deletedAt: new Date(now()) },
-        { new: true }
+        { new: true },
       )
       .then((res) => {
         console.log(res);
@@ -268,7 +296,7 @@ export class UsersCrudService {
   }
 
   async updateCart(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     const id = updateCartReqDto._id;
     console.log(`update items of user's cart`, updateCartReqDto.cart);
@@ -277,7 +305,7 @@ export class UsersCrudService {
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
         { $set: { cart: updateCartReqDto.cart } },
-        { new: true }
+        { new: true },
       )
       .then((res) => {
         if (res.matchedCount && res.matchedCount)
@@ -329,7 +357,7 @@ export class UsersCrudService {
   }
 
   async updateTrxHist(
-    updateTrxHistReqDto: UpdateTrxHistReqDto
+    updateTrxHistReqDto: UpdateTrxHistReqDto,
   ): Promise<UpdateTrxHistResDto> {
     console.log(`update items of user's cart`, updateTrxHistReqDto.trx);
     const _id: ObjectId = new ObjectId(updateTrxHistReqDto._id);
@@ -337,7 +365,7 @@ export class UsersCrudService {
       .findOneAndUpdate(
         { _id: _id },
         { $push: { trxHist: updateTrxHistReqDto.trx } },
-        { new: true }
+        { new: true },
       )
       .then((res) => {
         return Promise.resolve({

@@ -24,26 +24,15 @@ class LocalAuthenticationInfo {
     minLength: 5,
     maxLength: 255,
     nullable: false,
-    pattern: '^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$',
+    // pattern: '^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$',
   })
-  @Matches('^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$')
   username: string;
 
   @ApiProperty({
     description: `Password strength criteria:\n\n\t- Number of characters must be between 8 to 255.\n\n\t- Contain at least 1 character in Upper Case\n\n\t- Contain at least 1 Special Character (!, @, #, $, &, *)\n\n\t-  Contain at least 1 numeral (0-9)\n\n\t-  Contain at least 1 letters in lower case`,
     example: 'P@s5__.word',
     nullable: false,
-    pattern: `^(?=[.\\S]*[A-Z][.\\S]*)(?=[.\\S]*[0-9][.\\S]*)(?=[.\\S]*[a-z][.\\S]*)[.\\S]{8,255}$`,
-  })
-  @NotContains(' ', {
-    message: 'should not contain space',
-  })
-  @IsStrongPassword({
-    minLength: 8,
-    minUppercase: 1,
-    minLowercase: 1,
-    minSymbols: 1,
-    minNumbers: 1,
+    // pattern: `^(?=[.\\S]*[A-Z][.\\S]*)(?=[.\\S]*[0-9][.\\S]*)(?=[.\\S]*[a-z][.\\S]*)[.\\S]{8,255}$`,
   })
   password: string;
 }
@@ -55,8 +44,9 @@ class UserInfo {
     minLength: 5,
     maxLength: 255,
     nullable: false,
-    pattern: '^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$',
+    // pattern: '^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$',
   })
+  @IsAscii()
   @Matches('^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$')
   username: string;
 
@@ -114,7 +104,15 @@ export class ValidateUserResDto extends BaseResDto {
   user: IUser;
 }
 
-export class LoginReqDto extends LocalAuthenticationInfo {}
+export class LoginReqDto extends LocalAuthenticationInfo {
+  @IsNotEmpty()
+  @IsAscii()
+  @NotContains(' ')
+  username: string;
+
+  @IsNotEmpty()
+  password: string;
+}
 
 export class LoginResDto extends BaseResDto {
   @ApiProperty({
@@ -129,7 +127,11 @@ export class LoginResWithTokensDto extends LoginResDto {
   refreshToken?: string;
 }
 
-export class LogoutReqDto {}
+export class LogoutReqDto {
+  @IsNotEmpty()
+  @IsString()
+  refreshToken: string;
+}
 
 export class LogoutResDto extends BaseResDto {}
 

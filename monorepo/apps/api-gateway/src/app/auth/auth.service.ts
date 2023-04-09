@@ -114,9 +114,11 @@ export class AuthService {
     }
   }
 
-  logout(reqDto: LogoutReqDto): Promise<LogoutResDto> {
+  async logout(reqDto: LogoutReqDto): Promise<LogoutResDto> {
     return firstValueFrom(
-      this.authClient.send(kafkaTopic.AUTH.LOGOUT, JSON.stringify(reqDto)),
+      this.authClient
+        .send(kafkaTopic.AUTH.LOGOUT, JSON.stringify(reqDto))
+        .pipe(timeout(toMs('5s'))),
     );
   }
 

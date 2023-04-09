@@ -1,6 +1,8 @@
 import {
   config,
   ERole,
+  LogoutReqDto,
+  LogoutResDto,
   utils,
   ValidateUserReqDto,
   ValidateUserResDto,
@@ -21,6 +23,7 @@ import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist
 import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
 import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
 import { RoleEntity } from '../entities/role.entity';
+import { AccountService } from './account.service';
 
 @Injectable()
 export class AuthService {
@@ -42,25 +45,7 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(RefreshTokenBlacklistEntity)
     private refreshTokenBlacklistRepo: Repository<RefreshTokenBlacklistEntity>,
-  ) {
-    this.initDb();
-  }
-
-  async initDb() {
-    for (const roleName in ERole) {
-      console.log('[initDb]', roleName);
-
-      const roleEtt: RoleEntity = this.roleRepo.create({
-        roleName: roleName as ERole,
-      });
-
-      try {
-        await this.roleRepo.save(roleEtt);
-      } catch (error) {
-        //
-      }
-    }
-  }
+  ) {}
   getData(): { message: string } {
     return { message: 'Welcome to auth/Auth!' };
   }
@@ -179,7 +164,7 @@ export class AuthService {
    * @param refreshToken String
    * @returns boolean
    */
-  async logout(refreshToken: string): Promise<boolean> {
+  async logout(refreshToken: string): Promise<LogoutResDto> {
     try {
       const decoded = this.decodeToken(refreshToken);
       console.log(decoded);
@@ -189,7 +174,12 @@ export class AuthService {
       });
 
       if (!account) {
-        return false;
+        const accountNotFountRpcException: LogoutResDto = {
+          statusCode: 401,
+          message: `account not found`,
+        };
+
+        throw new RpcException(accountNotFountRpcException);
       }
 
       const refreshTokenRecord = this.refreshTokenBlacklistRepo.create({
@@ -203,9 +193,12 @@ export class AuthService {
 
       console.log('add token', refreshTokenRecord.token, ' to blacklist');
 
-      return true;
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Logout successfully',
+      };
     } catch (error) {
-      return false;
+      throw new RpcException(error);
     }
   }
 
