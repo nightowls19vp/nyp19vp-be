@@ -4,7 +4,7 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
@@ -12,10 +12,12 @@ import {
   IsEmail,
   IsPhoneNumber,
 } from 'class-validator';
+import { ObjectId } from 'mongodb';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto } from '../base.dto';
 
 export class UserId {
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
   _id: string;
 }
 
@@ -101,7 +103,7 @@ export class UserInfo {
   avatar: string;
 }
 
-class Items {
+export class Items {
   @ApiProperty({
     description: 'Package ID',
     type: String,

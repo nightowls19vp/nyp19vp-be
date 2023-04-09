@@ -15,6 +15,7 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  ParseObjectIdPipe,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -36,6 +37,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { Patch, Query } from '@nestjs/common/decorators';
@@ -44,6 +46,7 @@ import {
   CollectionResponse,
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { Types } from 'mongoose';
 
 @ApiTags('Users')
 @Controller('users')
@@ -88,9 +91,12 @@ export class UsersController implements OnModuleInit {
 
   @Get(':id')
   @ApiOkResponse({ description: 'Got user by Id', type: GetUserInfoResDto })
+  @ApiParam({ name: 'id', type: String })
   @ApiNotFoundResponse({ description: 'No user found' })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
-  async getUserById(@Param('id') id: string): Promise<GetUserInfoResDto> {
+  async getUserById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetUserInfoResDto> {
     console.log(`get user info by #${id}`);
     return this.usersService.getUserById(id);
   }
@@ -100,8 +106,9 @@ export class UsersController implements OnModuleInit {
     description: 'Got User Setting by Id',
     type: GetUserSettingResDto,
   })
+  @ApiParam({ name: 'id', type: String })
   async getUserSettingById(
-    @Param('id') id: string
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<GetUserSettingResDto> {
     console.log(`get user setting #${id}`);
     return this.usersService.getUserSettingById(id);
@@ -109,14 +116,20 @@ export class UsersController implements OnModuleInit {
 
   @Get(':id/cart')
   @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
-  async getCart(@Param('id') id: string): Promise<GetCartResDto> {
+  @ApiParam({ name: 'id', type: String })
+  async getCart(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetCartResDto> {
     console.log(`get items of user #${id}'s cart`);
     return this.usersService.getCart(id);
   }
 
   @Patch(':id')
+  @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
-  async deleteUser(@Param('id') id: string): Promise<CreateUserResDto> {
+  async deleteUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateUserResDto> {
     return this.usersService.deleteUser(id);
   }
 
@@ -194,5 +207,14 @@ export class UsersController implements OnModuleInit {
     //   this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
     // );
     // return res;
+  }
+  @Post(':id/checkout')
+  async checkout(
+    @Param('id') id: string,
+    @Body() updateCartReqDto: UpdateCartReqDto
+  ): Promise<any> {
+    console.log(`checkout #${id}`, updateCartReqDto);
+    updateCartReqDto._id = id;
+    return this.usersService.checkout(updateCartReqDto);
   }
 }

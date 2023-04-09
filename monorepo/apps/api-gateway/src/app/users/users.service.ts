@@ -23,6 +23,7 @@ import {
   UpdateUserResDto,
   UserDto,
 } from '@nyp19vp-be/shared';
+import { Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -60,7 +61,7 @@ export class UsersService {
       });
     }
   }
-  async getUserById(id: string): Promise<GetUserInfoResDto> {
+  async getUserById(id: Types.ObjectId): Promise<GetUserInfoResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
     ).then((res) => {
@@ -74,7 +75,7 @@ export class UsersService {
       }
     });
   }
-  async getUserSettingById(id: string): Promise<GetUserSettingResDto> {
+  async getUserSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_SETTING_BY_ID, id)
     ).then((res) => {
@@ -130,7 +131,7 @@ export class UsersService {
       }
     });
   }
-  async deleteUser(id: string): Promise<CreateUserResDto> {
+  async deleteUser(id: Types.ObjectId): Promise<CreateUserResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.DELETE_ONE, id)
     ).then((res) => {
@@ -160,7 +161,7 @@ export class UsersService {
       }
     });
   }
-  async getCart(id: string): Promise<GetCartResDto> {
+  async getCart(id: Types.ObjectId): Promise<GetCartResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_CART, id)
     ).then((res) => {
@@ -189,5 +190,20 @@ export class UsersService {
         });
       }
     });
+  }
+  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+    return await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto)
+    );
+    // ).then((res) => {
+    //   if (res.statusCode == HttpStatus.OK) {
+    //     return res;
+    //   } else {
+    //     throw new HttpException(res.message, res.statusCode, {
+    //       cause: new Error(res.error),
+    //       description: res.error,
+    //     });
+    //   }
+    // });
   }
 }
