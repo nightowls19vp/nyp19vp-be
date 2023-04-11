@@ -111,6 +111,13 @@ export class ZPCreateOrderReqDto {
   bank_code: string;
 
   @ApiProperty({
+    type: URL,
+    description:
+      'ZaloPay will notify to this URL only when the payment is success;',
+  })
+  callback_url: string;
+
+  @ApiProperty({
     maxLength: 256,
     description:
       'The description of the order, used to display to users on the ZaloPay app',
@@ -248,4 +255,33 @@ export class ZPCallbackResDto extends PickType(ZPCreateOrderResDto, [
   })
   @IsEnum([1, 2, null])
   return_code: number;
+}
+
+export class ZPGetOrderStatusReqDto extends PickType(ZPCreateOrderReqDto, [
+  'app_id',
+  'app_trans_id',
+  'mac',
+]) {}
+
+export class ZPGetOrderStatusResDto extends PickType(ZPCreateOrderResDto, [
+  'return_code',
+  'return_message',
+  'sub_return_code',
+  'sub_return_message',
+]) {
+  @ApiProperty({
+    description: "Process's status",
+  })
+  is_processing: boolean;
+
+  @ApiProperty({
+    description:
+      'Amount received (only make sense when the payment is successful)',
+  })
+  amount: number;
+
+  @ApiProperty({
+    description: "ZaloPay's transaction code",
+  })
+  zp_trans_id: number;
 }

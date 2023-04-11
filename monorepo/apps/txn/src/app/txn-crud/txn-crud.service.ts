@@ -7,13 +7,16 @@ import {
   kafkaTopic,
   ZPCreateOrderReqDto,
   ZPCreateOrderResDto,
+  ZPGetOrderStatusResDto,
+  ZPGetOrderStatusReqDto,
 } from '@nyp19vp-be/shared';
-import { catchError, firstValueFrom, of, timeout } from 'rxjs';
+import { Observable, catchError, firstValueFrom, of, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import { zpconfig } from '../../core/config/zalopay.config';
+import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 
 @Injectable()
 export class TxnCrudService implements OnModuleInit {
@@ -50,7 +53,30 @@ export class TxnCrudService implements OnModuleInit {
         console.log(zaloPayReq);
         const zaloRes = await this.zpCreateOrder(zaloPayReq);
         console.log(zaloRes);
+        const { app_id, app_trans_id } = zaloPayReq;
+        const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto =
+          mapZPGetStatusReqDto(app_id, app_trans_id, this.config);
+        this.CheckStatus(zpGetOrderStatusReqDto);
       });
+  }
+
+  CheckStatus(zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto) {
+    let timer;
+    // eslint-disable-next-line prefer-const
+    timer = setIntervalAsync(async () => {
+      const res: ZPGetOrderStatusResDto = await this.zpGetOrderStatus(
+        zpGetOrderStatusReqDto
+      );
+      if (res.return_code == 1) {
+        console.log(res);
+        await clearIntervalAsync(timer);
+      }
+    }, 15000);
+
+    setTimeout(async () => {
+      await clearIntervalAsync(timer);
+      console.log('stop timeout');
+    }, 15 * 60 * 1000);
   }
 
   async zpCreateOrder(
@@ -58,7 +84,26 @@ export class TxnCrudService implements OnModuleInit {
   ): Promise<ZPCreateOrderResDto> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post(this.config.endpoint, null, { params: zalopayReqDto })
+        .post(this.config.create_order_endpoint, null, {
+          params: zalopayReqDto,
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            throw error.response.data;
+          })
+        )
+    );
+    return data;
+  }
+
+  async zpGetOrderStatus(
+    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto
+  ): Promise<ZPGetOrderStatusResDto> {
+    const { data } = await firstValueFrom(
+      this.httpService
+        .post(this.config.get_status_endpoint, null, {
+          params: zpGetOrderStatusReqDto,
+        })
         .pipe(
           catchError((error: AxiosError) => {
             throw error.response.data;
@@ -148,9 +193,25 @@ const mapZaloPayReqDto = (
     item: JSON.stringify(items),
     app_trans_id: trans_id,
     bank_code: '',
+    callback_url: config.callback_URL,
     description: `Megoo - Paymemt for the order #${trans_id}`,
     embed_data: JSON.stringify({}),
     mac: mac,
   };
   return res;
+};
+const mapZPGetStatusReqDto = (
+  app_id: string,
+  app_trans_id: string,
+  config: any
+): ZPGetOrderStatusReqDto => {
+  const hmacinput = [app_id, app_trans_id, config.key1].join('|');
+  const mac: string = createHmac('sha256', config.key1)
+    .update(hmacinput)
+    .digest('hex');
+  return {
+    app_id: app_id,
+    app_trans_id: app_trans_id,
+    mac: mac,
+  };
 };

@@ -24,6 +24,7 @@
     "mongoose": "^6.10.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
+    "set-interval-async": "^3.0.3",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
