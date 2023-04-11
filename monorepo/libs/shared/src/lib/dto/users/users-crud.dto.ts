@@ -15,6 +15,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto } from '../base.dto';
+import { IdDto } from '../pkg-mgmt/pkg-crud.dto';
 
 export class UserId {
   @Transform((v: TransformFnParams) => new ObjectId(v.value))
@@ -130,6 +131,7 @@ class UserSettingDto {
 export class TrxHistDto {
   @ApiProperty()
   @IsArray()
+  @ValidateNested({ each: true })
   trxHist: string[];
 }
 

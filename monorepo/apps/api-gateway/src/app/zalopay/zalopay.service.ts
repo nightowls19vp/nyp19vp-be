@@ -1,18 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { createHmac } from 'crypto';
-import { zpconfig } from './core/config/zalopay.config';
 import { ZPCallbackReqDto, ZPCallbackResDto } from '@nyp19vp-be/shared';
+import { zpconfig } from '../core/config/zalopay.config';
+import { createHmac } from 'crypto';
 
 @Injectable()
-export class AppService {
+export class ZalopayService {
   constructor(
     @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig
   ) {}
-  getData(): { message: string } {
-    return { message: 'Welcome to api-gateway!' };
-  }
   callback(callbackReqDto: ZPCallbackReqDto): Promise<ZPCallbackResDto> {
-    let res: ZPCallbackResDto;
+    let res;
     try {
       const dataStr = callbackReqDto.data;
       const reqMac = callbackReqDto.mac;
@@ -21,22 +18,21 @@ export class AppService {
         .digest('hex');
       console.log('mac=', mac);
       if (reqMac !== mac) {
-        res = {
+        return Promise.resolve({
           return_code: -1,
           return_message: 'mac not equal',
-        };
+        });
       } else {
-        res = {
+        return Promise.resolve({
           return_code: 1,
           return_message: 'success',
-        };
+        });
       }
     } catch (error) {
-      res = {
+      return Promise.resolve({
         return_code: 0,
         return_message: error.return_message,
-      };
+      });
     }
-    return Promise.resolve(res);
   }
 }

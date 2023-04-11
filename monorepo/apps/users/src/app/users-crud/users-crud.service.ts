@@ -366,26 +366,30 @@ export class UsersCrudService implements OnModuleInit {
   }
   async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
     const { _id, cart } = updateCartReqDto;
-    const checkExist = await this.userModel.findOne({
-      _id: new ObjectId(_id),
-      cart: { $elemMatch: { $each: cart } },
-    });
-    if (checkExist)
-      return await this.txnClient
-        .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-        .subscribe(
-          (res: any) => {
-            console.log(res);
-          },
-          (error) => {
-            throw error;
-          }
-        )
-        .unsubscribe();
-    else
-      return Promise.resolve({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: `Items not found in user #${_id}'s cart `,
-      });
+    // const checkExist = await this.userModel.findOne({
+    //   _id: new ObjectId(_id),
+    //   cart: { $elemMatch: { $each: cart } },
+    // });
+    // if (checkExist)
+    console.log(`checkout user #${_id}`);
+    return await this.txnClient
+      .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
+      .subscribe(
+        (res: any) => {
+          console.log(res);
+        },
+        (error) => {
+          throw error;
+        }
+      )
+      .unsubscribe();
+    //   else
+    //     return Promise.resolve({
+    //       statusCode: HttpStatus.NOT_FOUND,
+    //       message: `Items not found in user #${_id}'s cart `,
+    //     });
+  }
+  async searchUser(keyword: string): Promise<UserDto[]> {
+    return await this.userModel.find({ $text: { $search: keyword } });
   }
 }

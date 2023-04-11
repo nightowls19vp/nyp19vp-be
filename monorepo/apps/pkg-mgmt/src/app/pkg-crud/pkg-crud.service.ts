@@ -4,6 +4,7 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
+  IdDto,
   PackageDto,
   UpdatePkgReqDto,
   UpdatePkgResDto,
@@ -161,18 +162,8 @@ export class PkgCrudService {
       });
   }
 
-  async findManyPkg(list_id: string[]): Promise<PackageDto[]> {
-    const list = [];
-    for (const elem of list_id) {
-      if (elem.length == 24) {
-        const id: ObjectId = new ObjectId(elem);
-        list.push(id);
-      }
-    }
-    if (!list.length) {
-      list.push(list_id);
-    }
-    const res = await this.pkgModel.find({ _id: { $in: list } }).exec();
+  async findManyPkg(list_id: IdDto[]): Promise<PackageDto[]> {
+    const res = await this.pkgModel.find({ _id: { $in: list_id } }).exec();
     console.log(res);
     return res;
   }

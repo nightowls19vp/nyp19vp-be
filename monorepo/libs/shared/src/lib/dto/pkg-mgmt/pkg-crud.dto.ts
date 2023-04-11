@@ -4,7 +4,15 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsPositive,
+  IsAscii,
+  ValidateNested,
+  IsArray,
+  ArrayMinSize,
+} from 'class-validator';
 import { BaseResDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
 import { Transform, TransformFnParams } from 'class-transformer';

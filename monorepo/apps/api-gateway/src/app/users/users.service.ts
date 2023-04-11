@@ -206,4 +206,9 @@ export class UsersService {
     //   }
     // });
   }
+  async searchUser(keyword: string): Promise<UserDto[]> {
+    return await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword)
+    );
+  }
 }

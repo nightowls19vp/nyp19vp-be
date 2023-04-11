@@ -5,20 +5,22 @@ import {
   PackageDto,
   UpdateCartReqDto,
   kafkaTopic,
-  ZalopayReqDto,
-  ZalopayResDto,
+  ZPCreateOrderReqDto,
+  ZPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
-import { Observable, catchError, from, of, timeout } from 'rxjs';
+import { catchError, firstValueFrom, of, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
-import { AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
+import { zpconfig } from '../../core/config/zalopay.config';
 
 @Injectable()
 export class TxnCrudService implements OnModuleInit {
   constructor(
     private httpService: HttpService,
-    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
+    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig
   ) {}
   async onModuleInit() {
     this.pkgMgmtClient.subscribeToResponseOf(
@@ -40,20 +42,30 @@ export class TxnCrudService implements OnModuleInit {
         catchError(() => of(`Request timed out after: 5s`))
       )
       .subscribe(async (res: PackageDto[]) => {
-        const zaloPayReq = mapZaloPayReqDto(_id, mapPkgDtoToItemDto(res, cart));
+        const zaloPayReq = mapZaloPayReqDto(
+          _id,
+          mapPkgDtoToItemDto(res, cart),
+          this.config
+        );
         console.log(zaloPayReq);
-        const zaloRes = await this.createOrder(zaloPayReq);
+        const zaloRes = await this.zpCreateOrder(zaloPayReq);
         console.log(zaloRes);
       });
   }
 
-  createOrder(
-    zalopayReqDto: ZalopayReqDto
-  ): Observable<AxiosResponse<ZalopayResDto[]>> {
-    return this.httpService.post(
-      'https://sb-openapi.zalopay.vn/v2/create',
-      zalopayReqDto
+  async zpCreateOrder(
+    zalopayReqDto: ZPCreateOrderReqDto
+  ): Promise<ZPCreateOrderResDto> {
+    const { data } = await firstValueFrom(
+      this.httpService
+        .post(this.config.endpoint, null, { params: zalopayReqDto })
+        .pipe(
+          catchError((error: AxiosError) => {
+            throw error.response.data;
+          })
+        )
     );
+    return data;
   }
 }
 function padTo2Digits(num: number) {
@@ -86,8 +98,17 @@ const totalPrice = (items: ItemDto[]): number => {
 const getTransId = (): string => {
   const date = new Date();
   const time = date.toLocaleTimeString().split(/[\s:]/);
-  if (time[3] == 'PM') time[0] = (parseInt(time[0], 10) + 12).toString();
-  else padTo2Digits(parseInt(time[0], 10));
+  if (time[3] == 'PM') {
+    if (time[0] != '12') {
+      time[0] = (parseInt(time[0], 10) + 12).toString();
+    }
+  } else {
+    if (time[0] != '12') {
+      padTo2Digits(parseInt(time[0], 10));
+    } else {
+      time[0] = '00';
+    }
+  }
   return (
     [
       date.getFullYear().toString().substring(2),
@@ -95,28 +116,40 @@ const getTransId = (): string => {
       padTo2Digits(date.getDate()),
     ].join('') +
     '_' +
-    [time[0], time[1], time[2]].join('')
+    [time[0], time[1], time[2]].join('') +
+    Math.floor(Math.random() * 1000)
   );
 };
-const mapZaloPayReqDto = (user_id: string, items: ItemDto[]): ZalopayReqDto => {
+const mapZaloPayReqDto = (
+  user_id: string,
+  items: ItemDto[],
+  config: any
+): ZPCreateOrderReqDto => {
   const now: number = Date.now();
   const trans_id = getTransId();
-  const key1 = 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL';
   const amount = totalPrice(items);
-  const hmacinput = [2553, trans_id, user_id, amount, now, {}, items].join('|');
-  const mac: string = createHmac('sha256', key1)
+  const hmacinput = [
+    config.app_id,
+    trans_id,
+    user_id,
+    amount,
+    now,
+    JSON.stringify({}),
+    JSON.stringify(items),
+  ].join('|');
+  const mac: string = createHmac('sha256', config.key1)
     .update(hmacinput)
     .digest('hex');
-  const res: ZalopayReqDto = {
+  const res: ZPCreateOrderReqDto = {
     amount: amount,
-    app_id: 2553,
+    app_id: config.app_id,
     app_time: now,
     app_user: user_id,
-    item: items,
+    item: JSON.stringify(items),
     app_trans_id: trans_id,
+    bank_code: '',
     description: `Megoo - Paymemt for the order #${trans_id}`,
-    embed_data: {},
-    key1: key1,
+    embed_data: JSON.stringify({}),
     mac: mac,
   };
   return res;

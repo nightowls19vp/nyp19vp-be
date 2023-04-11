@@ -77,7 +77,7 @@ export class UsersController implements OnModuleInit {
   @Get()
   @ApiOperation({
     description:
-      'Filter MUST: \n\n\t- name(optional): {"name":{"$regex":"(?i)(keyword)(?-i)"}}\n\n\t- phone(optional)\n\n\t\t+ check input @IsPhoneNumber(\'VI\')\n\n\t\t+ search full-text\n\n\t\t+ example: {"phone":"+84987654321"}\n\n\t- email(optional)\n\n\t\t+ check input exists @\n\n\t\t+ example: {"email":{"$regex":"^exam@"}}',
+      'Filter MUST: \n\n\t- name(optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}\n\n\t- phone(optional)\n\n\t\t+ check input @IsPhoneNumber(\'VI\')\n\n\t\t+ search full-text\n\n\t\t+ example: {"phone":"+84987654321"}\n\n\t- email(optional)\n\n\t\t+ check input exists @\n\n\t\t+ example: {"email":{"$regex":"^exam@"}}',
   })
   @ApiOkResponse({ description: 'Got All Users' })
   async getAll(
@@ -87,6 +87,12 @@ export class UsersController implements OnModuleInit {
     console.log('get all users');
     console.log(collectionDto.filter);
     return this.usersService.getAllUsers(collectionDto);
+  }
+
+  @Get('search')
+  async searchUser(@Query('keyword') keyword: string): Promise<UserDto[]> {
+    console.log('search users');
+    return this.usersService.searchUser(keyword);
   }
 
   @Get(':id')

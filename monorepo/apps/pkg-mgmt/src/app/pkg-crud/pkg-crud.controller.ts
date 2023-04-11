@@ -5,6 +5,7 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
+  IdDto,
   kafkaTopic,
   PackageDto,
   UpdatePkgReqDto,
@@ -52,7 +53,7 @@ export class PkgCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG)
-  findManyPkg(@Payload() list_id: string[]): Promise<PackageDto[]> {
+  findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
     return this.pkgCrudService.findManyPkg(list_id);
   }
 }

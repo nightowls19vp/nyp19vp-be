@@ -23,6 +23,7 @@ import {
   UpdateGrPkgReqDto,
   PackageDto,
   GroupDto,
+  IdDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
@@ -225,11 +226,5 @@ export class PkgMgmtService {
           description: res.error,
         });
     });
-  }
-  async findManyPkg(list: string[]): Promise<PackageDto[]> {
-    console.log(list);
-    return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list)
-    );
   }
 }

@@ -105,4 +105,9 @@ export class UsersCrudController {
   checkout(@Payload() updateCartReqDto: UpdateCartReqDto): Promise<any> {
     return this.usersCrudService.checkout(updateCartReqDto);
   }
+
+  @MessagePattern(kafkaTopic.USERS.SEARCH_USER)
+  searchUser(@Payload() keyword: string): Promise<UserDto[]> {
+    return this.usersCrudService.searchUser(keyword);
+  }
 }

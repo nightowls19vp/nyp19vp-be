@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { IsEnum, IsJSON, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class ItemDto {
@@ -63,7 +64,7 @@ class EmbedData {
   zlppaymentid?: string;
 }
 
-export class ZalopayReqDto {
+export class ZPCreateOrderReqDto {
   @ApiProperty({
     description: 'The amount of the order (VND)',
     required: true,
@@ -75,10 +76,9 @@ export class ZalopayReqDto {
     description:
       'Identification of the application that was provided by ZaloPay.',
     example: 2553,
-    type: Number,
     required: true,
   })
-  app_id: number;
+  app_id: string;
 
   @ApiProperty({
     type: Number,
@@ -103,6 +103,14 @@ export class ZalopayReqDto {
   app_user: string;
 
   @ApiProperty({
+    description:
+      "\t- Empty(''): List of payment methods and banks supported (CC, ATM, zalopayapp, ...)\n\n\t- zalopayapp: QR code to scan with ZaloPay App.\n\n\t- CC: Form to input credit card information.\n\n\t- ATM bank code (VTB, VCB, ...): Form to input bank card information",
+    default: '',
+    maxLength: 20,
+  })
+  bank_code: string;
+
+  @ApiProperty({
     maxLength: 256,
     description:
       'The description of the order, used to display to users on the ZaloPay app',
@@ -113,18 +121,13 @@ export class ZalopayReqDto {
     description:
       "Application's own data. This will be returned to AppServer upon successful payment (Callback). If not, then leave the empty string",
   })
-  embed_data: EmbedData;
+  embed_data: string;
 
   @ApiProperty({
     description: "Order's item",
     required: true,
   })
-  item: ItemDto[];
-
-  @ApiProperty({
-    example: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
-  })
-  key1: string;
+  item: string;
 
   @ApiProperty({
     description: 'Authentication information of the order',
@@ -132,7 +135,7 @@ export class ZalopayReqDto {
   mac: string;
 }
 
-export class ZalopayResDto {
+export class ZPCreateOrderResDto {
   @ApiProperty({
     type: Number,
     enum: [1, 2],
@@ -170,4 +173,79 @@ export class ZalopayResDto {
 
   @ApiProperty({ description: 'Transaction token' })
   zp_trans_token: string;
+}
+
+export class ZPDataCallback extends PickType(ZPCreateOrderReqDto, [
+  'app_id',
+  'app_trans_id',
+  'app_time',
+  'app_user',
+  'amount',
+  'embed_data',
+  'item',
+]) {
+  @ApiProperty({
+    description: "ZaloPay's Transaction code",
+  })
+  zp_trans_id: number;
+
+  @ApiProperty({
+    description:
+      "ZaloPay's Transaction trading time (unix timestamp in milliseconds)",
+  })
+  server_time: number;
+
+  @ApiProperty({
+    enum: [36, 37, 38, 39, 40, 41],
+    description:
+      'Payment channel:\n\n\t- 36: Visa/Master/JCB\n\n\t- 37: Bank Account\n\n\t- 38: ZaloPay Wallet\n\n\t- 39: ATM\n\n\t- 41: Visa/Master Debit',
+  })
+  @IsEnum([36, 37, 38, 39, 40, 41])
+  channel: number;
+
+  @ApiProperty({
+    description: 'ZaloPay user, who paid for the order',
+  })
+  merchant_user_id: string;
+
+  @ApiProperty({
+    description: 'Fee (VND)',
+  })
+  user_fee_amount: number;
+
+  @ApiProperty({
+    description: 'Discount(VND)',
+  })
+  discount_amount: number;
+}
+
+export class ZPCallbackReqDto {
+  @ApiProperty({
+    type: JSON,
+    description: 'ZaloPay transaction data callback to the application',
+  })
+  data: string;
+
+  @ApiProperty({
+    type: String,
+    description:
+      'Confirmation of order information, using key2 (had been provided) to verify the order',
+  })
+  mac: string;
+
+  @ApiProperty({
+    description: 'Callback type\n\n\t- 1: Order\n\n\t- 2: Agreement',
+  })
+  type: number;
+}
+
+export class ZPCallbackResDto extends PickType(ZPCreateOrderResDto, [
+  'return_message',
+]) {
+  @ApiProperty({
+    description:
+      '\t- 1: Success\n\n\t- 2: ZaloPay zptransid or apptransid is duplicated\n\n\t- <>: failure (not callback again)',
+  })
+  @IsEnum([1, 2, null])
+  return_code: number;
 }

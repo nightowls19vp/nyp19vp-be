@@ -13,6 +13,7 @@ export const AUTH = {
 
 export const USERS = {
   CREATE: 'createUser',
+  SEARCH_USER: 'searchFull-textUser',
   GET_INFO_BY_ID: 'getUserInfoById',
   GET_SETTING_BY_ID: 'getUserSettingById',
   GET_ALL: 'getAllUsers',

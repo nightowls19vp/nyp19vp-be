@@ -40,6 +40,7 @@ import {
   GrCollectionProperties,
   GroupDto,
   ParseObjectIdPipe,
+  IdDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -81,6 +82,10 @@ export class PkgMgmtController implements OnModuleInit {
 
   @Get('pkg')
   @ApiOkResponse({ description: 'Got All Packages', type: PackageDto })
+  @ApiOperation({
+    description:
+      'Filter MUST:\n\n\t- name(optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}\n\n\t- duration(optional):\n\n\t\t- type: integer\n\n\t\t- unit: date\n\n\t\t- example: {"duration":30}\n\n\t- noOfMember:\n\n\t\t- type: integer\n\n\t\t- description: Maximum number of members in group\n\n\t\t- example: {"noOfMember":3}\n\n\t- price(optional):\n\n\t\t- type: float \n\n\t\t- lower bound price: {price: {$gte: 25}}\n\n\t\t- upper bound price: {price: {$lte: 90}}\n\n\t\t- example: 25000 < price < 100000 => {"price": {"$gte": 25, "$lte": 100}}',
+  })
   getAllPkg(
     @Query(new ValidationPipe(PkgCollectionProperties))
     collectionDto: CollectionDto
@@ -88,12 +93,6 @@ export class PkgMgmtController implements OnModuleInit {
     console.log('get all packages');
     console.log(collectionDto);
     return this.pkgMgmtService.getAllPkg(collectionDto);
-  }
-
-  @Get('pkg/txn')
-  findManyPkg(@Query('list') list: string[]): Promise<PackageDto[]> {
-    console.log('find many package by id');
-    return this.pkgMgmtService.findManyPkg(list);
   }
 
   @Get('pkg/:id')
@@ -227,7 +226,7 @@ export class PkgMgmtController implements OnModuleInit {
     type: UpdatePkgResDto,
   })
   rmGrPkg(
-    @Param('id', new ParseObjectIdPipe()) id,
+    @Param('id') id: string,
     @Body() updateGrPkgReqDto: UpdateGrPkgReqDto
   ): Promise<UpdateGrPkgResDto> {
     console.log(`Remove package from group #${id}`, updateGrPkgReqDto);
