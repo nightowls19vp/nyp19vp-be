@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { Response } from 'express';
 import { firstValueFrom, timeout } from 'rxjs';
 
@@ -20,6 +21,8 @@ import {
   AuthorizeResDto,
   ELoginType,
   IUser,
+  RefreshTokenResDto,
+  RefreshTokenReqDto,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -170,5 +173,29 @@ export class AuthService {
     );
 
     return authorizeResult.result;
+  }
+
+  async refresh(token: string): Promise<RefreshTokenResDto> {
+    const reqDto: RefreshTokenReqDto = {
+      refreshToken: token,
+    };
+
+    try {
+      const resDto: RefreshTokenResDto = await firstValueFrom(
+        this.authClient
+          .send(kafkaTopic.AUTH.REFRESH, reqDto)
+          .pipe(timeout(toMs('5s'))),
+      );
+
+      return resDto;
+    } catch (error) {
+      console.error('timeout', error);
+
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal Server Error',
+        error: error.message,
+      };
+    }
   }
 }

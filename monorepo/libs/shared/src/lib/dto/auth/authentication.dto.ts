@@ -120,6 +120,11 @@ export class LoginResDto extends BaseResDto {
     type: String,
   })
   accessToken?: string;
+
+  data?: {
+    auth: LocalAuthenticationInfo;
+    info: UserInfo;
+  };
 }
 
 export class LoginResWithTokensDto extends LoginResDto {
@@ -130,7 +135,7 @@ export class LoginResWithTokensDto extends LoginResDto {
 export class LogoutReqDto {
   @IsNotEmpty()
   @IsString()
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export class LogoutResDto extends BaseResDto {}
@@ -196,3 +201,14 @@ export class ChangePasswordResDto extends BaseResDto {}
 
 // No need for DeleteAccountRes cause accountId to delete will be passed as a param
 export class DeleteAccountRes extends BaseResDto {}
+
+export class RefreshTokenReqDto {
+  @IsNotEmpty()
+  @IsString()
+  refreshToken: string;
+}
+
+export class RefreshTokenResDto extends BaseResDto {
+  accessToken?: string;
+  refreshToken?: string;
+}

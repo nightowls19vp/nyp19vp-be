@@ -7,6 +7,7 @@ import {
   HttpException,
   Inject,
   OnModuleInit,
+  Param,
   Post,
   Req,
   Res,
@@ -135,6 +136,45 @@ export class AuthController implements OnModuleInit {
       statusCode: loginResWithTokensDto.statusCode,
       message: loginResWithTokensDto.message,
       accessToken: loginResWithTokensDto.accessToken,
+      data: loginResWithTokensDto.data,
+    };
+
+    if (loginResDto.statusCode !== HttpStatus.OK) {
+      throw new HttpException(loginResDto, loginResDto.statusCode);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(loginResDto);
+      res.end();
+    }
+  }
+
+  @ApiResponse({
+    description: 'response of login',
+    type: LogoutResDto,
+  })
+  @Post('login/mobile')
+  async loginMobile(
+    @Body() reqDto: LoginReqDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    console.log('login', reqDto);
+
+    const loginResWithTokensDto: LoginResWithTokensDto =
+      await this.authService.login(reqDto);
+
+    this.authService.setCookie(
+      res,
+      loginResWithTokensDto.accessToken,
+      loginResWithTokensDto.refreshToken,
+    );
+
+    const loginResDto: LoginResWithTokensDto = {
+      statusCode: loginResWithTokensDto.statusCode,
+      message: loginResWithTokensDto.message,
+      accessToken: loginResWithTokensDto.accessToken,
+      refreshToken: loginResWithTokensDto.refreshToken,
+      data: loginResWithTokensDto.data,
     };
 
     if (loginResDto.statusCode !== HttpStatus.OK) {
@@ -149,8 +189,11 @@ export class AuthController implements OnModuleInit {
   @Post('logout')
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
   @UseGuards(RefreshJwtAuthGuard)
-  async logout(@Req() req: Request): Promise<LogoutResDto> {
-    const refreshToken = getRefreshToken(req);
+  async logout(
+    @Req() req: Request,
+    @Body() reqDto: LogoutReqDto,
+  ): Promise<LogoutResDto> {
+    const refreshToken = getRefreshToken(req) || reqDto.refreshToken || '';
 
     return this.authService.logout({
       refreshToken,
@@ -169,5 +212,27 @@ export class AuthController implements OnModuleInit {
   @UseGuards(AccessJwtAuthGuard)
   validate(@Req() req: Request): Express.User {
     return req.user;
+  }
+
+  @Get('refresh')
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
+  @UseGuards(RefreshJwtAuthGuard)
+  async refresh(@Req() req: Request) {
+    const refreshToken = getRefreshToken(req) || '';
+
+    console.log('refreshToken', refreshToken);
+
+    return this.authService.refresh(refreshToken);
+  }
+
+  @Get('refresh/:token')
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
+  @UseGuards(RefreshJwtAuthGuard)
+  async refreshWithToken(@Req() req: Request, @Param('token') token: string) {
+    const refreshToken = getRefreshToken(req) || token || '';
+
+    console.log('refreshToken', refreshToken);
+
+    return this.authService.refresh(refreshToken);
   }
 }

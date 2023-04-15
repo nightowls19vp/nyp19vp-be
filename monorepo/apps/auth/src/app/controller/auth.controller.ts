@@ -18,6 +18,9 @@ import {
   LogoutReqDto,
   LogoutResDto,
   ValidateUserReqDto,
+  ValidateUserResDto,
+  RefreshTokenReqDto,
+  RefreshTokenResDto,
 } from '@nyp19vp-be/shared';
 
 import { AccountService } from '../services/account.service';
@@ -53,7 +56,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.AUTH.VALIDATE_USER)
-  async validateUser(reqDto: ValidateUserReqDto): Promise<LoginResDto> {
+  async validateUser(reqDto: ValidateUserReqDto): Promise<ValidateUserResDto> {
     return this.authService.validateUser(reqDto);
   }
 
@@ -63,7 +66,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.AUTH.LOGOUT)
-  async logout(@Payload() reqDto: LogoutReqDto): Promise<LoginResDto> {
+  async logout(@Payload() reqDto: LogoutReqDto): Promise<LogoutResDto> {
     return this.authService.logout(reqDto.refreshToken);
   }
 
@@ -80,5 +83,12 @@ export class AuthController implements OnModuleInit {
     const resDto = await this.accountService.socialSignup(reqDto);
 
     return resDto;
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.REFRESH)
+  async refresh(
+    @Payload() reqDto: RefreshTokenReqDto,
+  ): Promise<RefreshTokenResDto> {
+    return this.authService.refresh(reqDto.refreshToken);
   }
 }

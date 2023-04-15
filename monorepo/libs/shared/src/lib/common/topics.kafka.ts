@@ -15,6 +15,7 @@ export const AUTH = {
   CHANGE_PASSWORD: 'changePassword',
   DELETE_ACCOUNT: 'deleteAccount',
   SOCIAL_SIGN_UP: 'social_sign_up',
+  REFRESH: 'refresh',
 };
 
 export const USERS = {

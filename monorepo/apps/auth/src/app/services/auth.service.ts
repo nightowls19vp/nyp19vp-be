@@ -3,6 +3,7 @@ import {
   ERole,
   LogoutReqDto,
   LogoutResDto,
+  RefreshTokenResDto,
   utils,
   ValidateUserReqDto,
   ValidateUserResDto,
@@ -109,32 +110,46 @@ export class AuthService {
   }
 
   decodeToken(token: string): IJwtPayload {
+    console.log('------------------------');
+
+    console.log('decodeToken', token);
+
     const decodeResult = this.jwtService.decode(token);
 
+    const jwtPayload: IJwtPayload = {
+      ...(decodeResult as IJwtPayload),
+    };
+    console.log('decodeResult', decodeResult);
+
     if (
-      decodeResult?.['user']?.username ||
-      decodeResult?.['user']?.hashedPassword ||
-      decodeResult?.['user']?.role ||
-      ![ERole.admin, ERole.user].includes(decodeResult?.['user']?.role) ||
-      decodeResult?.['iat'] ||
-      decodeResult?.['exp']
+      !jwtPayload.user ||
+      !jwtPayload.user.username ||
+      !jwtPayload.user.role ||
+      ![ERole.admin, ERole.user].includes(jwtPayload.user.role) ||
+      !jwtPayload.iat ||
+      !jwtPayload.exp
     ) {
+      // find what condition is not matched
+      console.log('------------------------');
+
+      console.log(!decodeResult?.['user']?.username);
+      console.log(!decodeResult?.['user']?.hashedPassword);
+      console.log(!decodeResult?.['user']?.role);
+      console.log(
+        ![ERole.admin, ERole.user].includes(decodeResult?.['user']?.role),
+      );
+      console.log(!decodeResult?.['iat']);
+      console.log(!decodeResult?.['exp']);
+
       const rpcExc: BaseResDto = {
-        message: 'Jwt paload error',
+        message: 'Jwt payload error xyz',
         statusCode: HttpStatus.UNAUTHORIZED,
       };
 
       throw new RpcException(rpcExc);
     }
 
-    return {
-      user: {
-        username: decodeResult?.['user']?.username ?? null,
-        role: decodeResult?.['user']?.role ?? null,
-      },
-      iat: decodeResult?.['iat'] ?? null,
-      exp: decodeResult?.['exp'] ?? null,
-    };
+    return jwtPayload;
   }
 
   async login(userDto: LoginReqDto): Promise<LoginResWithTokensDto> {
@@ -227,17 +242,36 @@ export class AuthService {
   }
 
   generateAccessJWT(payload: IJwtPayload): string {
-    return this.jwtService.sign(payload, {
-      expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
-      secret: config.auth.strategies.strategyConfig.accessJwtSecret,
-    });
+    return this.jwtService.sign(
+      {
+        user: {
+          username: payload.user.username,
+          role: payload.user.role,
+        },
+      },
+      {
+        expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
+        secret: config.auth.strategies.strategyConfig.accessJwtSecret,
+      },
+    );
   }
 
   generateRefreshJWT(payload: IJwtPayload): string {
-    return this.jwtService.sign(payload, {
-      expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
-      secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
-    });
+    // log payloasd
+    console.log('payload', payload);
+
+    return this.jwtService.sign(
+      {
+        user: {
+          username: payload.user.username,
+          role: payload.user.role,
+        },
+      },
+      {
+        expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
+        secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
+      },
+    );
   }
 
   // async authorize(userId: string, actionId: string): Promise<boolean> {
@@ -269,4 +303,16 @@ export class AuthService {
 
   //   return isAuthorized;
   // }
+
+  refresh(refreshToken: string): RefreshTokenResDto {
+    const jwtPayload: IJwtPayload = this.decodeToken(refreshToken);
+
+    const accessToken = this.generateAccessJWT(jwtPayload);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Refresh token successfully',
+      accessToken: accessToken,
+    };
+  }
 }
