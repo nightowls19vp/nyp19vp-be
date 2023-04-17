@@ -19,6 +19,7 @@ export interface IJwtPayloadUser {
 }
 
 export class IUser implements IJwtPayloadUser {
+  id: string;
   username: string;
   role: ERole;
   password?: string;

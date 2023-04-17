@@ -106,9 +106,11 @@ export class AuthService {
       statusCode: HttpStatus.OK,
       message: `user ${username} validated`,
       user: {
+        id: accountFound.id,
         username: accountFound.username,
-        hashedPassword: accountFound.hashedPassword,
         role: accountFound.role.roleName,
+        password: null,
+        hashedPassword: null,
       },
     };
   }
@@ -175,8 +177,12 @@ export class AuthService {
       message: 'Login successfully',
       accessToken: accessToken,
       refreshToken: refreshToken,
-      data: (await this.accountService.getUserInfoByEmail(userDto.username))
-        .user,
+      data: {
+        auth: validateUserRes.user,
+        userInfo: (
+          await this.accountService.getUserInfoByEmail(userDto.username)
+        ).user,
+      },
     });
   }
 
