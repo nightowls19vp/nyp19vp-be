@@ -1,28 +1,26 @@
+import * as bcrypt from 'bcrypt';
+import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
+import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
+import { Repository } from 'typeorm';
+
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common/enums';
+import { JwtService } from '@nestjs/jwt';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   config,
   ERole,
-  LogoutReqDto,
+  LoginReqDto,
+  LoginResWithTokensDto,
   LogoutResDto,
   RefreshTokenResDto,
-  utils,
   ValidateUserReqDto,
   ValidateUserResDto,
 } from '@nyp19vp-be/shared';
-import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
-
-import { Injectable } from '@nestjs/common';
-import { HttpStatus } from '@nestjs/common/enums';
-import { JwtService } from '@nestjs/jwt';
-import { RpcException } from '@nestjs/microservices';
-import { InjectRepository } from '@nestjs/typeorm';
-
-import { LoginReqDto, LoginResWithTokensDto } from '@nyp19vp-be/shared';
 
 import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
-import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
-import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
 import { RoleEntity } from '../entities/role.entity';
 import { AccountService } from './account.service';
 
@@ -46,6 +44,12 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(RefreshTokenBlacklistEntity)
     private refreshTokenBlacklistRepo: Repository<RefreshTokenBlacklistEntity>,
+
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+
+    // service
+    @Inject(forwardRef(() => AccountService))
+    private readonly accountService: AccountService,
   ) {}
   getData(): { message: string } {
     return { message: 'Welcome to auth/Auth!' };
@@ -171,6 +175,8 @@ export class AuthService {
       message: 'Login successfully',
       accessToken: accessToken,
       refreshToken: refreshToken,
+      data: (await this.accountService.getUserInfoByEmail(userDto.username))
+        .user,
     });
   }
 

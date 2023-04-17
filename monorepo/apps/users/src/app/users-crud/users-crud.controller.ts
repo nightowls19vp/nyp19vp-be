@@ -48,7 +48,7 @@ export class UsersCrudController {
     return this.usersCrudService.findInfoById(id);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
+  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_EMAIL)
   findInfoByEmail(@Payload() email: string): Promise<GetUserInfoResDto> {
     return this.usersCrudService.findInfoByEmail(email);
   }

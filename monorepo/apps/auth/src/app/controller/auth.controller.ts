@@ -1,26 +1,23 @@
-import { Controller, Get, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { OnModuleInit } from '@nestjs/common/interfaces';
-import {
-  ClientKafka,
-  MessagePattern,
-  Payload,
-  RpcException,
-} from '@nestjs/microservices';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  CreateAccountReqDto,
+  CreateAccountResDto,
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
-  CreateAccountReqDto,
-  CreateAccountResDto,
-  SocialSignupReqDto,
-  SocialSignupResDto,
   LogoutReqDto,
   LogoutResDto,
-  ValidateUserReqDto,
-  ValidateUserResDto,
   RefreshTokenReqDto,
   RefreshTokenResDto,
+  SocialLinkReqDto,
+  SocialLinkResDto,
+  SocialSignupReqDto,
+  SocialSignupResDto,
+  ValidateUserReqDto,
+  ValidateUserResDto,
 } from '@nyp19vp-be/shared';
 
 import { AccountService } from '../services/account.service';
@@ -28,7 +25,6 @@ import { ActionService } from '../services/action.service';
 import { AuthService } from '../services/auth.service';
 import { RefreshTokenBlacklistService } from '../services/refresh-token-blacklist.service';
 import { RoleService } from '../services/role.service';
-import { randomUUID } from 'crypto';
 
 @ApiTags('auth')
 @Controller()
@@ -90,5 +86,12 @@ export class AuthController implements OnModuleInit {
     @Payload() reqDto: RefreshTokenReqDto,
   ): Promise<RefreshTokenResDto> {
     return this.authService.refresh(reqDto.refreshToken);
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.SOCIAL_LINK)
+  async socialLink(
+    @Payload() reqDto: SocialLinkReqDto,
+  ): Promise<SocialLinkResDto> {
+    return this.accountService.socialLink(reqDto);
   }
 }

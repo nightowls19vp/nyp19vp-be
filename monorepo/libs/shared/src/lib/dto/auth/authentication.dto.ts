@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
@@ -14,8 +15,8 @@ import {
 
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
-import { BaseResDto } from '../base.dto';
 import { ELoginType, IUser } from '../../core';
+import { BaseResDto } from '../base.dto';
 
 class LocalAuthenticationInfo {
   @ApiProperty({
@@ -120,11 +121,6 @@ export class LoginResDto extends BaseResDto {
     type: String,
   })
   accessToken?: string;
-
-  data?: {
-    auth: LocalAuthenticationInfo;
-    info: UserInfo;
-  };
 }
 
 export class LoginResWithTokensDto extends LoginResDto {
@@ -175,6 +171,14 @@ export class SocialSignupResDto extends CreateAccountResDto {
     refreshToken: string;
   };
 }
+
+export class SocialLinkReqDto extends SocialSignupReqDto {
+  @IsOptional()
+  @IsString()
+  accountId: string;
+}
+
+export class SocialLinkResDto extends BaseResDto {}
 
 export class ChangePasswordReqDto extends LocalAuthenticationInfo {
   @ApiProperty({

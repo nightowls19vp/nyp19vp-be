@@ -1,11 +1,13 @@
 import * as bcrypt from 'bcrypt';
+import { time } from 'console';
 import { randomUUID } from 'crypto';
+import { toMs } from 'libs/shared/src/lib/utils';
 import { firstValueFrom, timeout } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
-import { ClientKafka } from '@nestjs/microservices';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   CreateAccountReqDto,
@@ -13,7 +15,10 @@ import {
   CreateUserReqDto,
   CreateUserResDto,
   ERole,
+  GetUserInfoResDto,
   kafkaTopic,
+  SocialLinkReqDto,
+  SocialLinkResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
 } from '@nyp19vp-be/shared';
@@ -22,8 +27,6 @@ import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
-import { time } from 'console';
-import { toMs } from 'libs/shared/src/lib/utils';
 
 @Injectable()
 export class AccountService {
@@ -310,5 +313,61 @@ export class AccountService {
     }
 
     return createUserInfoRes;
+  }
+
+  async socialLink(reqDto: SocialLinkReqDto): Promise<SocialLinkResDto> {
+    // check if the account is existed
+    const account = await this.accountRepo.findOneBy({
+      id: reqDto.accountId,
+    });
+
+    let socialAccount = await this.socialAccRepo.findOneBy({
+      platform: reqDto.platform,
+      platformId: reqDto.platformId,
+    });
+
+    if (account && !socialAccount) {
+      // link social account to account
+      socialAccount = this.socialAccRepo.create({
+        account: account,
+        platform: reqDto.platform,
+        platformId: reqDto.platformId,
+      });
+
+      await this.socialAccRepo.save(socialAccount);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'link social account successfully',
+      };
+    } else {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'link social account fail',
+      };
+    }
+  }
+
+  // async socialUnlink(reqDto: SocialUnlinkReqDto): Promise<SocialUnlinkResDto> {
+  //   throw new RpcException('not implemented');
+  // }
+
+  async getUserInfoByEmail(email: string): Promise<GetUserInfoResDto> {
+    try {
+      const getUserInfoRes: GetUserInfoResDto = await firstValueFrom(
+        this.usersClient
+          .send(kafkaTopic.USERS.GET_INFO_BY_EMAIL, email)
+          .pipe(timeout(toMs('5s'))),
+      );
+
+      return getUserInfoRes;
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'get user info fail',
+        error: error.message,
+        user: null,
+      };
+    }
   }
 }

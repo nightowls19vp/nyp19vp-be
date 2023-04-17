@@ -25,4 +25,10 @@ export class SocialAccountEntity {
     name: 'account_id',
   })
   account: AccountEntity;
+
+  @Column({
+    name: 'account_id',
+    nullable: false,
+  })
+  accountId: string;
 }
