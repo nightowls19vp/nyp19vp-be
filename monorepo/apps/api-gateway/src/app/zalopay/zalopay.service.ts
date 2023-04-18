@@ -42,9 +42,9 @@ export class ZalopayService {
       });
     }
   }
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
-    return await firstValueFrom(
-      this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-    );
-  }
+  // async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  //   return await firstValueFrom(
+  //     this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
+  //   );
+  // }
 }

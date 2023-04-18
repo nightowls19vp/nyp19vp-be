@@ -11,9 +11,10 @@ export class TxnCrudController {
   constructor(private readonly txnCrudService: TxnCrudService) {}
 
   @MessagePattern(kafkaTopic.TXN.CHECKOUT)
-  checkout(
+  async checkout(
     @Payload() updateCartReqDto: UpdateCartReqDto
   ): Promise<ZPCreateOrderResDto> {
-    return this.txnCrudService.checkout(updateCartReqDto);
+    console.log('xxxx');
+    return await this.txnCrudService.checkout(updateCartReqDto);
   }
 }

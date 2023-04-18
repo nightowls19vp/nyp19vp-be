@@ -377,24 +377,18 @@ export class UsersCrudService implements OnModuleInit {
         })
       );
       if (checkItem) {
-        return await this.txnClient
-          .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-          .pipe(
-            timeout(5000),
-            catchError((err) =>
-              of({
-                return_code: 2,
-                return_message: 'Giao dịch thất bại',
-                sub_return_code: 408,
-                sub_return_message: 'Request timed out after: 5s',
-              })
-            )
-          )
-          .toPromise();
+        const res = await firstValueFrom(
+          this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
+          // .pipe(timeout(5000))
+        );
+
+        console.log(res, 'res from the txt');
+
+        return res;
       } else {
         return {
           return_code: 2,
-          return_message: 'Giao dịch thất bại',
+          return_message: 'Transaction failed',
           sub_return_code: 404,
           sub_return_message: `No items found in user #${_id}'s cart`,
         };
@@ -402,7 +396,7 @@ export class UsersCrudService implements OnModuleInit {
     } else {
       return {
         return_code: 2,
-        return_message: 'Giao dịch thất bại',
+        return_message: 'Transaction failed',
         sub_return_code: 404,
         sub_return_message: `No user #${_id} found`,
       };

@@ -49,36 +49,22 @@ export class TxnCrudService implements OnModuleInit {
   ): Promise<ZPCreateOrderResDto> {
     const { _id, cart } = updateCartReqDto;
     const list_id = cart.map((x) => x.package);
-    return await this.pkgMgmtClient
-      .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
-      .pipe(
-        map(async (res: PackageDto[]) => {
-          const zaloPayReq = mapZaloPayReqDto(
-            _id,
-            mapPkgDtoToItemDto(res, cart),
-            this.config
-          );
-          const val: ZPCreateOrderResDto = await this.zpCreateOrder(zaloPayReq);
-          console.log(val);
-          return val;
-        }),
-        timeout(5000),
-        catchError(() =>
-          of({
-            return_code: 2,
-            return_message: 'Giao dịch thất bại',
-            sub_return_code: 408,
-            sub_return_message: 'Request timed out after: 5s',
-          })
-        )
-      )
-      .toPromise();
-    // .subscribe((val) => console.log('result:', val));
-    // console.log(zpCreateOrderResDto);
-    // const { app_id, app_trans_id } = zaloPayReq;
-    // const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto =
-    //   mapZPGetStatusReqDto(app_id, app_trans_id, this.config);
-    // this.CheckStatus(zpGetOrderStatusReqDto);
+    try {
+      const res = await firstValueFrom(
+        this.pkgMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+        // .pipe(timeout(5000))
+      );
+      const zaloPayReq = mapZaloPayReqDto(
+        _id,
+        mapPkgDtoToItemDto(res, cart),
+        this.config
+      );
+      const val: ZPCreateOrderResDto = await this.zpCreateOrder(zaloPayReq);
+      console.log(val);
+      return val;
+    } catch (error) {
+      return error;
+    }
   }
 
   CheckStatus(zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto) {

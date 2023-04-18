@@ -53,7 +53,7 @@ export class PkgCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG)
-  findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
-    return this.pkgCrudService.findManyPkg(list_id);
+  async findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
+    return await this.pkgCrudService.findManyPkg(list_id);
   }
 }

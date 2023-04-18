@@ -34,10 +34,10 @@ export class ZalopayController {
     return this.zalopayService.callback(callbackReqDto);
   }
 
-  @Post()
-  checkout(
-    @Body() updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCreateOrderResDto> {
-    return this.zalopayService.checkout(updateCartReqDto);
-  }
+  // @Post()
+  // checkout(
+  //   @Body() updateCartReqDto: UpdateCartReqDto
+  // ): Promise<ZPCreateOrderResDto> {
+  //   return this.zalopayService.checkout(updateCartReqDto);
+  // }
 }
