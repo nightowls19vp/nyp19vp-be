@@ -44,7 +44,7 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR)
   updateGr(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
-    return this.grCrudService.updateGr(updateGrReqDto._id, updateGrReqDto);
+    return this.grCrudService.updateGr(updateGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_GR)

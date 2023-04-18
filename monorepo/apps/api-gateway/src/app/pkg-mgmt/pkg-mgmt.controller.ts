@@ -134,7 +134,10 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Get('gr')
-  @ApiOperation({ description: 'Filter MUST:\n\n\t- name(Optional): \n\n\t- ' })
+  @ApiOperation({
+    description:
+      'Filter MUST:\n\n\t- name(Optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}',
+  })
   @ApiOkResponse({ description: 'Get All Groups', type: GroupDto })
   getAllGr(
     @Query(new ValidationPipe(GrCollectionProperties))

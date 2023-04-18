@@ -17,13 +17,13 @@ import {
 } from '@nyp19vp-be/shared';
 import { Model, Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
-import { ObjectId } from 'mongodb';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import {
   CollectionDto,
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class GrCrudService {
@@ -131,12 +131,9 @@ export class GrCrudService {
       });
   }
 
-  async updateGr(
-    id: string,
-    updateGrReqDto: UpdateGrReqDto
-  ): Promise<UpdateGrResDto> {
-    const _id: ObjectId = new ObjectId(id);
-    console.log(`pkg-mgmt-svc#update-group #${id}'s name`);
+  async updateGr(updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
+    const { _id } = updateGrReqDto;
+    console.log(`pkg-mgmt-svc#update-group #${_id}'s name`);
     return await this.grModel
       .updateOne({ _id: _id, deletedAt: null }, { name: updateGrReqDto.name })
       .exec()
@@ -144,12 +141,12 @@ export class GrCrudService {
         if (res.matchedCount && res.modifiedCount)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
-            message: `update group #${id}'s name successfully`,
+            message: `update group #${_id}'s name successfully`,
           });
         else
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
-            message: `No group #${id} found`,
+            message: `No group #${_id} found`,
             error: 'NOT FOUND',
           });
       })
@@ -189,7 +186,7 @@ export class GrCrudService {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#add-new-member #${user_id} to-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrMbReqDto;
     return await this.grModel
       .findOne(
         {
@@ -247,7 +244,7 @@ export class GrCrudService {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrMbReqDto;
     return await this.grModel
       .findOne(
         {
@@ -306,7 +303,7 @@ export class GrCrudService {
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#remove-package-from-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrPkgReqDto;
     return await this.grModel
       .updateOne(
         { _id: _id, deletedAt: null },
@@ -338,7 +335,7 @@ export class GrCrudService {
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#add-new-package-to-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrPkgReqDto;
     return await this.grModel
       .updateOne(
         { _id: _id, deletedAt: null },

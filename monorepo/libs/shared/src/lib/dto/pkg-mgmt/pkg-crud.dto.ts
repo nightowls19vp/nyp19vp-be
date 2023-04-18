@@ -4,18 +4,8 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import {
-  IsString,
-  IsInt,
-  IsPositive,
-  IsAscii,
-  ValidateNested,
-  IsArray,
-  ArrayMinSize,
-} from 'class-validator';
-import { BaseResDto } from '../base.dto';
-import { ObjectId } from 'mongodb';
-import { Transform, TransformFnParams } from 'class-transformer';
+import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
+import { BaseResDto, IdDto } from '../base.dto';
 
 export class PackageDto {
   @ApiProperty({
@@ -70,11 +60,6 @@ export class PackageDto {
 
   @ApiProperty()
   updatedBy: string;
-}
-
-export class IdDto {
-  @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  _id: string;
 }
 
 export class CreatePkgReqDto extends OmitType(PackageDto, ['updatedBy']) {}

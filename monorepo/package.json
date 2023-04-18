@@ -22,6 +22,7 @@
     "kafkajs": "^2.2.4",
     "moment-timezone": "^0.5.43",
     "mongoose": "^6.10.1",
+    "nestjs-seeder": "^0.3.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
     "set-interval-async": "^3.0.3",

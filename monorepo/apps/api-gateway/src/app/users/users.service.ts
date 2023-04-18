@@ -22,9 +22,10 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
+import { catchError, finalize, firstValueFrom, of, take, timeout } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -191,20 +192,12 @@ export class UsersService {
       }
     });
   }
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCreateOrderResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto)
     );
-    // ).then((res) => {
-    //   if (res.statusCode == HttpStatus.OK) {
-    //     return res;
-    //   } else {
-    //     throw new HttpException(res.message, res.statusCode, {
-    //       cause: new Error(res.error),
-    //       description: res.error,
-    //     });
-    //   }
-    // });
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await firstValueFrom(

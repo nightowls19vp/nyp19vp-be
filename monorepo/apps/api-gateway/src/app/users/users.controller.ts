@@ -28,6 +28,7 @@ import {
   UpdateUserResDto,
   UserDto,
   UsersCollectionProperties,
+  ZPCallbackResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
@@ -218,7 +219,7 @@ export class UsersController implements OnModuleInit {
   async checkout(
     @Param('id') id: string,
     @Body() updateCartReqDto: UpdateCartReqDto
-  ): Promise<any> {
+  ): Promise<ZPCallbackResDto> {
     console.log(`checkout #${id}`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.checkout(updateCartReqDto);

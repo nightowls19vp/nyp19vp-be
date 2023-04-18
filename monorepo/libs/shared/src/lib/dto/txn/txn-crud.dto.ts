@@ -176,10 +176,16 @@ export class ZPCreateOrderResDto {
       'Used to create QR code or forward users to ZaloPay Gateway page',
   })
   @IsUrl()
-  order_url: string;
+  @IsOptional()
+  order_url?: string;
 
   @ApiProperty({ description: 'Transaction token' })
-  zp_trans_token: string;
+  @IsOptional()
+  zp_trans_token?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  order_token?: string;
 }
 
 export class ZPDataCallback extends PickType(ZPCreateOrderReqDto, [

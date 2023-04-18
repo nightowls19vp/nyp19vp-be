@@ -11,13 +11,11 @@ import {
 } from '@nyp19vp-be/shared';
 import { Model, Types } from 'mongoose';
 import { Package, PackageDocument } from '../../schemas/package.schema';
-import { ObjectId } from 'mongodb';
 import {
   CollectionDto,
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { Observable, from } from 'rxjs';
 
 @Injectable()
 export class PkgCrudService {
@@ -101,7 +99,7 @@ export class PkgCrudService {
   async updatePkg(updatePkgReqDto: UpdatePkgReqDto): Promise<UpdatePkgResDto> {
     const id = updatePkgReqDto._id;
     console.log(`pkg-mgmt-svc#update-package #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updatePkgReqDto;
     return await this.pkgModel
       .updateOne(
         { _id: _id, deletedAt: null },

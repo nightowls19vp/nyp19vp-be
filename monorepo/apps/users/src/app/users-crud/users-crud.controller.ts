@@ -22,6 +22,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
 import { Types } from 'mongoose';
@@ -102,7 +103,9 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
-  checkout(@Payload() updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  checkout(
+    @Payload() updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCreateOrderResDto> {
     return this.usersCrudService.checkout(updateCartReqDto);
   }
 

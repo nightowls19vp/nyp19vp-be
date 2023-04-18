@@ -10,11 +10,20 @@ import {
   ZPGetOrderStatusResDto,
   ZPGetOrderStatusReqDto,
 } from '@nyp19vp-be/shared';
-import { Observable, catchError, firstValueFrom, of, timeout } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  delay,
+  firstValueFrom,
+  lastValueFrom,
+  map,
+  of,
+  timeout,
+} from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import { zpconfig } from '../../core/config/zalopay.config';
 import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 
@@ -35,29 +44,42 @@ export class TxnCrudService implements OnModuleInit {
     await Promise.all([this.pkgMgmtClient.connect()]);
   }
 
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
-    const { _id = '6425a5f3f1757ad283e82b23', cart } = updateCartReqDto;
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCreateOrderResDto> {
+    const { _id = '640b22084096fa00812fa128', cart } = updateCartReqDto;
     const list_id = cart.map((x) => x.package);
-    const res1 = this.pkgMgmtClient
+    const result = await this.pkgMgmtClient
       .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
       .pipe(
+        map(async (res: PackageDto[]) => {
+          const zaloPayReq = mapZaloPayReqDto(
+            _id,
+            mapPkgDtoToItemDto(res, cart),
+            this.config
+          );
+          const val: ZPCreateOrderResDto = await this.zpCreateOrder(zaloPayReq);
+          return val;
+        }),
         timeout(5000),
-        catchError(() => of(`Request timed out after: 5s`))
+        catchError(() =>
+          of({
+            return_code: 2,
+            return_message: 'Giao dịch thất bại',
+            sub_return_code: 408,
+            sub_return_message: 'Request timed out after: 5s',
+          })
+        )
       )
-      .subscribe(async (res: PackageDto[]) => {
-        const zaloPayReq = mapZaloPayReqDto(
-          _id,
-          mapPkgDtoToItemDto(res, cart),
-          this.config
-        );
-        console.log(zaloPayReq);
-        const zaloRes = await this.zpCreateOrder(zaloPayReq);
-        console.log(zaloRes);
-        const { app_id, app_trans_id } = zaloPayReq;
-        const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto =
-          mapZPGetStatusReqDto(app_id, app_trans_id, this.config);
-        this.CheckStatus(zpGetOrderStatusReqDto);
-      });
+      .toPromise();
+    console.log(result);
+    return result;
+    // .subscribe((val) => console.log('result:', val));
+    // console.log(zpCreateOrderResDto);
+    // const { app_id, app_trans_id } = zaloPayReq;
+    // const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto =
+    //   mapZPGetStatusReqDto(app_id, app_trans_id, this.config);
+    // this.CheckStatus(zpGetOrderStatusReqDto);
   }
 
   CheckStatus(zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto) {
@@ -71,7 +93,7 @@ export class TxnCrudService implements OnModuleInit {
         console.log(res);
         await clearIntervalAsync(timer);
       }
-    }, 15000);
+    }, 5000);
 
     setTimeout(async () => {
       await clearIntervalAsync(timer);
@@ -149,7 +171,7 @@ const getTransId = (): string => {
     }
   } else {
     if (time[0] != '12') {
-      padTo2Digits(parseInt(time[0], 10));
+      time[0] = padTo2Digits(parseInt(time[0], 10));
     } else {
       time[0] = '00';
     }

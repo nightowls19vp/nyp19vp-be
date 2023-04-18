@@ -4,7 +4,7 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
@@ -12,15 +12,8 @@ import {
   IsEmail,
   IsPhoneNumber,
 } from 'class-validator';
-import { ObjectId } from 'mongodb';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
-import { BaseResDto } from '../base.dto';
-import { IdDto } from '../pkg-mgmt/pkg-crud.dto';
-
-export class UserId {
-  @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  _id: string;
-}
+import { BaseResDto, IdDto } from '../base.dto';
 
 class UserSetting {
   @ApiProperty({
@@ -161,7 +154,7 @@ export class UserDto extends IntersectionType(
   CartDto
 ) {}
 
-export class UpdateTrxHistReqDto extends UserId {
+export class UpdateTrxHistReqDto extends IdDto {
   @ApiProperty({
     description: 'Transaction Id paid by user',
   })
@@ -187,21 +180,18 @@ export class CreateUserReqDto extends OmitType(UserInfo, ['avatar']) {}
 export class CreateUserResDto extends BaseResDto {}
 
 export class UpdateUserReqDto extends IntersectionType(
-  UserId,
+  IdDto,
   OmitType(UserInfo, ['email', 'avatar'])
 ) {}
 
 export class UpdateUserResDto extends BaseResDto {}
 
-export class UpdateSettingReqDto extends IntersectionType(
-  UserId,
-  UserSetting
-) {}
+export class UpdateSettingReqDto extends IntersectionType(IdDto, UserSetting) {}
 
 export class UpdateSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto extends IntersectionType(
-  UserId,
+  IdDto,
   PickType(UserInfo, ['avatar'])
 ) {}
 
@@ -209,6 +199,6 @@ export class UpdateAvatarResDto extends BaseResDto {}
 
 export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}
 
-export class UpdateCartReqDto extends IntersectionType(UserId, CartDto) {}
+export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}

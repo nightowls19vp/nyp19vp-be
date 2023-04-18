@@ -4,7 +4,6 @@ import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetPkgResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   UpdateAvatarReqDto,
@@ -18,6 +17,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCreateOrderResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Model, Types, now } from 'mongoose';
@@ -29,6 +29,7 @@ import {
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { ClientKafka } from '@nestjs/microservices';
+import { catchError, firstValueFrom, map, of, take, timeout } from 'rxjs';
 
 @Injectable()
 export class UsersCrudService implements OnModuleInit {
@@ -88,7 +89,6 @@ export class UsersCrudService implements OnModuleInit {
 
   async findInfoById(id: Types.ObjectId): Promise<GetUserInfoResDto> {
     console.log(`users-svc#get-user-by-id:`, id);
-    // const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .findOne({ _id: id, deletedAt: { $exists: false } })
       .then((res) => {
@@ -153,7 +153,7 @@ export class UsersCrudService implements OnModuleInit {
   ): Promise<UpdateUserResDto> {
     const id = updateUserReqDto._id;
     console.log(`users-svc#udpate-user:`, id);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateUserReqDto;
     return await this.userModel
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
@@ -189,7 +189,7 @@ export class UsersCrudService implements OnModuleInit {
   ): Promise<UpdateSettingResDto> {
     const id = updateSettingReqDto._id;
     console.log(`users-svc#udpate-setting:`, id);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateSettingReqDto;
     return await this.userModel
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
@@ -222,7 +222,7 @@ export class UsersCrudService implements OnModuleInit {
   ): Promise<UpdateAvatarResDto> {
     const id = updateAvatarReqDto._id;
     console.log(`users-svc#udpate-avatar:`, id);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateAvatarReqDto;
     return await this.userModel
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
@@ -250,10 +250,9 @@ export class UsersCrudService implements OnModuleInit {
 
   async removeUser(id: Types.ObjectId): Promise<CreateUserResDto> {
     console.log(`users-svc#delete-user:`, id);
-    const _id: ObjectId = new ObjectId(id);
     return await this.userModel
       .updateOne(
-        { _id: _id, deletedAt: { $exists: false } },
+        { _id: id, deletedAt: { $exists: false } },
         { deletedAt: new Date(now()) },
         { new: true }
       )
@@ -282,9 +281,8 @@ export class UsersCrudService implements OnModuleInit {
   async updateCart(
     updateCartReqDto: UpdateCartReqDto
   ): Promise<UpdateCartResDto> {
-    const id = updateCartReqDto._id;
     console.log(`update items of user's cart`, updateCartReqDto.cart);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateCartReqDto;
     return await this.userModel
       .updateOne(
         { _id: _id, deletedAt: { $exists: false } },
@@ -344,14 +342,14 @@ export class UsersCrudService implements OnModuleInit {
     updateTrxHistReqDto: UpdateTrxHistReqDto
   ): Promise<UpdateTrxHistResDto> {
     console.log(`update items of user's cart`, updateTrxHistReqDto.trx);
-    const _id: ObjectId = new ObjectId(updateTrxHistReqDto._id);
+    const { _id } = updateTrxHistReqDto;
     return await this.userModel
       .findOneAndUpdate(
         { _id: _id },
         { $push: { trxHist: updateTrxHistReqDto.trx } },
         { new: true }
       )
-      .then((res) => {
+      .then(() => {
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `updated user #${_id}'s cart successfully`,
@@ -364,30 +362,33 @@ export class UsersCrudService implements OnModuleInit {
         });
       });
   }
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCreateOrderResDto> {
     const { _id, cart } = updateCartReqDto;
-    // const checkExist = await this.userModel.findOne({
-    //   _id: new ObjectId(_id),
-    //   cart: { $elemMatch: { $each: cart } },
-    // });
-    // if (checkExist)
-    console.log(`checkout user #${_id}`);
-    return await this.txnClient
-      .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-      .subscribe(
-        (res: any) => {
-          console.log(res);
-        },
-        (error) => {
-          throw error;
-        }
-      )
-      .unsubscribe();
-    //   else
-    //     return Promise.resolve({
-    //       statusCode: HttpStatus.NOT_FOUND,
-    //       message: `Items not found in user #${_id}'s cart `,
-    //     });
+    const checkExist = await this.userModel.findOne({
+      _id: _id,
+      cart: { $in: cart },
+    });
+    console.log(checkExist);
+    if (checkExist) {
+      console.log(checkExist);
+      return await this.txnClient
+        .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
+        .pipe(
+          map((value: ZPCreateOrderResDto) => value),
+          timeout(5000),
+          catchError((err) =>
+            of({
+              return_code: 2,
+              return_message: 'Giao dịch thất bại',
+              sub_return_code: 408,
+              sub_return_message: 'Request timed out after: 5s',
+            })
+          )
+        )
+        .toPromise();
+    }
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await this.userModel.find({ $text: { $search: keyword } });
