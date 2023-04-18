@@ -8,6 +8,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
+import { ZalopayModule } from './zalopay/zalopay.module';
+import { zpconfig } from './core/config/zalopay.config';
 
 @Module({
   imports: [
@@ -42,8 +44,9 @@ import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
     AuthModule,
     UsersModule,
     PkgMgmtModule,
+    ZalopayModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: 'ZALOPAY_CONFIG', useValue: zpconfig }],
 })
 export class AppModule {}

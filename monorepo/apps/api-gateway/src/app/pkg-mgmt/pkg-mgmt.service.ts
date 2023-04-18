@@ -13,7 +13,6 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetGrResDto,
-  GetGrsResDto,
   GetPkgResDto,
   kafkaTopic,
   UpdateGrReqDto,
@@ -23,7 +22,10 @@ import {
   UpdateGrPkgResDto,
   UpdateGrPkgReqDto,
   PackageDto,
+  GroupDto,
+  IdDto,
 } from '@nyp19vp-be/shared';
+import { Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -56,16 +58,9 @@ export class PkgMgmtService {
         kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS,
         collectionDto
       )
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
-    });
+    );
   }
-  async getPkgById(id: string): Promise<GetPkgResDto> {
+  async getPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID, id)
     ).then((res) => {
@@ -92,7 +87,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async deletePkg(id: string): Promise<CreatePkgResDto> {
+  async deletePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_PKG, id)
     ).then((res) => {
@@ -119,12 +114,17 @@ export class PkgMgmtService {
         });
     });
   }
-  async getAllGr(req: Request): Promise<GetGrsResDto> {
+  async getAllGr(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<GroupDto>> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS, req)
+      this.packageMgmtClient.send(
+        kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS,
+        collectionDto
+      )
     );
   }
-  async getGrById(id: string): Promise<GetGrResDto> {
+  async getGrById(id: Types.ObjectId): Promise<GetGrResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID, id)
     ).then((res) => {
@@ -151,7 +151,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async deleteGr(id: string): Promise<CreateGrResDto> {
+  async deleteGr(id: Types.ObjectId): Promise<CreateGrResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_GR, id)
     ).then((res) => {

@@ -4,11 +4,12 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
+  IdDto,
   PackageDto,
   UpdatePkgReqDto,
   UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import { ObjectId } from 'mongodb';
 import {
@@ -16,6 +17,7 @@ import {
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { Observable, from } from 'rxjs';
 
 @Injectable()
 export class PkgCrudService {
@@ -66,11 +68,10 @@ export class PkgCrudService {
       });
   }
 
-  async findPkgById(id: string): Promise<GetPkgResDto> {
+  async findPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
     console.log(`pkg-mgmt-svc#get-package #${id}`);
-    const _id: ObjectId = new ObjectId(id);
     return await this.pkgModel
-      .findById({ _id: _id, deletedAt: null })
+      .findById({ _id: id, deletedAt: null })
       .exec()
       .then((res) => {
         console.log(res);
@@ -135,11 +136,10 @@ export class PkgCrudService {
       });
   }
 
-  async removePkg(id: string): Promise<CreatePkgResDto> {
+  async removePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
     console.log(`pkg-mgmt-svc#delete-package #${id}`);
-    const _id: ObjectId = new ObjectId(id);
     return await this.pkgModel
-      .updateOne({ _id: _id, deletedAt: null }, { deletedAt: new Date() })
+      .updateOne({ _id: id, deletedAt: null }, { deletedAt: new Date() })
       .exec()
       .then((res) => {
         if (res.matchedCount && res.modifiedCount)
@@ -160,5 +160,11 @@ export class PkgCrudService {
           message: error.message,
         });
       });
+  }
+
+  async findManyPkg(list_id: IdDto[]): Promise<PackageDto[]> {
+    const res = await this.pkgModel.find({ _id: { $in: list_id } }).exec();
+    console.log(res);
+    return res;
   }
 }

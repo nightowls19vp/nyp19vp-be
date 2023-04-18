@@ -8,13 +8,18 @@ import {
   CreateGrReqDto,
   CreateGrResDto,
   GetGrResDto,
-  GetGrsResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrResDto,
   UpdateGrPkgReqDto,
   UpdateGrPkgResDto,
+  GroupDto,
 } from '@nyp19vp-be/shared';
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
+import { Types } from 'mongoose';
 
 @Controller()
 export class GrCrudController {
@@ -26,12 +31,14 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS)
-  findAllGrs(): Promise<GetGrsResDto> {
-    return this.grCrudService.findAllGrs();
+  findAllGrs(
+    @Payload() collectionDto: CollectionDto
+  ): Promise<CollectionResponse<GroupDto>> {
+    return this.grCrudService.findAllGrs(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID)
-  findGrById(@Payload() id: string): Promise<GetGrResDto> {
+  findGrById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
     return this.grCrudService.findGrById(id);
   }
 
@@ -41,7 +48,7 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_GR)
-  removeGr(@Payload() id: string): Promise<CreateGrResDto> {
+  removeGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
     return this.grCrudService.removeGr(id);
   }
 

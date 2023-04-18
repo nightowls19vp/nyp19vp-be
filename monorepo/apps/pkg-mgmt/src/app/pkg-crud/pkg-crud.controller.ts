@@ -5,6 +5,7 @@ import {
   CreatePkgReqDto,
   CreatePkgResDto,
   GetPkgResDto,
+  IdDto,
   kafkaTopic,
   PackageDto,
   UpdatePkgReqDto,
@@ -14,6 +15,7 @@ import {
   CollectionDto,
   CollectionResponse,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { Types } from 'mongoose';
 
 @Controller()
 export class PkgCrudController {
@@ -28,13 +30,13 @@ export class PkgCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS)
   findAllPkgs(
-    collectionDto: CollectionDto
+    @Payload() collectionDto: CollectionDto
   ): Promise<CollectionResponse<PackageDto>> {
     return this.pkgCrudService.findAllPkgs(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID)
-  findPkgById(@Payload() id: string): Promise<GetPkgResDto> {
+  findPkgById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
     return this.pkgCrudService.findPkgById(id);
   }
 
@@ -46,7 +48,12 @@ export class PkgCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_PKG)
-  removePkg(@Payload() id: string): Promise<CreatePkgResDto> {
+  removePkg(@Payload() id: Types.ObjectId): Promise<CreatePkgResDto> {
     return this.pkgCrudService.removePkg(id);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG)
+  findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
+    return this.pkgCrudService.findManyPkg(list_id);
   }
 }

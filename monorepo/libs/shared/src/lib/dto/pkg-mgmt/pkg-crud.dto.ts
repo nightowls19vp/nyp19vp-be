@@ -9,11 +9,13 @@ import {
   IsInt,
   IsPositive,
   IsAscii,
-  IsEnum,
-  minLength,
-  min,
+  ValidateNested,
+  IsArray,
+  ArrayMinSize,
 } from 'class-validator';
 import { BaseResDto } from '../base.dto';
+import { ObjectId } from 'mongodb';
+import { Transform, TransformFnParams } from 'class-transformer';
 
 export class PackageDto {
   @ApiProperty({
@@ -71,6 +73,7 @@ export class PackageDto {
 }
 
 export class IdDto {
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
   _id: string;
 }
 

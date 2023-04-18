@@ -24,6 +24,7 @@ import {
   UserDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
+import { Types } from 'mongoose';
 
 @Controller()
 export class UsersCrudController {
@@ -44,7 +45,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
-  findInfoById(@Payload() id: string): Promise<GetUserInfoResDto> {
+  findInfoById(@Payload() id: Types.ObjectId): Promise<GetUserInfoResDto> {
     return this.usersCrudService.findInfoById(id);
   }
 
@@ -54,7 +55,9 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
-  findSettingById(@Payload() id: string): Promise<GetUserSettingResDto> {
+  findSettingById(
+    @Payload() id: Types.ObjectId
+  ): Promise<GetUserSettingResDto> {
     return this.usersCrudService.findSettingById(id);
   }
 
@@ -80,7 +83,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.DELETE_ONE)
-  removeUser(@Payload() id: string): Promise<CreateUserResDto> {
+  removeUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
     return this.usersCrudService.removeUser(id);
   }
 
@@ -92,7 +95,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_CART)
-  getCart(@Payload() id: string): Promise<GetCartResDto> {
+  getCart(@Payload() id: Types.ObjectId): Promise<GetCartResDto> {
     return this.usersCrudService.getCart(id);
   }
 
@@ -101,5 +104,15 @@ export class UsersCrudController {
     @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto,
   ): Promise<UpdateTrxHistResDto> {
     return this.usersCrudService.updateTrxHist(updateTrxHistReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.CHECKOUT)
+  checkout(@Payload() updateCartReqDto: UpdateCartReqDto): Promise<any> {
+    return this.usersCrudService.checkout(updateCartReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.SEARCH_USER)
+  searchUser(@Payload() keyword: string): Promise<UserDto[]> {
+    return this.usersCrudService.searchUser(keyword);
   }
 }
