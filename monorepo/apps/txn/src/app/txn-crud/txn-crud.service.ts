@@ -47,9 +47,9 @@ export class TxnCrudService implements OnModuleInit {
   async checkout(
     updateCartReqDto: UpdateCartReqDto
   ): Promise<ZPCreateOrderResDto> {
-    const { _id = '640b22084096fa00812fa128', cart } = updateCartReqDto;
+    const { _id, cart } = updateCartReqDto;
     const list_id = cart.map((x) => x.package);
-    const result = await this.pkgMgmtClient
+    return await this.pkgMgmtClient
       .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
       .pipe(
         map(async (res: PackageDto[]) => {
@@ -59,6 +59,7 @@ export class TxnCrudService implements OnModuleInit {
             this.config
           );
           const val: ZPCreateOrderResDto = await this.zpCreateOrder(zaloPayReq);
+          console.log(val);
           return val;
         }),
         timeout(5000),
@@ -72,8 +73,6 @@ export class TxnCrudService implements OnModuleInit {
         )
       )
       .toPromise();
-    console.log(result);
-    return result;
     // .subscribe((val) => console.log('result:', val));
     // console.log(zpCreateOrderResDto);
     // const { app_id, app_trans_id } = zaloPayReq;

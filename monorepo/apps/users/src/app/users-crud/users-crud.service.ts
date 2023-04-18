@@ -22,7 +22,6 @@ import {
 } from '@nyp19vp-be/shared';
 import { Model, Types, now } from 'mongoose';
 import { User, UserDocument } from '../../schemas/users.schema';
-import { ObjectId } from 'mongodb';
 import {
   CollectionDto,
   CollectionResponse,
@@ -38,11 +37,12 @@ export class UsersCrudService implements OnModuleInit {
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
   ) {}
   async onModuleInit() {
-    this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
-    for (const key in kafkaTopic.TXN) {
-      this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
-    }
-    await Promise.all([this.txnClient.connect()]);
+    // this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
+    // for (const key in kafkaTopic.TXN) {
+    //   this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
+    // }
+    // await Promise.all([this.txnClient.connect()]);
+    this.txnClient.subscribeToResponseOf(kafkaTopic.TXN.CHECKOUT);
   }
 
   async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
@@ -362,32 +362,50 @@ export class UsersCrudService implements OnModuleInit {
         });
       });
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCreateOrderResDto> {
+  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
     const { _id, cart } = updateCartReqDto;
     const checkExist = await this.userModel.findOne({
       _id: _id,
-      cart: { $in: cart },
+      deletedAt: { $exists: false },
     });
-    console.log(checkExist);
     if (checkExist) {
-      console.log(checkExist);
-      return await this.txnClient
-        .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-        .pipe(
-          map((value: ZPCreateOrderResDto) => value),
-          timeout(5000),
-          catchError((err) =>
-            of({
-              return_code: 2,
-              return_message: 'Giao dịch thất bại',
-              sub_return_code: 408,
-              sub_return_message: 'Request timed out after: 5s',
-            })
+      const checkItem: boolean = cart.every((elem) =>
+        checkExist.cart.some((value) => {
+          if (value.package == elem.package && value.quantity == elem.quantity)
+            return true;
+          else return false;
+        })
+      );
+      if (checkItem) {
+        return await this.txnClient
+          .send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
+          .pipe(
+            timeout(5000),
+            catchError((err) =>
+              of({
+                return_code: 2,
+                return_message: 'Giao dịch thất bại',
+                sub_return_code: 408,
+                sub_return_message: 'Request timed out after: 5s',
+              })
+            )
           )
-        )
-        .toPromise();
+          .toPromise();
+      } else {
+        return {
+          return_code: 2,
+          return_message: 'Giao dịch thất bại',
+          sub_return_code: 404,
+          sub_return_message: `No items found in user #${_id}'s cart`,
+        };
+      }
+    } else {
+      return {
+        return_code: 2,
+        return_message: 'Giao dịch thất bại',
+        sub_return_code: 404,
+        sub_return_message: `No user #${_id} found`,
+      };
     }
   }
   async searchUser(keyword: string): Promise<UserDto[]> {

@@ -2,7 +2,13 @@ import {
   CollectionDto,
   CollectionResponse,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
@@ -192,16 +198,24 @@ export class UsersService {
       }
     });
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCreateOrderResDto> {
+  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto)
+      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        })
+      )
     );
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword)
+      this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        })
+      )
     );
   }
 }

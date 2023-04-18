@@ -103,9 +103,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
-  checkout(
-    @Payload() updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCreateOrderResDto> {
+  checkout(@Payload() updateCartReqDto: UpdateCartReqDto): Promise<any> {
     return this.usersCrudService.checkout(updateCartReqDto);
   }
 

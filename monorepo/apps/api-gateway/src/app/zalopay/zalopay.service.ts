@@ -3,7 +3,6 @@ import {
   UpdateCartReqDto,
   ZPCallbackReqDto,
   ZPCallbackResDto,
-  ZPCreateOrderResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { zpconfig } from '../core/config/zalopay.config';
@@ -43,13 +42,9 @@ export class ZalopayService {
       });
     }
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCreateOrderResDto> {
-    const res = await firstValueFrom(
+  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+    return await firstValueFrom(
       this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
     );
-    console.log(res);
-    return res;
   }
 }
