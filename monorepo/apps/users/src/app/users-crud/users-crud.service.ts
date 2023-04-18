@@ -144,7 +144,7 @@ export class UsersCrudService implements OnModuleInit {
       });
   }
 
-  async findSettingById(id: string): Promise<GetUserSettingResDto> {
+  async findSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
     return await this.userModel
       .findOne(
