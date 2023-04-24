@@ -51,21 +51,15 @@ class GrPkgDto {
   @Type(() => PackageDto)
   package: PackageDto;
 
-  @ApiProperty({
-    type: Date,
-  })
+  @ApiProperty({ type: Date })
   @IsISO8601()
   startDate: Date;
 
-  @ApiProperty({
-    type: Date,
-  })
+  @ApiProperty({ type: Date })
   @IsISO8601()
   endDate: Date;
 
-  @ApiProperty({
-    type: String,
-  })
+  @ApiProperty({ type: String })
   remainingTime: string;
 
   @ApiProperty({

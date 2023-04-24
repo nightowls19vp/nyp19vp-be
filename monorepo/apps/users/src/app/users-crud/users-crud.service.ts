@@ -1,5 +1,10 @@
-import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import {
   CreateUserReqDto,
   CreateUserResDto,
@@ -17,10 +22,11 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCheckoutResDto,
   ZPCreateOrderResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
-import { Model, Types, now } from 'mongoose';
+import mongoose, { Model, Types, now } from 'mongoose';
 import { User, UserDocument } from '../../schemas/users.schema';
 import {
   CollectionDto,
@@ -28,22 +34,15 @@ import {
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { ClientKafka } from '@nestjs/microservices';
-import { catchError, firstValueFrom, map, of, take, timeout } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
-export class UsersCrudService implements OnModuleInit {
+export class UsersCrudService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
+    @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
-  async onModuleInit() {
-    // this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
-    // for (const key in kafkaTopic.TXN) {
-    //   this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
-    // }
-    // await Promise.all([this.txnClient.connect()]);
-    this.txnClient.subscribeToResponseOf(kafkaTopic.TXN.CHECKOUT);
-  }
 
   async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
     console.log('users-svc#create-user: ', createUserReqDto);
@@ -341,19 +340,24 @@ export class UsersCrudService implements OnModuleInit {
   async updateTrxHist(
     updateTrxHistReqDto: UpdateTrxHistReqDto
   ): Promise<UpdateTrxHistResDto> {
-    console.log(`update items of user's cart`, updateTrxHistReqDto.trx);
-    const { _id } = updateTrxHistReqDto;
+    const { _id, trx, cart } = updateTrxHistReqDto;
+    console.log(`update items of user's cart`, trx);
     return await this.userModel
       .findOneAndUpdate(
         { _id: _id },
-        { $push: { trxHist: updateTrxHistReqDto.trx } },
-        { new: true }
+        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } }
       )
-      .then(() => {
-        return Promise.resolve({
-          statusCode: HttpStatus.OK,
-          message: `updated user #${_id}'s cart successfully`,
-        });
+      .then((res) => {
+        if (!res)
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user #${_id} found`,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `updated user #${_id}'s cart successfully`,
+          });
       })
       .catch((error) => {
         return Promise.resolve({
@@ -362,7 +366,9 @@ export class UsersCrudService implements OnModuleInit {
         });
       });
   }
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
     const { _id, cart } = updateCartReqDto;
     const checkExist = await this.userModel.findOne({
       _id: _id,
@@ -377,29 +383,26 @@ export class UsersCrudService implements OnModuleInit {
         })
       );
       if (checkItem) {
-        const res = await firstValueFrom(
-          this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-          // .pipe(timeout(5000))
+        return await firstValueFrom(
+          this.txnClient
+            .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+            .pipe(timeout(5000))
         );
-
-        console.log(res, 'res from the txt');
-
-        return res;
       } else {
-        return {
-          return_code: 2,
-          return_message: 'Transaction failed',
-          sub_return_code: 404,
-          sub_return_message: `No items found in user #${_id}'s cart`,
-        };
+        return Promise.resolve({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `No items found in user #${_id}'s cart`,
+          order: null,
+          trans: null,
+        });
       }
     } else {
-      return {
-        return_code: 2,
-        return_message: 'Transaction failed',
-        sub_return_code: 404,
-        sub_return_message: `No user #${_id} found`,
-      };
+      return Promise.resolve({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `No user #${_id} found`,
+        order: null,
+        trans: null,
+      });
     }
   }
   async searchUser(keyword: string): Promise<UserDto[]> {

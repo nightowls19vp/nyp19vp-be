@@ -154,10 +154,8 @@ export class UserDto extends IntersectionType(
   CartDto
 ) {}
 
-export class UpdateTrxHistReqDto extends IdDto {
-  @ApiProperty({
-    description: 'Transaction Id paid by user',
-  })
+export class UpdateTrxHistReqDto extends IntersectionType(IdDto, CartDto) {
+  @ApiProperty({ description: 'Transaction Id paid by user' })
   trx: string;
 }
 

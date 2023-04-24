@@ -6,6 +6,7 @@
     "declaration": true,
     "types": ["node"]
   },
+  "watchOptions": {"watchFile": "fixedPollingInterval"},
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
   "include": ["src/**/*.ts"]
 }

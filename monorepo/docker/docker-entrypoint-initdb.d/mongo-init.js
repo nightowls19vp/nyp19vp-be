@@ -39,8 +39,8 @@ db.createCollection('init-db');
 // DB_TXN_DATABASE
 db = db.getSiblingDB(process.env.DB_TXN_DATABASE);
 db.createUser({
-  user: process.env.MONGO_USER,
-  pwd: process.env.MONGO_PASSWORD,
+  user: process.env.DB_TXN_USER,
+  pwd: process.env.DB_TXN_PASSWORD,
   roles: [{ role: 'readWrite', db: process.env.DB_TXN_DATABASE }],
 });
 db.createCollection('init-db');

@@ -29,6 +29,7 @@ import {
   UserDto,
   UsersCollectionProperties,
   ZPCallbackResDto,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
@@ -197,17 +198,6 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateCart(updateCartReqDto);
   }
 
-  @Put(':id/trx')
-  @ApiOkResponse({ description: 'Get transaction history' })
-  async updateTrxHist(
-    @Param('id') id: string,
-    @Body() updateTrxHistReqDto: UpdateTrxHistReqDto
-  ): Promise<UpdateTrxHistResDto> {
-    console.log(`update transaction history of from user #${id}`);
-    updateTrxHistReqDto._id = id;
-    return this.usersService.updateTrxHist(updateTrxHistReqDto);
-  }
-
   @Get('healthcheck')
   async healthcheck() {
     // const res = await firstValueFrom(
@@ -219,7 +209,7 @@ export class UsersController implements OnModuleInit {
   async checkout(
     @Param('id') id: string,
     @Body() updateCartReqDto: UpdateCartReqDto
-  ): Promise<any> {
+  ): Promise<ZPCheckoutResDto> {
     console.log(`checkout #${id}`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.checkout(updateCartReqDto);

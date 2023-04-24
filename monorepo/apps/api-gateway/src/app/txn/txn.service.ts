@@ -1,22 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  UpdateCartReqDto,
+  CreateTransReqDto,
   ZPCallbackReqDto,
-  ZPCallbackResDto,
+  ZPDataCallback,
+  ZPGetOrderStatusReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
-import { zpconfig } from '../core/config/zalopay.config';
 import { createHmac } from 'crypto';
-import { firstValueFrom } from 'rxjs';
+import { zpconfig } from '../core/config/zalopay.config';
 import { ClientKafka } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class ZalopayService {
+export class TxnService {
   constructor(
     @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
   ) {}
-  callback(callbackReqDto: ZPCallbackReqDto): any {
+  async zpCallback(callbackReqDto: ZPCallbackReqDto): Promise<any> {
     try {
       const dataStr = callbackReqDto.data;
       const reqMac = callbackReqDto.mac;
@@ -30,6 +31,15 @@ export class ZalopayService {
           return_message: 'mac not equal',
         });
       } else {
+        let zpDataCallback: ZPDataCallback;
+        if (typeof dataStr === 'object') {
+          zpDataCallback = dataStr;
+        } else if (typeof dataStr === 'string') {
+          zpDataCallback = JSON.parse(dataStr);
+        }
+        const res = await firstValueFrom(
+          this.txnClient.send(kafkaTopic.TXN.ZP_CREATE_TRANS, zpDataCallback)
+        );
         return JSON.stringify({
           return_code: 1,
           return_message: 'success',
@@ -42,9 +52,9 @@ export class ZalopayService {
       });
     }
   }
-  // async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
-  //   return await firstValueFrom(
-  //     this.txnClient.send(kafkaTopic.TXN.CHECKOUT, updateCartReqDto)
-  //   );
-  // }
+  async zpGetStatus(createTransReqDto: CreateTransReqDto): Promise<any> {
+    return await firstValueFrom(
+      this.txnClient.send(kafkaTopic.TXN.ZP_GET_STT, createTransReqDto)
+    );
+  }
 }

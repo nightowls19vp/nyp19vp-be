@@ -28,6 +28,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCheckoutResDto,
   ZPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -182,11 +183,16 @@ export class UsersService {
       }
     });
   }
-  async updateTrxHist(
-    updateTrxHistReqDto: UpdateTrxHistReqDto
-  ): Promise<UpdateTrxHistResDto> {
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        })
+      )
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -197,16 +203,6 @@ export class UsersService {
         });
       }
     });
-  }
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
-    return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto).pipe(
-        timeout(5000),
-        catchError(() => {
-          throw new RequestTimeoutException();
-        })
-      )
-    );
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await firstValueFrom(

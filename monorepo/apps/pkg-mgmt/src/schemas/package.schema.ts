@@ -22,7 +22,7 @@ export class Package {
   })
   duration: number;
 
-  @Factory((faker) => faker.commerce.price(100, 500, 0))
+  @Factory((faker) => faker.commerce.price(100000, 500000, 0))
   @Prop({
     type: Number,
     required: true,

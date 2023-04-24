@@ -16,11 +16,6 @@ import { randomUUID } from 'crypto';
         options: {
           client: {
             clientId: 'txn',
-            retry: {
-              retries: 1,
-              initialRetryTime: 1,
-              maxRetryTime: 99999999999999999999999999999,
-            },
             brokers: ['localhost:9092'],
           },
           consumer: {

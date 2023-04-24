@@ -1,6 +1,15 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
-import { IsEnum, IsJSON, IsOptional, IsString, IsUrl } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsEnum,
+  IsJSON,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from 'class-validator';
+import { BaseResDto } from '../base.dto';
 
 export class ItemDto {
   @ApiProperty({
@@ -21,8 +30,8 @@ export class ItemDto {
     description:
       '- Unit price of a package;\n\n- Default currency: VND;\n\n- Example: 10000 => 10',
     type: Number,
-    minimum: 10,
-    example: 10,
+    minimum: 100000,
+    example: 100000,
   })
   price: number;
 
@@ -35,9 +44,8 @@ export class ItemDto {
   quantity: number;
 }
 
-class EmbedData {
+export class EmbedData {
   @ApiProperty({
-    type: URL,
     default: 'https://docs.zalopay.vn/result',
     example: 'https://docs.zalopay.vn/result',
     description:
@@ -130,15 +138,10 @@ export class ZPCreateOrderReqDto {
   })
   embed_data: string;
 
-  @ApiProperty({
-    description: "Order's item",
-    required: true,
-  })
+  @ApiProperty({ description: "Order's item", required: true })
   item: string;
 
-  @ApiProperty({
-    description: 'Authentication information of the order',
-  })
+  @ApiProperty({ description: 'Authentication information of the order' })
   mac: string;
 }
 
@@ -160,14 +163,10 @@ export class ZPCreateOrderResDto {
   @IsString()
   return_message: string;
 
-  @ApiProperty({
-    description: 'Status code detail',
-  })
+  @ApiProperty({ description: 'Status code detail' })
   sub_return_code: number;
 
-  @ApiProperty({
-    description: 'Detail description of status code',
-  })
+  @ApiProperty({ description: 'Detail description of status code' })
   sub_return_message: string;
 
   @ApiProperty({
@@ -197,9 +196,7 @@ export class ZPDataCallback extends PickType(ZPCreateOrderReqDto, [
   'embed_data',
   'item',
 ]) {
-  @ApiProperty({
-    description: "ZaloPay's Transaction code",
-  })
+  @ApiProperty({ description: "ZaloPay's Transaction code" })
   zp_trans_id: number;
 
   @ApiProperty({
@@ -216,19 +213,13 @@ export class ZPDataCallback extends PickType(ZPCreateOrderReqDto, [
   @IsEnum([36, 37, 38, 39, 40, 41])
   channel: number;
 
-  @ApiProperty({
-    description: 'ZaloPay user, who paid for the order',
-  })
+  @ApiProperty({ description: 'ZaloPay user, who paid for the order' })
   merchant_user_id: string;
 
-  @ApiProperty({
-    description: 'Fee (VND)',
-  })
+  @ApiProperty({ description: 'Fee (VND)' })
   user_fee_amount: number;
 
-  @ApiProperty({
-    description: 'Discount(VND)',
-  })
+  @ApiProperty({ description: 'Discount(VND)' })
   discount_amount: number;
 }
 
@@ -275,9 +266,7 @@ export class ZPGetOrderStatusResDto extends PickType(ZPCreateOrderResDto, [
   'sub_return_code',
   'sub_return_message',
 ]) {
-  @ApiProperty({
-    description: "Process's status",
-  })
+  @ApiProperty({ description: "Process's status" })
   is_processing: boolean;
 
   @ApiProperty({
@@ -286,8 +275,76 @@ export class ZPGetOrderStatusResDto extends PickType(ZPCreateOrderResDto, [
   })
   amount: number;
 
-  @ApiProperty({
-    description: "ZaloPay's transaction code",
-  })
+  @ApiProperty({ description: "ZaloPay's transaction code" })
   zp_trans_id: number;
+}
+
+class PaymentMethodDto {
+  @ApiProperty({ type: String, required: true })
+  type: string;
+
+  @ApiProperty({ type: String, required: true })
+  name: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+  trans_id?: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+  detail_info?: string;
+}
+
+export class CreateTransReqDto {
+  @ApiProperty({
+    type: String,
+    description: 'Transaction Id <app_trans_id>',
+    example: '230423_221232469',
+    required: true,
+  })
+  _id: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'User Id <app_user>',
+    example: '64453668e9e2e696d56ed2a1',
+    required: true,
+  })
+  user: string;
+
+  @ApiProperty({ required: true })
+  @ValidateNested({ each: true })
+  @Type(() => ItemDto)
+  item: ItemDto[];
+
+  @ApiProperty({
+    type: Number,
+    minimum: 100000,
+    required: true,
+    example: 100000,
+  })
+  @IsNumber()
+  amount: number;
+
+  @ApiProperty({ required: false })
+  @ValidateNested()
+  @Type(() => PaymentMethodDto)
+  @IsOptional()
+  method?: PaymentMethodDto;
+}
+
+export class CreateTransResDto extends BaseResDto {}
+
+export class ZPCheckoutResDto extends BaseResDto {
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => ZPCreateOrderResDto)
+  order: ZPCreateOrderResDto;
+
+  @ApiProperty({
+    description: "Used to create transaction via method Get order's status ",
+  })
+  @ValidateNested()
+  @Type(() => CreateTransReqDto)
+  trans: CreateTransReqDto;
 }

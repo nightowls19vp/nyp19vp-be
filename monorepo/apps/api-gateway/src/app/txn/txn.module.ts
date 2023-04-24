@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ZalopayService } from './zalopay.service';
-import { ZalopayController } from './zalopay.controller';
+import { TxnService } from './txn.service';
+import { TxnController } from './txn.controller';
 import { zpconfig } from '../core/config/zalopay.config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
@@ -23,10 +23,7 @@ import { randomUUID } from 'crypto';
       },
     ]),
   ],
-  controllers: [ZalopayController],
-  providers: [
-    ZalopayService,
-    { provide: 'ZALOPAY_CONFIG', useValue: zpconfig },
-  ],
+  controllers: [TxnController],
+  providers: [TxnService, { provide: 'ZALOPAY_CONFIG', useValue: zpconfig }],
 })
-export class ZalopayModule {}
+export class TxnModule {}

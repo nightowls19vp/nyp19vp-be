@@ -32,16 +32,11 @@ export class PackageDto {
   @IsPositive()
   duration: number;
 
-  @ApiProperty({
-    required: true,
-  })
+  @ApiProperty({ required: true })
   @IsPositive()
   price: number;
 
-  @ApiProperty({
-    required: true,
-    minimum: 1,
-  })
+  @ApiProperty({ required: true, minimum: 1 })
   @IsInt()
   @IsPositive()
   noOfMember: number;
@@ -82,17 +77,11 @@ export class FilterPkgReqDto extends PickType(PackageDto, [
   'duration',
   'noOfMember',
 ]) {
-  @ApiProperty({
-    minimum: 100,
-    maximum: 10000,
-  })
+  @ApiProperty({ minimum: 100000, maximum: 500000 })
   @IsPositive()
   price_lb: number;
 
-  @ApiProperty({
-    minimum: 100,
-    maximum: 10000,
-  })
+  @ApiProperty({ minimum: 100000, maximum: 500000 })
   @IsPositive()
   price_gb: number;
 }

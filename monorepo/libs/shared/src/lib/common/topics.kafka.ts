@@ -46,5 +46,7 @@ export const PACKAGE_MGMT = {
 };
 
 export const TXN = {
-  CHECKOUT: 'checkOut',
+  ZP_CREATE_ORD: 'zaloPayCreateOrder',
+  ZP_GET_STT: 'zaloPayGetStatus',
+  ZP_CREATE_TRANS: 'zaloPayCallbackCreateTransaction',
 };
