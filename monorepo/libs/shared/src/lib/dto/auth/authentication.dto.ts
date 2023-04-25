@@ -9,7 +9,6 @@ import {
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
-  Matches,
   NotContains,
 } from 'class-validator';
 
@@ -48,7 +47,6 @@ class UserInfo {
     // pattern: '^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$',
   })
   @IsAscii()
-  @Matches('^(?=.{8,255}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$')
   username: string;
 
   @ApiProperty({
