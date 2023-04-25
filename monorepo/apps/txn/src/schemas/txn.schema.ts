@@ -2,8 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Item } from './item.schema';
 import { Method } from './payment_method.schema';
+import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
-export type TransactionDocument = HydratedDocument<Transaction>;
+export type TransactionDocument = HydratedDocument<Transaction> &
+  SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class Transaction {
@@ -30,3 +32,7 @@ export class Transaction {
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+TransactionSchema.plugin(MongooseDelete, {
+  overrideMethods: true,
+  deletedAt: true,
+});

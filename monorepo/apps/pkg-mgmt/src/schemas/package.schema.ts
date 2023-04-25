@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 import { Factory } from 'nestjs-seeder';
 
-export type PackageDocument = HydratedDocument<Package>;
+export type PackageDocument = HydratedDocument<Package> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class Package {
@@ -66,11 +67,10 @@ export class Package {
     type: Date,
   })
   updatedAt: Date;
-
-  @Prop({
-    type: Date,
-  })
-  deletedAt: Date;
 }
 
 export const PackageSchema = SchemaFactory.createForClass(Package);
+PackageSchema.plugin(MongooseDelete, {
+  overrideMethods: true,
+  deletedAt: true,
+});

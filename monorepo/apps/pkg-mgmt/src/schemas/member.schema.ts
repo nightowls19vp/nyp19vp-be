@@ -28,11 +28,6 @@ export class Member {
     type: Date,
   })
   addedAt: Date;
-
-  @Prop({
-    type: Date,
-  })
-  deletedAt: Date;
 }
 
 export const MemberSchema = SchemaFactory.createForClass(Member);

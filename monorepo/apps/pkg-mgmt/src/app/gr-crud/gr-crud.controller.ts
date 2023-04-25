@@ -52,6 +52,11 @@ export class GrCrudController {
     return this.grCrudService.removeGr(id);
   }
 
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RESTORE_GR)
+  restoreGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
+    return this.grCrudService.restoreGr(id);
+  }
+
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)
   addMemb(
     @Payload() updateGrMbReqDto: AddGrMbReqDto

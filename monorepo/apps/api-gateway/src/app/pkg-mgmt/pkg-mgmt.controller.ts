@@ -106,13 +106,26 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Patch('pkg/:id')
-  @ApiOkResponse({ description: 'Updated Package', type: CreatePkgResDto })
+  @ApiOkResponse({ description: 'Deleted Package', type: CreatePkgResDto })
   @ApiParam({ name: 'id', type: String })
   deletePkg(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreatePkgResDto> {
     console.log(`delete package #${id}`);
     return this.pkgMgmtService.deletePkg(id);
+  }
+
+  @Patch('pkg/:id/restore')
+  @ApiOkResponse({
+    description: 'Restore deleted package',
+    type: CreatePkgResDto,
+  })
+  @ApiParam({ name: 'id', type: String })
+  restorePkg(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreatePkgResDto> {
+    console.log(`delete package #${id}`);
+    return this.pkgMgmtService.restorePkg(id);
   }
 
   @Put('pkg/:id')
@@ -158,13 +171,23 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Patch('gr/:id')
-  @ApiOkResponse({ description: 'Delete Group', type: CreateGrResDto })
+  @ApiOkResponse({ description: 'Deleted Group', type: CreateGrResDto })
   @ApiParam({ name: 'id', type: String })
   deleteGr(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreateGrResDto> {
     console.log(`Delete group #${id}`);
     return this.pkgMgmtService.deleteGr(id);
+  }
+
+  @Patch('gr/:id/restore')
+  @ApiOkResponse({ description: 'Restore deleted group', type: CreateGrResDto })
+  @ApiParam({ name: 'id', type: String })
+  restoreGr(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateGrResDto> {
+    console.log(`Delete group #${id}`);
+    return this.pkgMgmtService.restoreGr(id);
   }
 
   @Put('gr/:id')

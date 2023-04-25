@@ -6,7 +6,6 @@ import {
   CreateTransResDto,
   UpdateCartReqDto,
   ZPCheckoutResDto,
-  ZPCreateOrderResDto,
   ZPDataCallback,
   kafkaTopic,
 } from '@nyp19vp-be/shared';

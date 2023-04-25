@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument, plugin } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { Item } from './item.schema';
 import { UserSetting } from './setting.schema';
 import { Factory } from 'nestjs-seeder';
-import { SoftDeleteModel }, MongooseDelete from '@jeffe95/mongoose-delete';
+import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
-export type UserDocument = HydratedDocument<User>;
+export type UserDocument = HydratedDocument<User> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class User {
@@ -50,10 +50,6 @@ export class User {
 
   @Prop({ type: Date })
   updatedAt: Date;
-
-  @Prop({ type: Date })
-  deletedAt: Date;
 }
-
-const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.plugin(Mon)
+export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.plugin(MongooseDelete, { overrideMethods: true, deletedAt: true });

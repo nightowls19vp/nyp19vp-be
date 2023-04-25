@@ -22,13 +22,10 @@ import {
   UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
-  UpdateTrxHistReqDto,
-  UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
   UsersCollectionProperties,
-  ZPCallbackResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
@@ -131,7 +128,7 @@ export class UsersController implements OnModuleInit {
     console.log(`get items of user #${id}'s cart`);
     return this.usersService.getCart(id);
   }
-
+  @Get('deleted')
   @Patch(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
@@ -139,6 +136,18 @@ export class UsersController implements OnModuleInit {
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreateUserResDto> {
     return this.usersService.deleteUser(id);
+  }
+
+  @Patch(':id/restore')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({
+    description: 'Restore deleted user',
+    type: CreateUserResDto,
+  })
+  async restoreUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateUserResDto> {
+    return this.usersService.restoreUser(id);
   }
 
   @Put(':id')

@@ -15,7 +15,6 @@ import {
   ZPGetOrderStatusResDto,
   ZPGetOrderStatusReqDto,
   CreateTransReqDto,
-  ZPCallbackReqDto,
   ZPDataCallback,
   UpdateTrxHistReqDto,
   EmbedData,
@@ -30,16 +29,17 @@ import { AxiosError } from 'axios';
 import { zpconfig } from '../../core/config/zalopay.config';
 import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 import { Transaction, TransactionDocument } from '../../schemas/txn.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import * as MOP from '../../core/constants/payment_method.constants';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class TxnCrudService {
   constructor(
     private httpService: HttpService,
     @InjectModel(Transaction.name)
-    private transModel: Model<TransactionDocument>,
+    private transModel: SoftDeleteModel<TransactionDocument>,
     @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,

@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { DataFactory, Seeder } from 'nestjs-seeder';
 import { User, UserDocument } from '../../schemas/users.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class UsersSeeder implements Seeder {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>
+  ) {}
 
   async seed(): Promise<any> {
     const count = await this.userModel.count();

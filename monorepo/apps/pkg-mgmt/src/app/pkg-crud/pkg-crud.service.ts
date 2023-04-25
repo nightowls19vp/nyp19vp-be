@@ -9,18 +9,20 @@ import {
   UpdatePkgReqDto,
   UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import {
   CollectionDto,
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class PkgCrudService {
   constructor(
-    @InjectModel(Package.name) private pkgModel: Model<PackageDocument>
+    @InjectModel(Package.name)
+    private pkgModel: SoftDeleteModel<PackageDocument>
   ) {}
   async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
     console.log('pkg-mgmt-svc#create-package: ', createPkgReqDto);
@@ -69,10 +71,8 @@ export class PkgCrudService {
   async findPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
     console.log(`pkg-mgmt-svc#get-package #${id}`);
     return await this.pkgModel
-      .findById({ _id: id, deletedAt: null })
-      .exec()
+      .findById({ _id: id })
       .then((res) => {
-        console.log(res);
         if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
@@ -102,7 +102,7 @@ export class PkgCrudService {
     const { _id } = updatePkgReqDto;
     return await this.pkgModel
       .updateOne(
-        { _id: _id, deletedAt: null },
+        { _id: _id },
         {
           name: updatePkgReqDto.name,
           duration: updatePkgReqDto.duration,
@@ -137,13 +137,37 @@ export class PkgCrudService {
   async removePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
     console.log(`pkg-mgmt-svc#delete-package #${id}`);
     return await this.pkgModel
-      .updateOne({ _id: id, deletedAt: null }, { deletedAt: new Date() })
-      .exec()
+      .deleteById(id)
       .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+        if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `delete package #${id} successfully`,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No package #${id} found`,
+            error: 'NOT FOUND',
+          });
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+
+  async restorePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
+    console.log(`pkg-mgmt-svc#restore-deleted-package #${id}`);
+    return await this.pkgModel
+      .restore({ _id: id })
+      .then((res) => {
+        if (res)
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Restore deleted package #${id} successfully`,
           });
         else
           return Promise.resolve({

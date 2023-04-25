@@ -23,7 +23,6 @@ import {
   UpdateUserResDto,
   UserDto,
   ZPCheckoutResDto,
-  ZPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
 import { Types } from 'mongoose';
@@ -90,9 +89,14 @@ export class UsersCrudController implements OnModuleInit {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.DELETE_ONE)
+  @MessagePattern(kafkaTopic.USERS.DELETE_USER)
   removeUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
     return this.usersCrudService.removeUser(id);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.RESTORE_USER)
+  restoreUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
+    return this.usersCrudService.restoreUser(id);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)

@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { DataFactory, Seeder } from 'nestjs-seeder';
 import { Package, PackageDocument } from '../../schemas/package.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class PackageSeeder implements Seeder {
   constructor(
-    @InjectModel(Package.name) private pkgModel: Model<PackageDocument>
+    @InjectModel(Package.name)
+    private pkgModel: SoftDeleteModel<PackageDocument>
   ) {}
 
   async seed(): Promise<any> {
