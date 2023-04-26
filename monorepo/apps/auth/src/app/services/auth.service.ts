@@ -111,8 +111,8 @@ export class AuthService {
         id: accountFound.id,
         username: accountFound.username,
         role: accountFound.role.roleName,
-        password: null,
-        hashedPassword: null,
+        password: undefined,
+        hashedPassword: undefined,
         socialAccounts: socialAccounts.map((sa) => sa.platform),
       },
     };
