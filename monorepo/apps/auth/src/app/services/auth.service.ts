@@ -102,6 +102,8 @@ export class AuthService {
       throw new RpcException(userNotFoundRpcException);
     }
 
+    const socialAccounts = await accountFound.socialAccounts;
+
     return {
       statusCode: HttpStatus.OK,
       message: `user ${username} validated`,
@@ -111,6 +113,7 @@ export class AuthService {
         role: accountFound.role.roleName,
         password: null,
         hashedPassword: null,
+        socialAccounts: socialAccounts.map((sa) => sa.platform),
       },
     };
   }

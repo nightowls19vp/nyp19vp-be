@@ -24,4 +24,5 @@ export class IUser implements IJwtPayloadUser {
   role: ERole;
   password?: string;
   hashedPassword?: string;
+  socialAccounts?: string[];
 }
