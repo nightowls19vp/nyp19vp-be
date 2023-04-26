@@ -64,6 +64,12 @@ export class AuthController implements OnModuleInit {
     // this route empty
   }
 
+  @Get('oauth2/google/:from/:accountId')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthLink() {
+    // this route empty
+  }
+
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(
