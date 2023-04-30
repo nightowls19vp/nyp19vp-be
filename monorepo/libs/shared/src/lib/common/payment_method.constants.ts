@@ -1,3 +1,5 @@
+import * as kafkaTopic from './topics.kafka';
+
 export const PAYMENT_METHOD = {
   EWALLET: 'Digital Wallet',
   TRANSFER: 'Bank Transfer',
@@ -6,6 +8,15 @@ export const PAYMENT_METHOD = {
 
 export const EWALLET = {
   ZALOPAY: 'ZaloPay',
+  VNPAY: 'VnPay',
+  MOMO: 'MoMo',
+};
+
+export const KEY = {
+  EWALLET: {
+    ZALOPAY: kafkaTopic.TXN.ZP_CREATE_ORD,
+    VNPAY: kafkaTopic.TXN.VNP_CREATE_ORD,
+  },
 };
 
 export const ZALOPAY = {

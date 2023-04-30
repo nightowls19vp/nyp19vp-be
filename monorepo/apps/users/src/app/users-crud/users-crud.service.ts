@@ -1,11 +1,13 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  MOP,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -364,11 +366,11 @@ export class UsersCrudService {
         });
       });
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCheckoutResDto> {
-    const { _id, cart } = updateCartReqDto;
-    console.log(`User #${_id} checkout:`, cart);
+  async checkout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+    const { _id, cart, method, ipAddr } = checkoutReqDto;
+    console.log(`User #${_id} checkout:`, cart, ipAddr);
+    const mop = MOP.KEY[method.type];
+    console.log(mop[method.bank_code]);
     const checkExist = await this.userModel.findById({ _id: _id });
     if (checkExist) {
       const checkItem: boolean = cart.every((elem) =>
@@ -381,7 +383,7 @@ export class UsersCrudService {
       if (checkItem) {
         return await firstValueFrom(
           this.txnClient
-            .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+            .send(mop[method.bank_code], checkoutReqDto)
             .pipe(timeout(5000))
         );
       } else {

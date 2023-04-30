@@ -2,9 +2,9 @@ import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { TxnCrudService } from './txn-crud.service';
 import {
+  CheckoutReqDto,
   CreateTransReqDto,
   CreateTransResDto,
-  UpdateCartReqDto,
   ZPCheckoutResDto,
   ZPDataCallback,
   kafkaTopic,
@@ -35,9 +35,9 @@ export class TxnCrudController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.TXN.ZP_CREATE_ORD)
   async zpCheckout(
-    @Payload() updateCartReqDto: UpdateCartReqDto
+    @Payload() checkoutReqDto: CheckoutReqDto
   ): Promise<ZPCheckoutResDto> {
-    return await this.txnCrudService.zpCheckout(updateCartReqDto);
+    return await this.txnCrudService.zpCheckout(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.ZP_GET_STT)
@@ -52,5 +52,12 @@ export class TxnCrudController implements OnModuleInit {
     @Payload() zpDataCallback: ZPDataCallback
   ): Promise<CreateTransResDto> {
     return await this.txnCrudService.zpCreateTrans(zpDataCallback);
+  }
+
+  @MessagePattern(kafkaTopic.TXN.VNP_CREATE_ORD)
+  async vnpCreateOrder(
+    @Payload() checkoutReqDto: CheckoutReqDto
+  ): Promise<any> {
+    return await this.txnCrudService.vnpCreateOrder(checkoutReqDto);
   }
 }

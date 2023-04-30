@@ -52,4 +52,5 @@ export const TXN = {
   ZP_CREATE_ORD: 'zaloPayCreateOrder',
   ZP_GET_STT: 'zaloPayGetStatus',
   ZP_CREATE_TRANS: 'zaloPayCallbackCreateTransaction',
+  VNP_CREATE_ORD: 'vnpayCreateOrder',
 };

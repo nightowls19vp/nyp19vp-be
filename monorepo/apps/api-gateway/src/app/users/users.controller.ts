@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -39,7 +40,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { Patch, Query } from '@nestjs/common/decorators';
+import { Ip, Patch, Query } from '@nestjs/common/decorators';
 import {
   CollectionDto,
   CollectionResponse,
@@ -217,10 +218,13 @@ export class UsersController implements OnModuleInit {
   @Post(':id/checkout')
   async checkout(
     @Param('id') id: string,
-    @Body() updateCartReqDto: UpdateCartReqDto
+    @Body() checkoutReqDto: CheckoutReqDto,
+    @Ip() ip: string
   ): Promise<ZPCheckoutResDto> {
-    console.log(`checkout #${id}`, updateCartReqDto);
-    updateCartReqDto._id = id;
-    return this.usersService.checkout(updateCartReqDto);
+    console.log(`checkout #${id}`, checkoutReqDto);
+    if (ip == '::1') ip = '127.0.0.1';
+    checkoutReqDto._id = id;
+    checkoutReqDto.ipAddr = ip;
+    return this.usersService.checkout(checkoutReqDto);
   }
 }

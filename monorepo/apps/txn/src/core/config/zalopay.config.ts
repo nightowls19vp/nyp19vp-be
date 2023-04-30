@@ -10,5 +10,5 @@ export const zpconfig = {
   key1: process.env.ZALOPAY_KEY1,
   create_order_endpoint: process.env.ZALOPAY_CREATE_ENDPOINT,
   get_status_endpoint: process.env.ZALOPAY_STATUS_ENDPOINT,
-  callback_URL: process.env.ZALOPAY_CALLBACK,
+  callback_url: process.env.ZALOPAY_CALLBACK,
 };

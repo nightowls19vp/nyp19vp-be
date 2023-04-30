@@ -8,7 +8,6 @@ import {
   ItemDto,
   Items,
   PackageDto,
-  UpdateCartReqDto,
   kafkaTopic,
   ZPCreateOrderReqDto,
   ZPCreateOrderResDto,
@@ -20,19 +19,22 @@ import {
   EmbedData,
   CreateTransResDto,
   ZPCheckoutResDto,
+  MOP,
+  CheckoutReqDto,
+  VNPCreateOrderReqDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
-import { zpconfig } from '../../core/config/zalopay.config';
 import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 import { Transaction, TransactionDocument } from '../../schemas/txn.schema';
 import mongoose from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import * as MOP from '../../core/constants/payment_method.constants';
 import { SoftDeleteModel } from 'mongoose-delete';
+import moment from 'moment-timezone';
+import qs from 'qs';
 
 @Injectable()
 export class TxnCrudService {
@@ -42,14 +44,13 @@ export class TxnCrudService {
     private transModel: SoftDeleteModel<TransactionDocument>,
     @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
+    @Inject('ZALOPAY_CONFIG') private readonly zpconfig,
+    @Inject('VNPAY_CONFIG') private readonly vnpconfig,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
 
-  async zpCheckout(
-    updateCartReqDto: UpdateCartReqDto
-  ): Promise<ZPCheckoutResDto> {
-    const { _id, cart } = updateCartReqDto;
+  async zpCheckout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+    const { _id, cart } = checkoutReqDto;
     const list_id = cart.map((x) => x.package);
     try {
       const res = await firstValueFrom(
@@ -61,7 +62,7 @@ export class TxnCrudService {
         const zaloPayReq = mapZaloPayReqDto(
           _id,
           mapPkgDtoToItemDto(res, cart),
-          this.config
+          this.zpconfig
         );
         console.log(zaloPayReq);
         const order = await this.zpCreateOrder(zaloPayReq);
@@ -105,7 +106,7 @@ export class TxnCrudService {
     const { _id, user } = createTransReqDto;
     const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto = mapZPGetStatusReqDto(
       _id,
-      this.config
+      this.zpconfig
     );
     const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
     console.log('result:', res);
@@ -260,7 +261,7 @@ export class TxnCrudService {
   ): Promise<ZPCreateOrderResDto> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post(this.config.create_order_endpoint, null, {
+        .post(this.zpconfig.create_order_endpoint, null, {
           params: zalopayReqDto,
         })
         .pipe(
@@ -277,7 +278,7 @@ export class TxnCrudService {
   ): Promise<ZPGetOrderStatusResDto> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post(this.config.get_status_endpoint, null, {
+        .post(this.zpconfig.get_status_endpoint, null, {
           params: zpGetOrderStatusReqDto,
         })
         .pipe(
@@ -287,6 +288,10 @@ export class TxnCrudService {
         )
     );
     return data;
+  }
+
+  async vnpCreateOrder(checkoutReqDto: CheckoutReqDto): Promise<any> {
+    return;
   }
 }
 function padTo2Digits(num: number) {
@@ -418,4 +423,38 @@ const mapZPCreateOrderReqDtoToCreateTransReqDto = (
     amount: zpCreateOrderReqDto.amount,
   };
   return createTransReqDto;
+};
+
+const mapVNPCreateOrderReqDto = (
+  ip: string,
+  items: ItemDto[],
+  config: any
+): string => {
+  const amount = totalPrice(items);
+  const trans_id = getTransId();
+  process.env.TZ = 'Asia/Ho_Chi_Minh';
+
+  const date = new Date();
+  const createDate: number = +moment(date).format('YYYYMMDDHHmmss');
+  const vnpCreateOrderReqDto: VNPCreateOrderReqDto = {
+    vnp_Version: '2.1.0',
+    vnp_Command: 'pay',
+    vnp_TmnCode: config.app_id,
+    vnp_Amount: amount,
+    vnp_CreateDate: createDate,
+    vnp_CurrCode: 'VND',
+    vnp_IpAddr: ip,
+    vnp_Locale: 'vn',
+    vnp_OrderInfo: `Megoo - Paymemt for the order #${trans_id}`,
+    vnp_ReturnUrl: config.callback_url,
+    vnp_TxnRef: trans_id,
+  };
+  const hmacinput = qs.stringify(vnpCreateOrderReqDto, { encode: false });
+  const mac: string = createHmac('sha256', config.key1)
+    .update(new Buffer(hmacinput, 'utf-8'))
+    .digest('hex');
+  vnpCreateOrderReqDto.vnp_SecureHash = mac;
+  let vnp_endpoint = config.create_order_endpoint;
+  vnp_endpoint += '?' + qs.stringify(vnpCreateOrderReqDto, { encode: false });
+  return vnp_endpoint;
 };

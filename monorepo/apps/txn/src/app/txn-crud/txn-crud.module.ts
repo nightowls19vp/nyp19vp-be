@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { zpconfig } from '../../core/config/zalopay.config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Transaction, TransactionSchema } from '../../schemas/txn.schema';
+import { vnpconfig } from '../../core/config/vnpay.config';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { Transaction, TransactionSchema } from '../../schemas/txn.schema';
   providers: [
     TxnCrudService,
     { provide: 'ZALOPAY_CONFIG', useValue: zpconfig },
+    { provide: 'VNPAY_CONFIG', useValue: vnpconfig },
   ],
 })
 export class TxnCrudModule {}

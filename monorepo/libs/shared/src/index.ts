@@ -7,6 +7,8 @@ export * from './lib/core/pipe/parseObjectId.pipe';
 // common
 export * as kafkaTopic from './lib/common/topics.kafka';
 
+export * as MOP from './lib/common/payment_method.constants';
+
 // dto
 export * from './lib/shared';
 
