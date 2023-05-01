@@ -72,7 +72,8 @@ export class UserInfo {
     example: '2001-01-01',
   })
   @IsDateString()
-  dob: Date;
+  @IsOptional()
+  dob?: Date;
 
   @ApiProperty({
     description:
