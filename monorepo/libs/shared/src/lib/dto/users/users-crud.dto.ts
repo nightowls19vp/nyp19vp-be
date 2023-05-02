@@ -10,6 +10,7 @@ import {
   IsAscii,
   IsDateString,
   IsEmail,
+  IsOptional,
   IsPhoneNumber,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
@@ -159,7 +160,7 @@ export class UserDto extends IntersectionType(
   UserInfo,
   UserSettingDto,
   TrxHistDto,
-  CartDto
+  CartDto,
 ) {}
 
 export class UpdateTrxHistReqDto extends UserId {
@@ -180,7 +181,7 @@ export class GetUserInfoResDto extends BaseResDto {
 
 export class GetUserSettingResDto extends IntersectionType(
   BaseResDto,
-  UserSettingDto
+  UserSettingDto,
 ) {}
 
 export class CreateUserReqDto extends OmitType(UserInfo, ['avatar']) {}
@@ -189,21 +190,21 @@ export class CreateUserResDto extends BaseResDto {}
 
 export class UpdateUserReqDto extends IntersectionType(
   UserId,
-  OmitType(UserInfo, ['email', 'avatar'])
+  OmitType(UserInfo, ['email', 'avatar']),
 ) {}
 
 export class UpdateUserResDto extends BaseResDto {}
 
 export class UpdateSettingReqDto extends IntersectionType(
   UserId,
-  UserSetting
+  UserSetting,
 ) {}
 
 export class UpdateSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto extends IntersectionType(
   UserId,
-  PickType(UserInfo, ['avatar'])
+  PickType(UserInfo, ['avatar']),
 ) {}
 
 export class UpdateAvatarResDto extends BaseResDto {}
