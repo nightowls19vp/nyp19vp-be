@@ -8,7 +8,6 @@ import {
   Inject,
   Injectable,
   RequestTimeoutException,
-  Type,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -41,12 +40,14 @@ export class UsersService {
     createUserReqDto: CreateUserReqDto
   ): Promise<CreateUserResDto> {
     const res = await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CREATE, createUserReqDto).pipe(
-        timeout(5000),
-        catchError(() => {
-          throw new RequestTimeoutException();
-        })
-      )
+      this.usersClient
+        .send(kafkaTopic.USERS.CREATE, JSON.stringify(createUserReqDto))
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          })
+        )
     );
     if (res.statusCode == HttpStatus.CREATED) {
       return res;
@@ -62,7 +63,7 @@ export class UsersService {
   ): Promise<UpdateUserResDto> {
     const res = await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.UPDATE_INFO, updateUserReqDto)
+        .send(kafkaTopic.USERS.UPDATE_INFO, JSON.stringify(updateUserReqDto))
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -129,7 +130,10 @@ export class UsersService {
   ): Promise<UpdateSettingResDto> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.UPDATE_SETTING, updateSettingReqDto)
+        .send(
+          kafkaTopic.USERS.UPDATE_SETTING,
+          JSON.stringify(updateSettingReqDto)
+        )
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -152,7 +156,10 @@ export class UsersService {
   ): Promise<UpdateAvatarResDto> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.UPDATE_AVATAR, updateAvatarReqDto)
+        .send(
+          kafkaTopic.USERS.UPDATE_AVATAR,
+          JSON.stringify(updateAvatarReqDto)
+        )
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -194,7 +201,7 @@ export class UsersService {
   ): Promise<UpdateCartResDto> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.UPDATE_CART, updateCartReqDto)
+        .send(kafkaTopic.USERS.UPDATE_CART, JSON.stringify(updateCartReqDto))
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -235,12 +242,14 @@ export class UsersService {
     updateCartReqDto: UpdateCartReqDto
   ): Promise<ZPCheckoutResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto).pipe(
-        timeout(5000),
-        catchError(() => {
-          throw new RequestTimeoutException();
-        })
-      )
+      this.usersClient
+        .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(updateCartReqDto))
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          })
+        )
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;

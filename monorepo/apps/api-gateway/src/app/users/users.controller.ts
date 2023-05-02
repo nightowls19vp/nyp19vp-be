@@ -128,13 +128,14 @@ export class UsersController implements OnModuleInit {
     console.log(`get items of user #${id}'s cart`);
     return this.usersService.getCart(id);
   }
-  @Get('deleted')
+
   @Patch(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
   async deleteUser(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreateUserResDto> {
+    console.log(`delete user #${id}`);
     return this.usersService.deleteUser(id);
   }
 
@@ -147,6 +148,7 @@ export class UsersController implements OnModuleInit {
   async restoreUser(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreateUserResDto> {
+    console.log(`restore user #${id}`);
     return this.usersService.restoreUser(id);
   }
 

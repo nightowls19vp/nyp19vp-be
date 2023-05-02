@@ -3,7 +3,6 @@ import {
   CreateTransReqDto,
   ZPCallbackReqDto,
   ZPDataCallback,
-  ZPGetOrderStatusReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { createHmac } from 'crypto';
@@ -38,7 +37,10 @@ export class TxnService {
           zpDataCallback = JSON.parse(dataStr);
         }
         const res = await firstValueFrom(
-          this.txnClient.send(kafkaTopic.TXN.ZP_CREATE_TRANS, zpDataCallback)
+          this.txnClient.send(
+            kafkaTopic.TXN.ZP_CREATE_TRANS,
+            JSON.stringify(zpDataCallback)
+          )
         );
         return JSON.stringify({
           return_code: 1,
@@ -54,7 +56,10 @@ export class TxnService {
   }
   async zpGetStatus(createTransReqDto: CreateTransReqDto): Promise<any> {
     return await firstValueFrom(
-      this.txnClient.send(kafkaTopic.TXN.ZP_GET_STT, createTransReqDto)
+      this.txnClient.send(
+        kafkaTopic.TXN.ZP_GET_STT,
+        JSON.stringify(createTransReqDto)
+      )
     );
   }
 }

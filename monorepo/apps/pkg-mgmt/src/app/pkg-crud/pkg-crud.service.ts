@@ -97,9 +97,8 @@ export class PkgCrudService {
   }
 
   async updatePkg(updatePkgReqDto: UpdatePkgReqDto): Promise<UpdatePkgResDto> {
-    const id = updatePkgReqDto._id;
-    console.log(`pkg-mgmt-svc#update-package #${id}`);
     const { _id } = updatePkgReqDto;
+    console.log(`pkg-mgmt-svc#update-package #${_id}`);
     return await this.pkgModel
       .updateOne(
         { _id: _id },
@@ -112,19 +111,21 @@ export class PkgCrudService {
           updatedBy: updatePkgReqDto.updatedBy,
         }
       )
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .then(async (res) => {
+        if (res.matchedCount && res.modifiedCount) {
+          const data = await this.pkgModel.findById(_id);
           return Promise.resolve({
             statusCode: HttpStatus.OK,
-            message: `get package #${id} successfully`,
+            message: `get package #${_id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
-            message: `No package #${id} found`,
+            message: `No package #${_id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -138,18 +139,21 @@ export class PkgCrudService {
     console.log(`pkg-mgmt-svc#delete-package #${id}`);
     return await this.pkgModel
       .deleteById(id)
-      .then((res) => {
-        if (res)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.pkgModel.findById(id);
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `delete package #${id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No package #${id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -163,18 +167,21 @@ export class PkgCrudService {
     console.log(`pkg-mgmt-svc#restore-deleted-package #${id}`);
     return await this.pkgModel
       .restore({ _id: id })
-      .then((res) => {
-        if (res)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.pkgModel.findById(id);
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `Restore deleted package #${id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No package #${id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({

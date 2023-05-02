@@ -153,11 +153,16 @@ export class UsersCrudService {
           phone: updateUserReqDto.phone,
         }
       )
-      .then((res) => {
+      .then(async (res) => {
         if (res) {
+          const data = await this.userModel.findById(
+            { _id: _id },
+            { setting: 0, avatar: 0, cart: 0, trxHist: 0 }
+          );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `update user #${_id} successfully`,
+            data: data,
           });
         } else {
           return Promise.resolve({
@@ -181,17 +186,23 @@ export class UsersCrudService {
     console.log(`users-svc#udpate-setting:`, _id);
     return await this.userModel
       .findByIdAndUpdate({ _id: _id }, { setting: updateSettingReqDto })
-      .then((res) => {
-        if (res)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.userModel.findById(
+            { _id: _id },
+            { setting: 1 }
+          );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `update user #${_id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No user #${_id} found`,
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -208,11 +219,13 @@ export class UsersCrudService {
     console.log(`users-svc#udpate-avatar:`, _id);
     return await this.userModel
       .findByIdAndUpdate({ _id: _id }, { avatar: updateAvatarReqDto.avatar })
-      .then((res) => {
+      .then(async (res) => {
+        const data = await this.userModel.findById(_id, { avatar: 1 });
         if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `update user #${_id} successfully`,
+            data: data,
           });
         else
           return Promise.resolve({
@@ -232,12 +245,14 @@ export class UsersCrudService {
     console.log(`users-svc#delete-user:`, id);
     return await this.userModel
       .deleteById(id)
-      .then((res) => {
+      .then(async (res) => {
         console.log(res);
         if (res) {
+          const data = await this.userModel.findById(id);
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `delete user #${id} successfully`,
+            data: data,
           });
         } else {
           return Promise.resolve({
@@ -257,12 +272,13 @@ export class UsersCrudService {
     console.log(`users-svc#restore-deleted-user:`, id);
     return await this.userModel
       .restore({ _id: id })
-      .then((res) => {
-        console.log(res);
+      .then(async (res) => {
+        const data = await this.userModel.findById(id);
         if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `restore deleted user #${id} successfully`,
+            data: data,
           });
         } else {
           return Promise.resolve({
@@ -286,17 +302,20 @@ export class UsersCrudService {
     console.log(`update items of user's cart`, cart);
     return await this.userModel
       .findByIdAndUpdate({ _id: _id }, { $set: { cart: cart } })
-      .then((res) => {
-        if (res)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.userModel.findById(_id, { cart: 1 });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `updated user #${_id}'s cart successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No user #${_id}'s cart found`,
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
