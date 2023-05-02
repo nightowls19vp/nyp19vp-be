@@ -50,7 +50,10 @@ export class UsersService {
     updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     const res = await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.UPDATE_INFO, updateUserReqDto),
+      this.usersClient.send(
+        kafkaTopic.USERS.UPDATE_INFO,
+        JSON.stringify(updateUserReqDto),
+      ),
     );
     if (res.statusCode == HttpStatus.OK) {
       return res;
@@ -78,7 +81,7 @@ export class UsersService {
 
   async getUserByEmail(email: string): Promise<GetUserInfoResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, email),
+      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_EMAIL, email),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -208,7 +211,7 @@ export class UsersService {
   }
   async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto)
+      this.usersClient.send(kafkaTopic.USERS.CHECKOUT, updateCartReqDto),
     );
     // ).then((res) => {
     //   if (res.statusCode == HttpStatus.OK) {
@@ -223,7 +226,7 @@ export class UsersService {
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword)
+      this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword),
     );
   }
 }

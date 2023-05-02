@@ -1,7 +1,9 @@
+import { Request, Response } from 'express';
+
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
 import { GOOGLE_STRATEGY_NAME } from '../constants/authentication';
-import { Request, Response } from 'express';
 
 @Injectable()
 export class GoogleAuthGuard extends AuthGuard(GOOGLE_STRATEGY_NAME) {
@@ -17,10 +19,15 @@ export class GoogleAuthGuard extends AuthGuard(GOOGLE_STRATEGY_NAME) {
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest() as Request;
-    const from = (request.query.state as string)?.replace(/@/g, '/');
 
+    // log state
+    console.log('state', request.query.state);
+    const res = (request.query.state as string)?.replace(/@/g, '/').split(';');
     const activate = (await super.canActivate(context)) as boolean;
-    // request.params.from = from;
+
+    request.params.from = res[0];
+    request.params.accountId = res[1];
+
     return activate;
   }
 }

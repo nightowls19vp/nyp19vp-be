@@ -153,23 +153,24 @@ export class AccountService {
     return `This action removes an account`;
   }
 
-  // It will create a new account, new social medial account too
+  // It will create a new account, new social medial account too if not account_id found
+  // It will return the access token and refresh token if the account is existed
   async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    // find the account with this email
+    // find the account with this account id
     let account: AccountEntity = await this.accountRepo.findOneBy({
-      email: user.email,
+      id: user.accountId,
     });
 
     if (account) {
       // find the social account with this platform and platformId
-      const socialAccounts = (await account.socialAccounts).filter(
+      const socialAccounts = (await account.socialAccounts).find(
         (socialAccount) =>
           socialAccount.platform === user.platform &&
           socialAccount.platformId === user.platformId,
       );
 
       // if the social account is existed, return the access token and refresh token
-      if (socialAccounts.length > 0) {
+      if (socialAccounts) {
         return {
           statusCode: HttpStatus.OK,
           message: 'login successfully',
@@ -188,6 +189,56 @@ export class AccountService {
             }),
           },
         };
+      }
+
+      // if the social account is not existed, create a new social account
+      else {
+        const queryRunner = this.dataSource.createQueryRunner();
+
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+          const socialMediaAccount: SocialAccountEntity =
+            this.socialAccRepo.create({
+              account: account,
+              platform: user.platform,
+              platformId: user.platformId,
+            });
+
+          await queryRunner.manager.save<SocialAccountEntity>(
+            socialMediaAccount,
+          );
+
+          await queryRunner.commitTransaction();
+          return {
+            statusCode: HttpStatus.OK,
+            message: 'login successfully',
+            data: {
+              accessToken: this.authService.generateAccessJWT({
+                user: {
+                  username: account.username,
+                  role: account.role.roleName,
+                },
+              }),
+              refreshToken: this.authService.generateRefreshJWT({
+                user: {
+                  username: account.username,
+                  role: account.role.roleName,
+                },
+              }),
+            },
+          };
+        } catch (error) {
+          await queryRunner.rollbackTransaction();
+          return {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: 'login fail',
+            error: error.message,
+          };
+        } finally {
+          // you need to release a queryRunner which was manually instantiated
+          await queryRunner.release();
+        }
       }
     }
 
@@ -217,11 +268,11 @@ export class AccountService {
           roleName: ERole.user,
         });
 
-        const password = randomUUID();
+        const password = 'password';
         const hashedPassword = await bcrypt.hash(password, 10);
 
         account = this.accountRepo.create({
-          username: user.email,
+          username: randomUUID(),
           hashedPassword: hashedPassword,
           email: user.email,
           role: roleUser,
@@ -238,13 +289,6 @@ export class AccountService {
         socialAccount = await queryRunner.manager.save<SocialAccountEntity>(
           socialAccount,
         );
-
-        const createUserReq: CreateUserReqDto = {
-          email: user.email ?? null,
-          dob: null,
-          name: user.name ?? null,
-          phone: null,
-        };
 
         await queryRunner.commitTransaction();
 
@@ -321,14 +365,38 @@ export class AccountService {
       id: reqDto.accountId,
     });
 
-    let socialAccount = await this.socialAccRepo.findOneBy({
-      platform: reqDto.platform,
-      platformId: reqDto.platformId,
+    if (!account) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'link social account fail',
+      };
+    }
+
+    // find all platform of the account that linked
+    const socialAccounts = await account.socialAccounts;
+
+    // check platform is existed
+    if (
+      socialAccounts.find(
+        (socialAccount) => socialAccount.platform === reqDto.platform,
+      )
+    ) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'link social account fail',
+      };
+    }
+
+    const isExist = await this.socialAccRepo.exist({
+      where: {
+        platform: reqDto.platform,
+        platformId: reqDto.platformId,
+      },
     });
 
-    if (account && !socialAccount) {
+    if (!isExist) {
       // link social account to account
-      socialAccount = this.socialAccRepo.create({
+      const socialAccount = this.socialAccRepo.create({
         account: account,
         platform: reqDto.platform,
         platformId: reqDto.platformId,
@@ -339,6 +407,20 @@ export class AccountService {
       return {
         statusCode: HttpStatus.CREATED,
         message: 'link social account successfully',
+        data: {
+          accessToken: this.authService.generateAccessJWT({
+            user: {
+              username: account.username,
+              role: account.role.roleName,
+            },
+          }),
+          refreshToken: this.authService.generateRefreshJWT({
+            user: {
+              username: account.username,
+              role: account.role.roleName,
+            },
+          }),
+        },
       };
     } else {
       return {

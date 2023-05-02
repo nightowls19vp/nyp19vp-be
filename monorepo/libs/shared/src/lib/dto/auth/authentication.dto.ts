@@ -142,6 +142,10 @@ export class CreateAccountReqDto extends IntersectionType(
 export class CreateAccountResDto extends BaseResDto {}
 
 export class SocialSignupReqDto {
+  @IsOptional()
+  @IsString()
+  accountId?: string;
+
   @IsNotEmpty()
   @IsString()
   platform: string;
@@ -170,11 +174,7 @@ export class SocialSignupResDto extends CreateAccountResDto {
   };
 }
 
-export class SocialLinkReqDto extends SocialSignupReqDto {
-  @IsOptional()
-  @IsString()
-  accountId: string;
-}
+export class SocialLinkReqDto extends SocialSignupReqDto {}
 
 export class SocialLinkResDto extends BaseResDto {}
 

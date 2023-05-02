@@ -23,4 +23,9 @@ export class BaseResDto {
     description: 'Error message',
   })
   error?: string;
+
+  @ApiProperty({
+    description: 'Error message',
+  })
+  errCode?: string;
 }

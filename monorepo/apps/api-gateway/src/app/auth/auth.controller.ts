@@ -1,5 +1,5 @@
-import { SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME } from './../constants/authentication/index';
 import { Request, Response } from 'express';
+
 import {
   Body,
   Controller,
@@ -18,26 +18,27 @@ import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  CreateAccountReqDto,
+  CreateAccountResDto,
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
   LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
-  CreateAccountReqDto,
-  CreateAccountResDto,
   SocialSignupResDto,
+  UserDto,
 } from '@nyp19vp-be/shared';
 
+import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME } from '../constants/authentication/index';
 // import { AllGlobalExceptionsFilter } from '../filters/filter';
 import { AuthService } from './auth.service';
-import { GoogleAuthGuard } from './guards/google.guard';
 import { SocialUser } from './decorators/social-user.decorator';
-import { ISocialUser } from './interfaces/social-user.interface';
 import { SocialAccountReqDto } from './dto/social-account.req.dto';
-import { UserDto } from '@nyp19vp-be/shared';
+import { GoogleAuthGuard } from './guards/google.guard';
 import { AccessJwtAuthGuard, RefreshJwtAuthGuard } from './guards/jwt.guard';
-import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { ISocialUser } from './interfaces/social-user.interface';
 import { getRefreshToken } from './utils/get-jwt-token';
 
 @ApiTags('auth')
@@ -62,6 +63,7 @@ export class AuthController implements OnModuleInit {
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     // this route empty
+    console.log('gpai auth ctrl: reach googleAuth');
   }
 
   @Get('oauth2/google/:from/:accountId')
@@ -81,21 +83,55 @@ export class AuthController implements OnModuleInit {
       throw new UnauthorizedException();
     }
 
+    console.log('req params', req.params);
+
     console.log('gpai auth ctrl: reach redirect');
     const webUrl =
       req.params.from || process.env.WEB_URL || 'http://localhost:8080';
 
-    const signupResDto: SocialSignupResDto =
-      await this.authService.googleSignUp(googleUser);
+    const accountId = req.params.accountId || undefined;
 
-    if (signupResDto.statusCode === HttpStatus.OK) {
-      this.authService.setCookie(
-        res,
-        signupResDto.data.accessToken,
-        signupResDto.data.refreshToken,
+    if (!accountId) {
+      const resDto: SocialSignupResDto = await this.authService.googleSignUp(
+        googleUser,
+      );
+
+      if (resDto.statusCode === HttpStatus.OK) {
+        this.authService.setCookie(
+          res,
+          resDto?.data?.accessToken,
+          resDto?.data?.refreshToken,
+        );
+      }
+      res.redirect(
+        `${webUrl}` +
+          `?accessToken=${resDto?.data?.accessToken}` +
+          `?message=${resDto.message}` +
+          `?statusCode=${resDto?.statusCode}` +
+          `?errCode=${resDto?.errCode}`,
+      );
+    } else {
+      const resDto = await this.authService.linkGoogleAccount(
+        accountId,
+        googleUser,
+      );
+
+      if (resDto.statusCode === HttpStatus.CREATED) {
+        this.authService.setCookie(
+          res,
+          resDto?.data?.accessToken,
+          resDto?.data?.refreshToken,
+        );
+      }
+
+      res.redirect(
+        `${webUrl}` +
+          `?accessToken=${resDto?.data?.accessToken}` +
+          `?message=${resDto.message}` +
+          `?statusCode=${resDto?.statusCode}` +
+          `?errCode=${resDto?.errCode}`,
       );
     }
-    res.redirect(webUrl);
   }
 
   @Post('create-social-account')
@@ -240,5 +276,11 @@ export class AuthController implements OnModuleInit {
     console.log('refreshToken', refreshToken);
 
     return this.authService.refresh(refreshToken);
+  }
+
+  @Get('oauth2/google/:from/:userId')
+  @UseGuards(GoogleAuthGuard)
+  async googleLink() {
+    // this route empty
   }
 }

@@ -92,6 +92,8 @@ export class AuthController implements OnModuleInit {
   async socialLink(
     @Payload() reqDto: SocialLinkReqDto,
   ): Promise<SocialLinkResDto> {
+    console.log('MessagePattern(kafkaTopic.AUTH.SOCIAL_LINK) ', reqDto);
+
     return this.accountService.socialLink(reqDto);
   }
 }

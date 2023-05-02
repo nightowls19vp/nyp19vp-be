@@ -1,13 +1,13 @@
-import { PassportStrategy } from '@nestjs/passport';
-import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
-import { Injectable } from '@nestjs/common';
-
 import dotenv from 'dotenv';
-import { GOOGLE_STRATEGY_NAME } from '../constants/authentication';
-import { AuthService } from '../auth.service';
-
 import { Request } from 'express';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
+
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+
+import { AuthService } from '../auth.service';
+import { GOOGLE_STRATEGY_NAME } from '../constants/authentication';
 
 dotenv.config({
   path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
@@ -43,8 +43,17 @@ export class GoogleStrategy extends PassportStrategy(
   }
 
   authenticate(req: any, options: any) {
+    let state = `${req.params.from}`;
+
+    if (req.params.accountId) {
+      state = `${state};${req.params.accountId}`;
+    }
+
     if (!options?.state) {
-      options = { ...options, state: req.params.from };
+      options = {
+        ...options,
+        state,
+      };
     }
 
     return super.authenticate(req, options);
@@ -57,7 +66,7 @@ export class GoogleStrategy extends PassportStrategy(
     profile: Profile,
     done: VerifyCallback,
   ): Promise<any> {
-    console.log('gg vlt pf', profile);
+    // console.log('gg vlt pf', profile);
     const googleUser = {
       provider: 'google',
       providerId: profile?.id,

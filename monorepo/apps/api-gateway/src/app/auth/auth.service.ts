@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { Response } from 'express';
-import { firstValueFrom, timeout } from 'rxjs';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
@@ -23,6 +23,7 @@ import {
   IUser,
   RefreshTokenResDto,
   RefreshTokenReqDto,
+  SocialLinkReqDto,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -64,7 +65,7 @@ export class AuthService {
           )
           .pipe(timeout(toMs('5s'))),
       );
-      console.log('resDto success', resDto);
+      // console.log('resDto success', resDto);
       return resDto;
     } catch (error) {
       console.error('timeout', error);
@@ -197,5 +198,31 @@ export class AuthService {
         error: error.message,
       };
     }
+  }
+
+  async linkGoogleAccount(userId: string, googleUser: ISocialUser) {
+    console.log('xxx userId', userId);
+
+    const reqDto: SocialLinkReqDto = {
+      accountId: userId,
+      email: googleUser.email,
+      platform: googleUser.provider,
+      platformId: googleUser.providerId,
+      name: googleUser.name,
+      photo: googleUser.photo,
+    };
+
+    const resDto = await firstValueFrom(
+      this.authClient
+        .send(kafkaTopic.AUTH.SOCIAL_LINK, JSON.stringify(reqDto))
+        .pipe(timeout(toMs('5s')))
+        .pipe(
+          catchError((error) => {
+            throw error;
+          }),
+        ),
+    );
+
+    return resDto;
   }
 }
