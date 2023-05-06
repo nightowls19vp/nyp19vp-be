@@ -123,14 +123,9 @@ export class AuthService {
     const decodeRes = this.jwtService.decode(token);
     const payload: IJwtPayload = decodeRes as IJwtPayload;
 
-    const accessToken = this.generateAccessJWT(payload);
-    const refreshToken = this.generateRefreshJWT(payload);
-
     return {
       statusCode: HttpStatus.OK,
       message: 'Login successfully',
-      accessToken: accessToken,
-      refreshToken: refreshToken,
       data: {
         auth: {
           ...payload,

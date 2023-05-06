@@ -170,9 +170,7 @@ export class AccountService {
 
     let account: AccountEntity = null;
     if (socialAccount) {
-      account = await this.accountRepo.findOneBy({
-        id: user.accountId,
-      });
+      account = socialAccount.account;
     }
 
     // if (account) {
