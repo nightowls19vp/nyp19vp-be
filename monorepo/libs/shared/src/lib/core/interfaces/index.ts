@@ -14,15 +14,19 @@ export enum ELoginType {
 }
 
 export interface IJwtPayloadUser {
+  id: string;
   username: string;
+  email: string;
   role: ERole;
+  socialAccounts: string[];
 }
 
 export class IUser implements IJwtPayloadUser {
   id: string;
   username: string;
+  email: string;
   role: ERole;
   password?: string;
   hashedPassword?: string;
-  socialAccounts?: string[];
+  socialAccounts: string[];
 }

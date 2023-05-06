@@ -127,6 +127,7 @@ export class LoginResWithTokensDto extends LoginResDto {
 }
 
 export class LogoutReqDto {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   refreshToken?: string;
@@ -213,4 +214,20 @@ export class RefreshTokenReqDto {
 export class RefreshTokenResDto extends BaseResDto {
   accessToken?: string;
   refreshToken?: string;
+}
+
+export class GoogleSignUpReqDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  googleAccessToken: string;
+}
+
+export class GoogleLinkReqDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  googleAccessToken: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  accountId: string;
 }

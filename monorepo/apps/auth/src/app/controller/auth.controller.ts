@@ -8,6 +8,7 @@ import {
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
+  LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
   RefreshTokenReqDto,
@@ -54,6 +55,13 @@ export class AuthController implements OnModuleInit {
   @MessagePattern(kafkaTopic.AUTH.VALIDATE_USER)
   async validateUser(reqDto: ValidateUserReqDto): Promise<ValidateUserResDto> {
     return this.authService.validateUser(reqDto);
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.VALIDATE_TOKEN)
+  async validateToken(
+    @Payload() token: string,
+  ): Promise<LoginResWithTokensDto> {
+    return this.authService.validateToken(token);
   }
 
   @MessagePattern(kafkaTopic.AUTH.LOGIN)

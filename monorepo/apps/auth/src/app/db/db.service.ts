@@ -95,6 +95,7 @@ export class DbService {
         username: 'user' + i + '@email.com',
         hashedPassword: hashedPassword,
         email: 'user' + i + '@gmail.com',
+        role: roleUser,
       });
 
       try {

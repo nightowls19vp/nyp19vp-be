@@ -16,6 +16,7 @@ import {
   CreateUserResDto,
   ERole,
   GetUserInfoResDto,
+  IJwtPayload,
   kafkaTopic,
   SocialLinkReqDto,
   SocialLinkResDto,
@@ -156,107 +157,120 @@ export class AccountService {
   // It will create a new account, new social medial account too if not account_id found
   // It will return the access token and refresh token if the account is existed
   async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    // find the account with this account id
-    let account: AccountEntity = await this.accountRepo.findOneBy({
-      id: user.accountId,
+    console.log('find condition', {
+      platform: user.platform,
+      platformId: user.platformId,
     });
 
-    if (account) {
-      // find the social account with this platform and platformId
-      const socialAccounts = (await account.socialAccounts).find(
-        (socialAccount) =>
-          socialAccount.platform === user.platform &&
-          socialAccount.platformId === user.platformId,
-      );
+    // find the social account
+    let socialAccount = await this.socialAccRepo.findOneBy({
+      platform: user.platform,
+      platformId: user.platformId,
+    });
 
-      // if the social account is existed, return the access token and refresh token
-      if (socialAccounts) {
-        return {
-          statusCode: HttpStatus.OK,
-          message: 'login successfully',
-          data: {
-            accessToken: this.authService.generateAccessJWT({
-              user: {
-                username: account.username,
-                role: account.role.roleName,
-              },
-            }),
-            refreshToken: this.authService.generateRefreshJWT({
-              user: {
-                username: account.username,
-                role: account.role.roleName,
-              },
-            }),
-          },
-        };
-      }
-
-      // if the social account is not existed, create a new social account
-      else {
-        const queryRunner = this.dataSource.createQueryRunner();
-
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-        try {
-          const socialMediaAccount: SocialAccountEntity =
-            this.socialAccRepo.create({
-              account: account,
-              platform: user.platform,
-              platformId: user.platformId,
-            });
-
-          await queryRunner.manager.save<SocialAccountEntity>(
-            socialMediaAccount,
-          );
-
-          await queryRunner.commitTransaction();
-          return {
-            statusCode: HttpStatus.OK,
-            message: 'login successfully',
-            data: {
-              accessToken: this.authService.generateAccessJWT({
-                user: {
-                  username: account.username,
-                  role: account.role.roleName,
-                },
-              }),
-              refreshToken: this.authService.generateRefreshJWT({
-                user: {
-                  username: account.username,
-                  role: account.role.roleName,
-                },
-              }),
-            },
-          };
-        } catch (error) {
-          await queryRunner.rollbackTransaction();
-          return {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'login fail',
-            error: error.message,
-          };
-        } finally {
-          // you need to release a queryRunner which was manually instantiated
-          await queryRunner.release();
-        }
-      }
+    let account: AccountEntity = null;
+    if (socialAccount) {
+      account = await this.accountRepo.findOneBy({
+        id: user.accountId,
+      });
     }
 
-    // if the social account is not existed, create a new account and a new social account
-    let socialAccount: SocialAccountEntity = await this.socialAccRepo.findOne({
-      where: [
-        {
-          platform: user.platform,
-          platformId: user.platformId,
-        },
-      ],
-    });
+    // if (account) {
+    //   // find the social account with this platform and platformId
+    //   const socialAccounts = await account.socialAccounts;
+    //   const socialAccount = socialAccounts.find(
+    //     (socialAccount) =>
+    //       socialAccount.platform === user.platform &&
+    //       socialAccount.platformId === user.platformId,
+    //   );
 
-    let statusCode = HttpStatus.UNAUTHORIZED;
+    //   if (socialAccount) {
+    //     console.log('CASE ACCOUNT && SOCIAL ACCOUNT');
 
-    if (socialAccount && socialAccount.account) {
-      statusCode = HttpStatus.OK;
-    } else {
+    //     // if the social account is existed, return the access token and refresh token
+    //     const payload: IJwtPayload = {
+    //       user: {
+    //         id: account.id,
+    //         email: account.email,
+    //         username: account.username,
+    //         role: account.role.roleName,
+    //         socialAccounts: [
+    //           ...new Set(socialAccounts.map((sa) => sa.platform)),
+    //         ],
+    //       },
+    //     };
+    //     return {
+    //       statusCode: HttpStatus.OK,
+    //       message: 'login successfully',
+    //       data: {
+    //         accessToken: this.authService.generateAccessJWT(payload),
+    //         refreshToken: this.authService.generateRefreshJWT(payload),
+    //       },
+    //     };
+    //   }
+
+    //   // if the social account is not existed, create a new social account
+    //   else {
+    //     console.log('CASE ACCOUNT && !SOCIAL ACCOUNT');
+
+    //     const queryRunner = this.dataSource.createQueryRunner();
+
+    //     await queryRunner.connect();
+    //     await queryRunner.startTransaction();
+    //     try {
+    //       const socialMediaAccount: SocialAccountEntity =
+    //         this.socialAccRepo.create({
+    //           account: account,
+    //           platform: user.platform,
+    //           platformId: user.platformId,
+    //         });
+
+    //       await queryRunner.manager.save<SocialAccountEntity>(
+    //         socialMediaAccount,
+    //       );
+
+    //       await queryRunner.commitTransaction();
+
+    //       const payload: IJwtPayload = {
+    //         user: {
+    //           id: account.id,
+    //           email: account.email,
+    //           username: account.username,
+    //           role: account.role.roleName,
+    //           socialAccounts: [
+    //             ...new Set([
+    //               ...socialAccounts.map((sa) => sa.platform),
+    //               user.platform,
+    //             ]),
+    //           ],
+    //         },
+    //       };
+    //       return {
+    //         statusCode: HttpStatus.OK,
+    //         message: 'login successfully',
+    //         data: {
+    //           accessToken: this.authService.generateAccessJWT(payload),
+    //           refreshToken: this.authService.generateRefreshJWT(payload),
+    //         },
+    //       };
+    //     } catch (error) {
+    //       await queryRunner.rollbackTransaction();
+    //       return {
+    //         statusCode: HttpStatus.BAD_REQUEST,
+    //         message: 'login fail',
+    //         error: error.message,
+    //       };
+    //     } finally {
+    //       // you need to release a queryRunner which was manually instantiated
+    //       await queryRunner.release();
+    //     }
+    //   }
+    // }
+
+    console.log('sa', socialAccount);
+    console.log('acc', account);
+
+    if (!socialAccount) {
       const queryRunner = this.dataSource.createQueryRunner();
 
       await queryRunner.connect();
@@ -271,48 +285,56 @@ export class AccountService {
         const password = 'password';
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        account = this.accountRepo.create({
-          username: randomUUID(),
-          hashedPassword: hashedPassword,
-          email: user.email,
-          role: roleUser,
-        });
+        if (!account) {
+          account = this.accountRepo.create({
+            username: randomUUID(),
+            hashedPassword: hashedPassword,
+            email: user.email,
+            role: roleUser,
+          });
 
-        account = await queryRunner.manager.save<AccountEntity>(account);
+          account = await queryRunner.manager.save<AccountEntity>(account);
 
-        socialAccount = this.socialAccRepo.create({
-          account: account,
-          platform: user.platform,
-          platformId: user.platformId,
-        });
+          socialAccount = this.socialAccRepo.create({
+            account: account,
+            platform: user.platform,
+            platformId: user.platformId,
+          });
+        } else {
+          socialAccount = this.socialAccRepo.create({
+            account: account,
+            platform: user.platform,
+            platformId: user.platformId,
+          });
+        }
 
         socialAccount = await queryRunner.manager.save<SocialAccountEntity>(
           socialAccount,
         );
 
+        const createUserReq: CreateUserReqDto = {
+          email: user.email,
+          dob: null,
+          name: user.name,
+          phone: null,
+        };
+
+        const createUserRes: CreateUserResDto = await firstValueFrom(
+          this.usersClient.send(
+            kafkaTopic.USERS.CREATE,
+            JSON.stringify(createUserReq),
+          ),
+        );
+
+        if (createUserRes.error) {
+          console.log('roll back');
+
+          throw new Error(createUserRes.error);
+        }
+
         await queryRunner.commitTransaction();
 
         console.log('socialAccount', socialAccount);
-        statusCode = HttpStatus.CREATED;
-
-        return {
-          statusCode: statusCode,
-          message: 'SignUp successfully',
-          data: {
-            accessToken: this.authService.generateAccessJWT({
-              user: {
-                username: socialAccount.account.username,
-                role: socialAccount.account.role.roleName,
-              },
-            }),
-            refreshToken: this.authService.generateRefreshJWT({
-              user: {
-                username: socialAccount.account.username,
-                role: socialAccount.account.role.roleName,
-              },
-            }),
-          },
-        };
       } catch (error) {
         await queryRunner.rollbackTransaction();
         return {
@@ -325,6 +347,34 @@ export class AccountService {
         await queryRunner.release();
       }
     }
+
+    if (!account || !socialAccount) {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'SignUp failed',
+      };
+    }
+
+    console.log('await account.socialAccounts', await account.socialAccounts);
+
+    const payload: IJwtPayload = {
+      user: {
+        id: account.id,
+        email: account.email,
+        username: socialAccount.account.username,
+        role: socialAccount.account.role.roleName,
+        socialAccounts: (await account.socialAccounts).map((sa) => sa.platform),
+      },
+    };
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'SignUp successfully',
+      data: {
+        accessToken: this.authService.generateAccessJWT(payload),
+        refreshToken: this.authService.generateRefreshJWT(payload),
+      },
+    };
   }
 
   /** Create user info
@@ -394,6 +444,8 @@ export class AccountService {
       },
     });
 
+    console.log('account', account);
+
     if (!isExist) {
       // link social account to account
       const socialAccount = this.socialAccRepo.create({
@@ -403,23 +455,28 @@ export class AccountService {
       });
 
       await this.socialAccRepo.save(socialAccount);
-
+      console.log('await account.socialAccounts', await account.socialAccounts);
+      const payload: IJwtPayload = {
+        user: {
+          id: account.id,
+          email: account.email,
+          username: account.username,
+          role: account?.role?.roleName,
+          socialAccounts: [
+            ...new Set(
+              (await account.socialAccounts).map(
+                (socialAccount) => socialAccount.platform,
+              ),
+            ),
+          ],
+        },
+      };
       return {
         statusCode: HttpStatus.CREATED,
         message: 'link social account successfully',
         data: {
-          accessToken: this.authService.generateAccessJWT({
-            user: {
-              username: account.username,
-              role: account.role.roleName,
-            },
-          }),
-          refreshToken: this.authService.generateRefreshJWT({
-            user: {
-              username: account.username,
-              role: account.role.roleName,
-            },
-          }),
+          accessToken: this.authService.generateAccessJWT(payload),
+          refreshToken: this.authService.generateRefreshJWT(payload),
         },
       };
     } else {

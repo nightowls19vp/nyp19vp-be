@@ -39,10 +39,13 @@ export class AccessJwtStrategy extends PassportStrategy(
   }
 
   async validate(req: Request, payload: IJwtPayload) {
-    const user: GetUserInfoResDto = await this.userService.getUserByEmail(
-      payload.user.username,
-    );
+    const at = getAccessToken(req);
+    console.log('access token', at);
 
-    return user;
+    const resDto = await this.authService.validateAccessToken(at);
+
+    console.log('validateAccessToken res', resDto);
+
+    return resDto;
   }
 }

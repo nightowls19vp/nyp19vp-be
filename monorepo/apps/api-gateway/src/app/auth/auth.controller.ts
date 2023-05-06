@@ -1,3 +1,4 @@
+import { google } from 'googleapis';
 import { Request, Response } from 'express';
 
 import {
@@ -16,10 +17,12 @@ import {
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountReqDto,
   CreateAccountResDto,
+  GoogleLinkReqDto,
+  GoogleSignUpReqDto,
   kafkaTopic,
   LoginReqDto,
   LoginResDto,
@@ -40,6 +43,7 @@ import { GoogleAuthGuard } from './guards/google.guard';
 import { AccessJwtAuthGuard, RefreshJwtAuthGuard } from './guards/jwt.guard';
 import { ISocialUser } from './interfaces/social-user.interface';
 import { getRefreshToken } from './utils/get-jwt-token';
+import { Profile } from 'passport-google-oauth20';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -63,7 +67,6 @@ export class AuthController implements OnModuleInit {
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     // this route empty
-    console.log('gpai auth ctrl: reach googleAuth');
   }
 
   @Get('oauth2/google/:from/:accountId')
@@ -94,6 +97,7 @@ export class AuthController implements OnModuleInit {
     if (!accountId) {
       const resDto: SocialSignupResDto = await this.authService.googleSignUp(
         googleUser,
+        accountId,
       );
 
       if (resDto.statusCode === HttpStatus.OK) {
@@ -134,24 +138,137 @@ export class AuthController implements OnModuleInit {
     }
   }
 
-  @Post('create-social-account')
-  async createSocialAccount(
-    @Body() reqDto: SocialAccountReqDto,
+  @Post('mobile/google-sign-up')
+  async googleSignUpMobile(
+    @Body() googleSignUpReqDto: GoogleSignUpReqDto,
   ): Promise<SocialSignupResDto> {
-    console.log('createSocialAccount', reqDto);
+    console.log('mobile/google-sign-up');
 
-    const resDto = await this.authService.googleSignUp(reqDto);
+    const token = googleSignUpReqDto.googleAccessToken;
 
-    console.log('resDto', resDto);
+    console.log('token', token);
 
-    if (!resDto) {
-      throw new HttpException(
-        'Cannot create social account',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (token) {
+      try {
+        const profile: any = await this.authService.getUserData(token);
+
+        console.log('profile', profile);
+
+        const reqDto: SocialAccountReqDto = {
+          provider: 'google',
+          providerId: profile?.id,
+          name: profile?.name,
+          email: profile?.email,
+          photo: profile?.photo,
+        };
+
+        const resDto = await this.authService.googleSignUp(reqDto, null);
+
+        console.log('resDto', resDto);
+
+        if (!resDto) {
+          throw new HttpException(
+            'Cannot create social account',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return resDto;
+      } catch (error) {
+        throw new UnauthorizedException();
+      }
     }
-    return resDto;
+    throw new UnauthorizedException();
   }
+
+  @Post('mobile/google-link')
+  async googleLinkMobile(
+    @Body() googleSignUpReqDto: GoogleLinkReqDto,
+  ): Promise<SocialSignupResDto> {
+    const token = googleSignUpReqDto.googleAccessToken;
+    const accountId = googleSignUpReqDto.accountId;
+    if (token) {
+      try {
+        const profile: any = await this.authService.getUserData(token);
+
+        const reqDto: SocialAccountReqDto = {
+          provider: 'google',
+          providerId: profile?.id,
+          name: profile?.name,
+          email: profile?.email,
+          photo: profile?.picture,
+        };
+
+        const resDto = await this.authService.linkGoogleAccount(accountId, {
+          email: reqDto.email,
+          name: reqDto.name,
+          photo: reqDto.photo,
+          provider: reqDto.provider,
+          providerId: reqDto.providerId,
+        });
+
+        console.log('resDto', resDto);
+
+        if (!resDto) {
+          throw new HttpException(
+            'Cannot create social account',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return resDto;
+      } catch (error) {
+        throw new UnauthorizedException();
+      }
+    }
+    throw new UnauthorizedException();
+  }
+
+  // @Post('create-social-account')
+  // async createSocialAccount(
+  //   @Body() reqDto: SocialAccountReqDto,
+  // ): Promise<SocialSignupResDto> {
+  //   console.log('createSocialAccount', reqDto);
+  //   const resDto = await this.authService.googleSignUp(reqDto);
+
+  //   console.log('resDto', resDto);
+
+  //   if (!resDto) {
+  //     throw new HttpException(
+  //       'Cannot create social account',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  //   return resDto;
+  // }
+
+  // @UseGuards(AccessJwtAuthGuard)
+  // @Post('link-social-account')
+  // async linkSocialAccount(
+  //   @Req() req: Request,
+  //   @Body() reqDto: SocialAccountReqDto,
+  // ): Promise<SocialSignupResDto> {
+  //   console.log('req.user', req?.user);
+
+  //   const resDto = await this.authService.linkGoogleAccount(
+  //     (req?.user as any)?.accountId,
+  //     {
+  //       email: reqDto.email,
+  //       name: reqDto.name,
+  //       photo: reqDto.photo,
+  //       provider: reqDto.provider,
+  //       providerId: reqDto.providerId,
+  //     },
+  //   );
+
+  //   console.log('resDto', resDto);
+
+  //   if (!resDto) {
+  //     throw new HttpException(
+  //       'Cannot create social account',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  //   return resDto;
+  // }
 
   @ApiResponse({
     description: 'response of login',

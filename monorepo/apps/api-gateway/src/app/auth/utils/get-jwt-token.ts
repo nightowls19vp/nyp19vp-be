@@ -21,8 +21,6 @@ const extractBearerTokenFromReqHeader = (req: Request) => {
  * Cookie first then request header
  */
 export const getAccessToken = (req: Request): string => {
-  console.log(req.cookies, 'req.cookies');
-
   // extract from cookie
   let accessToken: string = req?.cookies?.[ACCESS_JWT_COOKIE_NAME];
 

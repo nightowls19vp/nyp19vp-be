@@ -110,10 +110,34 @@ export class AuthService {
       user: {
         id: accountFound.id,
         username: accountFound.username,
+        email: accountFound.email,
         role: accountFound.role.roleName,
         password: undefined,
         hashedPassword: undefined,
         socialAccounts: socialAccounts.map((sa) => sa.platform),
+      },
+    };
+  }
+
+  async validateToken(token: string): Promise<LoginResWithTokensDto> {
+    const decodeRes = this.jwtService.decode(token);
+    const payload: IJwtPayload = decodeRes as IJwtPayload;
+
+    const accessToken = this.generateAccessJWT(payload);
+    const refreshToken = this.generateRefreshJWT(payload);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Login successfully',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      data: {
+        auth: {
+          ...payload,
+        },
+        userInfo: (
+          await this.accountService.getUserInfoByEmail(payload.user.email)
+        ).user,
       },
     };
   }
@@ -168,10 +192,10 @@ export class AuthService {
       loginType: ELoginType.email,
     });
 
-    const accessToken = await this.generateAccessJWT({
+    const accessToken = this.generateAccessJWT({
       user: validateUserRes.user,
     });
-    const refreshToken = await this.generateRefreshJWT({
+    const refreshToken = this.generateRefreshJWT({
       user: validateUserRes.user,
     });
 
@@ -257,36 +281,21 @@ export class AuthService {
   }
 
   generateAccessJWT(payload: IJwtPayload): string {
-    return this.jwtService.sign(
-      {
-        user: {
-          username: payload.user.username,
-          role: payload.user.role,
-        },
-      },
-      {
-        expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
-        secret: config.auth.strategies.strategyConfig.accessJwtSecret,
-      },
-    );
+    delete payload.exp;
+    delete payload.iat;
+    return this.jwtService.sign(payload, {
+      expiresIn: config.auth.strategies.strategyConfig.accessJwtTtl, // 10 mins
+      secret: config.auth.strategies.strategyConfig.accessJwtSecret,
+    });
   }
 
   generateRefreshJWT(payload: IJwtPayload): string {
-    // log payloasd
-    console.log('payload', payload);
-
-    return this.jwtService.sign(
-      {
-        user: {
-          username: payload.user.username,
-          role: payload.user.role,
-        },
-      },
-      {
-        expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
-        secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
-      },
-    );
+    delete payload.exp;
+    delete payload.iat;
+    return this.jwtService.sign(payload, {
+      expiresIn: config.auth.strategies.strategyConfig.refreshJwtTtl, // 10 days
+      secret: config.auth.strategies.strategyConfig.refreshJwtSecret,
+    });
   }
 
   // async authorize(userId: string, actionId: string): Promise<boolean> {

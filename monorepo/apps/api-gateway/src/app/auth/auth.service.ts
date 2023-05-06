@@ -1,29 +1,32 @@
-import { resolve } from 'path';
+import dotenv from 'dotenv';
 import { Response } from 'express';
+import { Auth, google } from 'googleapis';
+import { resolve } from 'path';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  AuthorizeReqDto,
+  AuthorizeResDto,
+  CreateAccountReqDto,
+  CreateAccountResDto,
+  ELoginType,
+  ENV_FILE,
   ERole,
+  IUser,
   kafkaTopic,
   LoginReqDto,
   LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
-  CreateAccountReqDto,
-  CreateAccountResDto,
+  RefreshTokenReqDto,
+  RefreshTokenResDto,
+  SocialLinkReqDto,
   SocialSignupReqDto,
   SocialSignupResDto,
   ValidateUserReqDto,
   ValidateUserResDto,
-  AuthorizeReqDto,
-  AuthorizeResDto,
-  ELoginType,
-  IUser,
-  RefreshTokenResDto,
-  RefreshTokenReqDto,
-  SocialLinkReqDto,
 } from '@nyp19vp-be/shared';
 
 import {
@@ -32,23 +35,36 @@ import {
   REFRESH_JWT_COOKIE_NAME,
   REFRESH_JWT_DEFAULT_TTL,
 } from './constants/authentication';
+import { ISocialUser } from './interfaces/social-user.interface';
 import { toMs } from './utils/ms';
 
-import { ISocialUser } from './interfaces/social-user.interface';
+dotenv.config({
+  path: process.env.ENV_FILE ? process.env.ENV_FILE : ENV_FILE.DEV,
+});
 
 @Injectable()
 export class AuthService {
+  oauthClient: Auth.OAuth2Client;
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
-  ) {}
+  ) {
+    const clientID = process.env.OAUTH2_GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.OAUTH2_GOOGLE_CLIENT_SECRET;
+
+    this.oauthClient = new google.auth.OAuth2(clientID, clientSecret);
+  }
 
   /** Validate that have this Google Account been registered
    * If not do sign up
    * @param googleUser
    * @returns user
    */
-  async googleSignUp(googleUser: ISocialUser): Promise<SocialSignupResDto> {
+  async googleSignUp(
+    googleUser: ISocialUser,
+    accountId: string,
+  ): Promise<SocialSignupResDto> {
     const socialSignupReqDto: SocialSignupReqDto = {
+      accountId: accountId,
       platform: googleUser.provider,
       platformId: googleUser.providerId,
       name: googleUser.name,
@@ -201,8 +217,6 @@ export class AuthService {
   }
 
   async linkGoogleAccount(userId: string, googleUser: ISocialUser) {
-    console.log('xxx userId', userId);
-
     const reqDto: SocialLinkReqDto = {
       accountId: userId,
       email: googleUser.email,
@@ -224,5 +238,25 @@ export class AuthService {
     );
 
     return resDto;
+  }
+
+  async getUserData(token: string) {
+    const userInfoClient = google.oauth2('v2').userinfo;
+
+    this.oauthClient.setCredentials({
+      access_token: token,
+    });
+
+    const userInfoResponse = await userInfoClient.get({
+      auth: this.oauthClient,
+    });
+
+    return userInfoResponse.data;
+  }
+
+  async validateAccessToken(token: string) {
+    return firstValueFrom(
+      this.authClient.send(kafkaTopic.AUTH.VALIDATE_TOKEN, token),
+    );
   }
 }
