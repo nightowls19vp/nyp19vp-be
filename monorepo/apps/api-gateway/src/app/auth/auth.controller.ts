@@ -195,7 +195,7 @@ export class AuthController implements OnModuleInit {
           providerId: profile?.id,
           name: profile?.name,
           email: profile?.email,
-          photo: profile?.picture,
+          photo: profile?.photo,
         };
 
         const resDto = await this.authService.linkGoogleAccount(accountId, {
@@ -378,17 +378,6 @@ export class AuthController implements OnModuleInit {
   @UseGuards(RefreshJwtAuthGuard)
   async refresh(@Req() req: Request) {
     const refreshToken = getRefreshToken(req) || '';
-
-    console.log('refreshToken', refreshToken);
-
-    return this.authService.refresh(refreshToken);
-  }
-
-  @Get('refresh/:token')
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
-  @UseGuards(RefreshJwtAuthGuard)
-  async refreshWithToken(@Req() req: Request, @Param('token') token: string) {
-    const refreshToken = getRefreshToken(req) || token || '';
 
     console.log('refreshToken', refreshToken);
 
