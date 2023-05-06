@@ -1,13 +1,11 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -18,14 +16,28 @@ import {
   UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
+  ZPCheckoutResDto,
+  kafkaTopic,
 } from '@nyp19vp-be/shared';
-import { Model, now } from 'mongoose';
+import { Types } from 'mongoose';
 import { User, UserDocument } from '../../schemas/users.schema';
-import { ObjectId } from 'mongodb';
+import {
+  CollectionDto,
+  CollectionResponse,
+  DocumentCollector,
+} from '@forlagshuset/nestjs-mongoose-paginate';
+import { ClientKafka } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class UsersCrudService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name)
+    private userModel: SoftDeleteModel<UserDocument>,
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+  ) {}
 
   async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
     console.log('users-svc#create-user: ', createUserReqDto);
@@ -45,52 +57,34 @@ export class UsersCrudService {
       })
       .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.CONFLICT,
           message: error.message,
         });
       });
   }
 
-  async findAll(): Promise<GetUsersResDto> {
+  async findAll(
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
     console.log(`users-svc#get-all-users`);
-    return await this.userModel
-      .find({ deletedAt: null })
-      .exec()
+    const collector = new DocumentCollector<UserDocument>(this.userModel);
+    return await collector
+      .find(collectionDto)
       .then((res) => {
-        const userList = [];
-        for (const ele of res) {
-          userList.push(ele);
-        }
-        if (!userList.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: 'get all users successfully',
-            users: userList,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'No users found',
-            error: 'NOT FOUND',
-            users: userList,
-          });
-        }
-      })
-      .catch((error) => {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          users: null,
+          data: res.data,
+          pagination: res.pagination,
         });
+      })
+      .catch((err) => {
+        throw err;
       });
   }
 
-  async findInfoById(id: string): Promise<GetUserInfoResDto> {
+  async findInfoById(id: Types.ObjectId): Promise<GetUserInfoResDto> {
     console.log(`users-svc#get-user-by-id:`, id);
-    const _id: ObjectId = new ObjectId(id);
     return await this.userModel
-      .findOne({ _id: _id, deletedAt: null })
-      .exec()
+      .findById({ _id: id })
       .then((res) => {
         if (!res) {
           return Promise.resolve({
@@ -116,50 +110,10 @@ export class UsersCrudService {
       });
   }
 
-  async findInfoBy(option: string): Promise<GetUsersResDto> {
-    console.log(`users-svc#get-user-by:`, option);
-    return await this.userModel
-      .find({
-        $or: [{ name: option }, { phone: option }, { email: option }],
-        deletedAt: null,
-      })
-      .exec()
-      .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let users = [];
-        for (const ele of res) {
-          users.push(ele);
-        }
-        if (!users.length)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user successfully`,
-            users: users,
-          });
-        else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user with optional field found`,
-            error: 'NOT FOUND',
-            users: users,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          users: null,
-        });
-      });
-  }
-
-  async findSettingById(id: string): Promise<GetUserSettingResDto> {
+  async findSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
-    const _id: ObjectId = new ObjectId(id);
     return await this.userModel
-      .findOne({ _id: _id, deletedAt: null }, { setting: 1, _id: 0 })
-      .exec()
+      .findById({ _id: id }, { setting: 1, _id: 0 })
       .then((res) => {
         if (!res) {
           return Promise.resolve({
@@ -188,23 +142,131 @@ export class UsersCrudService {
   async updateInfo(
     updateUserReqDto: UpdateUserReqDto
   ): Promise<UpdateUserResDto> {
-    const id = updateUserReqDto._id;
-    console.log(`users-svc#udpate-user:`, id);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateUserReqDto;
+    console.log(`users-svc#udpate-user:`, _id);
     return await this.userModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
+      .findByIdAndUpdate(
+        { _id: _id },
         {
           name: updateUserReqDto.name,
           dob: updateUserReqDto.dob,
           phone: updateUserReqDto.phone,
         }
       )
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount) {
+      .then(async (res) => {
+        if (res) {
+          const data = await this.userModel.findById(
+            { _id: _id },
+            { setting: 0, avatar: 0, cart: 0, trxHist: 0 }
+          );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
-            message: `update user #${id} successfully`,
+            message: `update user #${_id} successfully`,
+            data: data,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user #${_id} found`,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+
+  async updateSetting(
+    updateSettingReqDto: UpdateSettingReqDto
+  ): Promise<UpdateSettingResDto> {
+    const { _id } = updateSettingReqDto;
+    console.log(`users-svc#udpate-setting:`, _id);
+    return await this.userModel
+      .findByIdAndUpdate({ _id: _id }, { setting: updateSettingReqDto })
+      .then(async (res) => {
+        if (res) {
+          const data = await this.userModel.findById(
+            { _id: _id },
+            { setting: 1 }
+          );
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `update user #${_id} successfully`,
+            data: data,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user #${_id} found`,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+
+  async updateAvatar(
+    updateAvatarReqDto: UpdateAvatarReqDto
+  ): Promise<UpdateAvatarResDto> {
+    const { _id, avatar } = updateAvatarReqDto;
+    const { originalname, mimetype, buffer, size } = avatar;
+    const fileName = `${Date.now()}-megoo-${originalname}`;
+    console.log(`users-svc#udpate-avatar:`, _id);
+    return await this.userModel
+      .findByIdAndUpdate(
+        { _id: _id },
+        {
+          avatar: {
+            fileName: fileName,
+            size: size,
+            data: buffer.data.toString('base64'),
+            contentType: mimetype,
+            uploadDate: new Date(),
+          },
+        }
+      )
+      .then(async (res) => {
+        const data = await this.userModel.findById(_id, { avatar: 1 });
+        console.log(data);
+        if (res)
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `update user #${_id} successfully`,
+            data: data,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user #${_id} found`,
+          });
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+
+  async removeUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+    console.log(`users-svc#delete-user:`, id);
+    return await this.userModel
+      .deleteById(id)
+      .then(async (res) => {
+        console.log(res);
+        if (res) {
+          const data = await this.userModel.findById(id);
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `delete user #${id} successfully`,
+            data: data,
           });
         } else {
           return Promise.resolve({
@@ -220,83 +282,17 @@ export class UsersCrudService {
         });
       });
   }
-
-  async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
-  ): Promise<UpdateSettingResDto> {
-    const id = updateSettingReqDto._id;
-    console.log(`users-svc#udpate-setting:`, id);
-    const _id: ObjectId = new ObjectId(id);
+  async restoreUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+    console.log(`users-svc#restore-deleted-user:`, id);
     return await this.userModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
-        {
-          setting: updateSettingReqDto,
-        }
-      )
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .restore({ _id: id })
+      .then(async (res) => {
+        const data = await this.userModel.findById(id);
+        if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
-            message: `update user #${id} successfully`,
-          });
-        else
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user #${id} found`,
-          });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
-      });
-  }
-
-  async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
-  ): Promise<UpdateAvatarResDto> {
-    const id = updateAvatarReqDto._id;
-    console.log(`users-svc#udpate-avatar:`, id);
-    const _id: ObjectId = new ObjectId(id);
-    return await this.userModel
-      .updateOne({ _id: _id }, { avatar: updateAvatarReqDto.avatar })
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `update user #${id} successfully`,
-          });
-        else
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user #${id} found`,
-          });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
-      });
-  }
-
-  async removeUser(id: string): Promise<CreateUserResDto> {
-    console.log(`users-svc#delete-user:`, id);
-    const _id: ObjectId = new ObjectId(id);
-    return await this.userModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
-        { deletedAt: new Date(now()) },
-        { new: true }
-      )
-      .then((res) => {
-        console.log(res);
-        if (res.matchedCount && res.modifiedCount) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `delete user #${id} successfully`,
+            message: `restore deleted user #${id} successfully`,
+            data: data,
           });
         } else {
           return Promise.resolve({
@@ -316,26 +312,24 @@ export class UsersCrudService {
   async updateCart(
     updateCartReqDto: UpdateCartReqDto
   ): Promise<UpdateCartResDto> {
-    const id = updateCartReqDto._id;
-    console.log(`update items of user's cart`, updateCartReqDto.cart);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id, cart } = updateCartReqDto;
+    console.log(`update items of user's cart`, cart);
     return await this.userModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
-        { $set: { cart: updateCartReqDto.cart } },
-        { new: true }
-      )
-      .then((res) => {
-        if (res.matchedCount && res.matchedCount)
+      .findByIdAndUpdate({ _id: _id }, { $set: { cart: cart } })
+      .then(async (res) => {
+        if (res) {
+          const data = await this.userModel.findById(_id, { cart: 1 });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `updated user #${_id}'s cart successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No user #${_id}'s cart found`,
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -345,29 +339,23 @@ export class UsersCrudService {
       });
   }
 
-  async getCart(id: string): Promise<GetCartResDto> {
+  async getCart(id: Types.ObjectId): Promise<GetCartResDto> {
     console.log(`get items from user's cart`, id);
     return await this.userModel
-      .find({ _id: id }, { cart: 1, _id: 0 })
-      .exec()
+      .findById({ _id: id }, { cart: 1, _id: 0 })
       .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let cart = [];
-        for (const ele of res) {
-          cart.push(ele);
-        }
-        if (!cart.length) {
+        if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,
-            cart: cart,
+            cart: res.cart,
           });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No items found in user #${id}'s cart`,
             error: 'NOT FOUND',
-            cart: cart,
+            cart: res.cart,
           });
         }
       })
@@ -380,59 +368,27 @@ export class UsersCrudService {
       });
   }
 
-  async getTrxHist(id: string): Promise<GetTrxHistResDto> {
-    console.log(`get transaction history of from user`, id);
-    return await this.userModel
-      .find({ _id: id }, { cart: 1, _id: 0 })
-      .exec()
-      .then((res) => {
-        // eslint-disable-next-line prefer-const
-        let hist = [];
-        for (const ele of res) {
-          hist.push(ele);
-        }
-        if (!hist.length) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user #${id}'s cart successfully`,
-            trx: hist,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No transacion history of user #${id} found`,
-            error: 'NOT FOUND',
-            trx: hist,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          trx: null,
-        });
-      });
-  }
-
   async updateTrxHist(
     updateTrxHistReqDto: UpdateTrxHistReqDto
   ): Promise<UpdateTrxHistResDto> {
-    console.log(`update items of user's cart`, updateTrxHistReqDto.trx);
-    const _id: ObjectId = new ObjectId(updateTrxHistReqDto._id);
+    const { _id, trx, cart } = updateTrxHistReqDto;
+    console.log(`update items of user's cart`, trx);
     return await this.userModel
-      .findOneAndUpdate(
+      .findByIdAndUpdate(
         { _id: _id },
-        { $push: { trxHist: updateTrxHistReqDto.trx } },
-        { new: true }
+        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } }
       )
-      .exec()
       .then((res) => {
-        console.log(res);
-        return Promise.resolve({
-          statusCode: HttpStatus.OK,
-          message: `updated user #${_id}'s cart successfully`,
-        });
+        if (!res)
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user #${_id} found`,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `updated user #${_id}'s cart successfully`,
+          });
       })
       .catch((error) => {
         return Promise.resolve({
@@ -440,5 +396,45 @@ export class UsersCrudService {
           message: error.message,
         });
       });
+  }
+  async checkout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
+    const { _id, cart } = updateCartReqDto;
+    console.log(`User #${_id} checkout:`, cart);
+    const checkExist = await this.userModel.findById({ _id: _id });
+    if (checkExist) {
+      const checkItem: boolean = cart.every((elem) =>
+        checkExist.cart.some((value) => {
+          if (value.package == elem.package && value.quantity == elem.quantity)
+            return true;
+          else return false;
+        })
+      );
+      if (checkItem) {
+        return await firstValueFrom(
+          this.txnClient
+            .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+            .pipe(timeout(5000))
+        );
+      } else {
+        return Promise.resolve({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `No items found in user #${_id}'s cart`,
+          order: null,
+          trans: null,
+        });
+      }
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `No user #${_id} found`,
+        order: null,
+        trans: null,
+      });
+    }
+  }
+  async searchUser(keyword: string): Promise<UserDto[]> {
+    return await this.userModel.find({ $text: { $search: keyword } });
   }
 }

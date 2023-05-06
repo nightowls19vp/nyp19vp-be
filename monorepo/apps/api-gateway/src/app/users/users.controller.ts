@@ -1,39 +1,65 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
   Inject,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
-  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   kafkaTopic,
+  ParseObjectIdPipe,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
   UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
-  UpdateTrxHistReqDto,
-  UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
+  UsersCollectionProperties,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
-import { Patch } from '@nestjs/common/decorators';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  Patch,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common/decorators';
+import {
+  CollectionDto,
+  CollectionResponse,
+  ValidationPipe,
+} from '@forlagshuset/nestjs-mongoose-paginate';
+import { Types } from 'mongoose';
+import { Multer } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController implements OnModuleInit {
   constructor(
@@ -50,36 +76,46 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'Created User', type: CreateUserResDto })
+  @ApiCreatedResponse({ description: 'Created user', type: CreateUserResDto })
+  @ApiInternalServerErrorResponse({ description: 'Bad Request: Duplicate Key' })
   async create(
     @Body() createUserReqDto: CreateUserReqDto
   ): Promise<CreateUserResDto> {
     console.log('createUser', createUserReqDto);
-
     return this.usersService.createUser(createUserReqDto);
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Got All Users', type: GetUsersResDto })
-  async getAll(@Req() req: Request): Promise<GetUsersResDto> {
+  @ApiOperation({
+    description:
+      'Filter MUST: \n\n\t- name(optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}\n\n\t- phone(optional)\n\n\t\t+ check input @IsPhoneNumber(\'VI\')\n\n\t\t+ search full-text\n\n\t\t+ example: {"phone":"+84987654321"}\n\n\t- email(optional)\n\n\t\t+ check input exists @\n\n\t\t+ example: {"email":{"$regex":"^exam@"}}',
+  })
+  @ApiOkResponse({ description: 'Got All Users' })
+  async getAll(
+    @Query(new ValidationPipe(UsersCollectionProperties))
+    collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
     console.log('get all users');
+    console.log(collectionDto.filter);
+    return this.usersService.getAllUsers(collectionDto);
+  }
 
-    return this.usersService.getAllUsers(req);
+  @Get('search')
+  async searchUser(@Query('keyword') keyword: string): Promise<UserDto[]> {
+    console.log('search users');
+    return this.usersService.searchUser(keyword);
   }
 
   @Get(':id')
-  @ApiOkResponse({ description: 'Got User by Id', type: GetUserInfoResDto })
-  async getUserById(@Param('id') id: string): Promise<GetUserInfoResDto> {
+  @ApiOkResponse({ description: 'Got user by Id', type: GetUserInfoResDto })
+  @ApiParam({ name: 'id', type: String })
+  @ApiNotFoundResponse({ description: 'No user found' })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
+  async getUserById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetUserInfoResDto> {
+    console.log(`get user info by #${id}`);
     return this.usersService.getUserById(id);
-  }
-
-  @Get('/findByFilter/:option')
-  @ApiOkResponse({
-    description: 'Got User Setting by Partial<UserInfo>',
-    type: GetUsersResDto,
-  })
-  async getUserBy(@Param('option') option: string): Promise<GetUsersResDto> {
-    return this.usersService.getUserBy(option);
   }
 
   @Get(':id/setting')
@@ -87,11 +123,45 @@ export class UsersController implements OnModuleInit {
     description: 'Got User Setting by Id',
     type: GetUserSettingResDto,
   })
+  @ApiParam({ name: 'id', type: String })
   async getUserSettingById(
-    @Param('id') id: string
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<GetUserSettingResDto> {
     console.log(`get user setting #${id}`);
     return this.usersService.getUserSettingById(id);
+  }
+
+  @Get(':id/cart')
+  @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
+  @ApiParam({ name: 'id', type: String })
+  async getCart(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<GetCartResDto> {
+    console.log(`get items of user #${id}'s cart`);
+    return this.usersService.getCart(id);
+  }
+
+  @Patch(':id')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
+  async deleteUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateUserResDto> {
+    console.log(`delete user #${id}`);
+    return this.usersService.deleteUser(id);
+  }
+
+  @Patch(':id/restore')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({
+    description: 'Restore deleted user',
+    type: CreateUserResDto,
+  })
+  async restoreUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateUserResDto> {
+    console.log(`restore user #${id}`);
+    return this.usersService.restoreUser(id);
   }
 
   @Put(':id')
@@ -119,30 +189,45 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
-  @Put(':id/avatar')
-  @ApiOkResponse({
-    description: 'Updated User Setting',
-    type: UpdateAvatarResDto,
+  @Post(':id/avatar')
+  @UseInterceptors(FileInterceptor('file')) // 👈 field name must match
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
   })
-  async updateAvatar(
+  uploadFile(
     @Param('id') id: string,
-    @Body() updateAvatarReqDto: UpdateAvatarReqDto
+    @UploadedFile(
+      'file',
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
+        ],
+      })
+    )
+    file: Express.Multer.File
   ): Promise<UpdateAvatarResDto> {
-    console.log(`update user #${id}`, updateAvatarReqDto);
-    updateAvatarReqDto._id = id;
+    console.log(`update user #${id}`, file);
+    const updateAvatarReqDto: UpdateAvatarReqDto = {
+      _id: id,
+      avatar: file,
+    };
     return this.usersService.updateAvatar(updateAvatarReqDto);
-  }
-
-  @Patch(':id')
-  @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
-  async deleteUser(@Param('id') id: string): Promise<CreateUserResDto> {
-    return this.usersService.deleteUser(id);
   }
 
   @Put(':id/cart')
   @ApiOkResponse({
-    description: 'Updated shopping cart',
+    description: "Updated user's shopping cart",
     type: UpdateCartResDto,
+  })
+  @ApiOperation({
+    description:
+      'Update all items in cart.\n\nMUST update the entire cart, not add or remove a few items.',
   })
   async updateCart(
     @Param('id') id: string,
@@ -153,36 +238,20 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateCart(updateCartReqDto);
   }
 
-  @Get(':id/cart')
-  @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
-  async getCart(@Param('id') id: string): Promise<GetCartResDto> {
-    console.log(`get items of user #${id}'s cart`);
-    return this.usersService.getCart(id);
-  }
-
-  @Get(':id/trx')
-  @ApiOkResponse({ description: 'Get transaction history' })
-  async getTrxHist(@Param('id') id: string): Promise<GetTrxHistResDto> {
-    console.log(`get transaction history of from user #${id}`);
-    return this.usersService.getTrxHist(id);
-  }
-
-  @Put(':id/trx')
-  @ApiOkResponse({ description: 'Get transaction history' })
-  async updateTrxHist(
-    @Param('id') id: string,
-    @Body() updateTrxHistReqDto: UpdateTrxHistReqDto
-  ): Promise<UpdateTrxHistResDto> {
-    console.log(`update transaction history of from user #${id}`);
-    updateTrxHistReqDto._id = id;
-    return this.usersService.updateTrxHist(updateTrxHistReqDto);
-  }
-
   @Get('healthcheck')
   async healthcheck() {
     // const res = await firstValueFrom(
     //   this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
     // );
     // return res;
+  }
+  @Post(':id/checkout')
+  async checkout(
+    @Param('id') id: string,
+    @Body() updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
+    console.log(`checkout #${id}`, updateCartReqDto);
+    updateCartReqDto._id = id;
+    return this.usersService.checkout(updateCartReqDto);
   }
 }

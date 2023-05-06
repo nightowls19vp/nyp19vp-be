@@ -1,13 +1,15 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
+import { Controller, Inject, OnModuleInit } from '@nestjs/common';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
-  GetTrxHistResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  GetUsersResDto,
   kafkaTopic,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -19,12 +21,26 @@ import {
   UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
+  UserDto,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
+import { Types } from 'mongoose';
 
 @Controller()
-export class UsersCrudController {
-  constructor(private readonly usersCrudService: UsersCrudService) {}
+export class UsersCrudController implements OnModuleInit {
+  constructor(
+    private readonly usersCrudService: UsersCrudService,
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+  ) {}
+
+  async onModuleInit() {
+    this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
+    for (const key in kafkaTopic.TXN) {
+      this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
+    }
+    await Promise.all([this.txnClient.connect()]);
+  }
 
   @MessagePattern(kafkaTopic.USERS.CREATE)
   create(
@@ -34,22 +50,21 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_ALL)
-  findAll(): Promise<GetUsersResDto> {
-    return this.usersCrudService.findAll();
+  findAll(
+    @Payload() collectionDto: CollectionDto
+  ): Promise<CollectionResponse<UserDto>> {
+    return this.usersCrudService.findAll(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
-  findInfoById(@Payload() id: string): Promise<GetUserInfoResDto> {
+  findInfoById(@Payload() id: Types.ObjectId): Promise<GetUserInfoResDto> {
     return this.usersCrudService.findInfoById(id);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY)
-  findInfoBy(@Payload() option: string): Promise<GetUsersResDto> {
-    return this.usersCrudService.findInfoBy(option);
-  }
-
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
-  findSettingById(@Payload() id: string): Promise<GetUserSettingResDto> {
+  findSettingById(
+    @Payload() id: Types.ObjectId
+  ): Promise<GetUserSettingResDto> {
     return this.usersCrudService.findSettingById(id);
   }
 
@@ -74,9 +89,14 @@ export class UsersCrudController {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.DELETE_ONE)
-  removeUser(@Payload() id: string): Promise<CreateUserResDto> {
+  @MessagePattern(kafkaTopic.USERS.DELETE_USER)
+  removeUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
     return this.usersCrudService.removeUser(id);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.RESTORE_USER)
+  restoreUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
+    return this.usersCrudService.restoreUser(id);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
@@ -87,19 +107,27 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_CART)
-  getCart(@Payload() id: string): Promise<GetCartResDto> {
+  getCart(@Payload() id: Types.ObjectId): Promise<GetCartResDto> {
     return this.usersCrudService.getCart(id);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_TRX)
-  getTrxHist(@Payload() id: string): Promise<GetTrxHistResDto> {
-    return this.usersCrudService.getTrxHist(id);
-  }
-
-  @MessagePattern(kafkaTopic.USERS.GET_TRX)
+  @MessagePattern(kafkaTopic.USERS.UPDATE_TRX)
   updateTrxHist(
     @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto
   ): Promise<UpdateTrxHistResDto> {
     return this.usersCrudService.updateTrxHist(updateTrxHistReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.CHECKOUT)
+  checkout(
+    @Payload() updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
+    console.log('users-svc : checkout');
+    return this.usersCrudService.checkout(updateCartReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.SEARCH_USER)
+  searchUser(@Payload() keyword: string): Promise<UserDto[]> {
+    return this.usersCrudService.searchUser(keyword);
   }
 }
