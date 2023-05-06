@@ -4,6 +4,7 @@ import { Item } from './item.schema';
 import { UserSetting } from './setting.schema';
 import { Factory } from 'nestjs-seeder';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
+import { File } from './file.schema';
 
 export type UserDocument = HydratedDocument<User> & SoftDeleteDocument;
 
@@ -27,14 +28,9 @@ export class User {
   @Prop({ unique: true, type: String })
   phone: string;
 
-  @Factory((faker) => faker.image.avatar())
-  @Prop({
-    type: String,
-    default:
-      'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
-    required: false,
-  })
-  avatar: string;
+  // @Factory((faker) => faker.image.avatar())
+  @Prop({ required: false })
+  avatar: File;
 
   @Prop({ required: true, default: Object })
   setting: UserSetting;

@@ -215,12 +215,26 @@ export class UsersCrudService {
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto
   ): Promise<UpdateAvatarResDto> {
-    const { _id } = updateAvatarReqDto;
+    const { _id, avatar } = updateAvatarReqDto;
+    const { originalname, mimetype, buffer, size } = avatar;
+    const fileName = `${Date.now()}-megoo-${originalname}`;
     console.log(`users-svc#udpate-avatar:`, _id);
     return await this.userModel
-      .findByIdAndUpdate({ _id: _id }, { avatar: updateAvatarReqDto.avatar })
+      .findByIdAndUpdate(
+        { _id: _id },
+        {
+          avatar: {
+            fileName: fileName,
+            size: size,
+            data: buffer.data.toString('base64'),
+            contentType: mimetype,
+            uploadDate: new Date(),
+          },
+        }
+      )
       .then(async (res) => {
         const data = await this.userModel.findById(_id, { avatar: 1 });
+        console.log(data);
         if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,

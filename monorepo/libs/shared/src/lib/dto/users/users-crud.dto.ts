@@ -92,9 +92,9 @@ export class UserInfo {
   email: string;
 
   @ApiProperty({
-    description: 'Avatar of user. It could be embbed link or upload file',
+    description: 'Avatar of user. Only supported upload file',
   })
-  avatar: string;
+  avatar: any;
 }
 
 export class Items {
