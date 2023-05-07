@@ -348,11 +348,8 @@ export class AuthController implements OnModuleInit {
   @Post('logout')
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_REFRESH_TOKEN_NAME)
   @UseGuards(RefreshJwtAuthGuard)
-  async logout(
-    @Req() req: Request,
-    @Body() reqDto: LogoutReqDto,
-  ): Promise<LogoutResDto> {
-    const refreshToken = getRefreshToken(req) || reqDto.refreshToken || '';
+  async logout(@Req() req: Request): Promise<LogoutResDto> {
+    const refreshToken = getRefreshToken(req) || undefined;
 
     return this.authService.logout({
       refreshToken,

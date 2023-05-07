@@ -45,7 +45,7 @@ export class DbService {
     // save admin
     const adminAccount = this.accountRepo.create({
       id: 'admin',
-      username: username,
+      username: 'admin',
       hashedPassword: hashedPassword,
       email: email,
       role: roleAdmin,
@@ -104,7 +104,7 @@ export class DbService {
 
         const user1 = this.accountRepo.create({
           id: 'user' + i,
-          username: 'user' + i + '@email.com',
+          username: 'user' + i,
           hashedPassword: hashedPassword,
           email: 'user' + i + '@gmail.com',
           role: roleUser,
