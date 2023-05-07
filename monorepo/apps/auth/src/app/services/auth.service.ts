@@ -23,6 +23,7 @@ import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { AccountService } from './account.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -112,6 +113,7 @@ export class AuthService {
         username: accountFound.username,
         email: accountFound.email,
         role: accountFound.role.roleName,
+        userInfoId: accountFound.userInfoId,
         password: undefined,
         hashedPassword: undefined,
         socialAccounts: socialAccounts.map((sa) => sa.platform),
@@ -131,7 +133,7 @@ export class AuthService {
           ...payload,
         },
         userInfo: (
-          await this.accountService.getUserInfoByEmail(payload.user.email)
+          await this.accountService.getUserInfoById(payload.user.userInfoId)
         ).user,
       },
     };
@@ -202,7 +204,9 @@ export class AuthService {
       data: {
         auth: validateUserRes.user,
         userInfo: (
-          await this.accountService.getUserInfoByEmail(userDto.username)
+          await this.accountService.getUserInfoById(
+            validateUserRes.user.userInfoId,
+          )
         ).user,
       },
     });
@@ -231,10 +235,14 @@ export class AuthService {
         throw new RpcException(accountNotFountRpcException);
       }
 
+      // hash refreshToken with sha256
+      const hash = crypto.createHash('sha256');
+      hash.update(refreshToken);
+
       const refreshTokenRecord = this.refreshTokenBlacklistRepo.create({
         account: account,
         userId: account.id,
-        token: refreshToken,
+        token: hash.digest('hex'),
         expiredAt: new Date(decoded.exp * 1e3),
       });
 
@@ -254,19 +262,19 @@ export class AuthService {
   /**
    * return true if token is valid, false if token is in blacklist
    */
-  async validateRefreshToken(
-    userId: string,
-    refreshToken: string,
-  ): Promise<boolean> {
-    const token = await this.refreshTokenBlacklistRepo.findOneBy({
-      token: refreshToken,
+  async validateRefreshToken(refreshToken: string): Promise<boolean> {
+    // hash refreshToken with sha256
+    const hash = crypto.createHash('sha256');
+    hash.update(refreshToken);
+    const hashedToken = hash.digest('hex');
+
+    console.log('hashedToken', hashedToken);
+
+    return !this.refreshTokenBlacklistRepo.exist({
+      where: {
+        token: hashedToken,
+      },
     });
-
-    console.log('token', token);
-    const isTokenInBlacklist = token !== null;
-
-    // if token in blacklist, it is not valid
-    return !isTokenInBlacklist;
   }
 
   refreshAccessToken(payload: IJwtPayload): string {
@@ -293,45 +301,22 @@ export class AuthService {
     });
   }
 
-  // async authorize(userId: string, actionId: string): Promise<boolean> {
-  //   // get user role
-  //   const account = await this.accountRespo.findOneBy({ id: userId });
+  async refresh(refreshToken: string): Promise<RefreshTokenResDto> {
+    if (await this.validateRefreshToken(refreshToken)) {
+      const jwtPayload: IJwtPayload = this.decodeToken(refreshToken);
 
-  //   // const requiredRoles: Roles[] = this.actionService.findOneBy({
-  //   //   actionId: actionId,
-  //   // });
+      const accessToken = this.generateAccessJWT(jwtPayload);
 
-  //   // Get required role for action #actionId
-  //   const requiredRoles = ['admin', 'user'];
-
-  //   let isAuthorized = false;
-
-  //   // for (const role in requiredRoles) {
-  //   //   if (user.role.id === role.id) {
-  //   //     isAuthorized = true;
-
-  //   //     break;
-  //   //   }
-  //   // }
-
-  //   for (const role of requiredRoles) {
-  //     if (role === account.role) {
-  //       isAuthorized = true;
-  //     }
-  //   }
-
-  //   return isAuthorized;
-  // }
-
-  refresh(refreshToken: string): RefreshTokenResDto {
-    const jwtPayload: IJwtPayload = this.decodeToken(refreshToken);
-
-    const accessToken = this.generateAccessJWT(jwtPayload);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Refresh token successfully',
-      accessToken: accessToken,
-    };
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Refresh token successfully',
+        accessToken: accessToken,
+      };
+    } else {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Refresh token fail cause user has been logout',
+      };
+    }
   }
 }

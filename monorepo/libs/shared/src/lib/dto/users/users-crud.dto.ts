@@ -184,7 +184,7 @@ export class GetUserSettingResDto extends IntersectionType(
   UserSettingDto,
 ) {}
 
-export class CreateUserReqDto extends OmitType(UserInfo, ['avatar']) {}
+export class CreateUserReqDto extends UserInfo {}
 
 export class CreateUserResDto extends BaseResDto {}
 

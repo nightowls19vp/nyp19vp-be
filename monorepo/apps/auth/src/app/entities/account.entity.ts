@@ -1,6 +1,12 @@
 import { randomUUID } from 'crypto';
 import {
-    Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { ACCOUNT } from '../constants/entities';
@@ -76,4 +82,10 @@ export class AccountEntity {
     },
   )
   socialAccounts: Promise<SocialAccountEntity[]>;
+
+  @Column({
+    name: 'user_info_id',
+    nullable: false,
+  })
+  userInfoId: string;
 }

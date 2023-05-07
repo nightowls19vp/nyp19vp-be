@@ -34,7 +34,7 @@ import { ClientKafka } from '@nestjs/microservices';
 export class UsersCrudService implements OnModuleInit {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
   ) {}
   async onModuleInit() {
     this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
@@ -51,13 +51,15 @@ export class UsersCrudService implements OnModuleInit {
       dob: createUserReqDto.dob,
       phone: createUserReqDto.phone,
       email: createUserReqDto.email,
+      avatar: createUserReqDto.avatar,
     });
     return await newUser
       .save()
-      .then(() => {
+      .then((user) => {
         return Promise.resolve({
           statusCode: HttpStatus.CREATED,
           message: `create user #${createUserReqDto.email} successfully`,
+          data: user,
         });
       })
       .catch((error) => {
@@ -149,7 +151,7 @@ export class UsersCrudService implements OnModuleInit {
     return await this.userModel
       .findOne(
         { _id: id, deletedAt: { $exists: false } },
-        { setting: 1, _id: 0 }
+        { setting: 1, _id: 0 },
       )
       .then((res) => {
         if (!res) {
@@ -408,7 +410,7 @@ export class UsersCrudService implements OnModuleInit {
         },
         (error) => {
           throw error;
-        }
+        },
       )
       .unsubscribe();
     //   else

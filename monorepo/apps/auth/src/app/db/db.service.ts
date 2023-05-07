@@ -9,6 +9,7 @@ import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AccountService } from '../services/account.service';
+import { userInfo } from 'os';
 
 @Injectable()
 export class DbService {
@@ -51,13 +52,23 @@ export class DbService {
     });
 
     try {
-      await this.accountRepo.save(adminAccount);
-      await this.accountService.createUserInfo({
+      const resDto = await this.accountService.createUserInfo({
         email: email,
         name: 'admin',
         dob: null,
         phone: null,
+        avatar: undefined,
       });
+
+      console.log('\n\nres', resDto);
+
+      if (![200, 201].includes(resDto.statusCode)) {
+        throw new Error(resDto.message);
+      }
+
+      adminAccount.userInfoId = resDto.data?.['_id'] || null;
+
+      await this.accountRepo.save(adminAccount);
     } catch (error) {
       //
     }
@@ -82,38 +93,41 @@ export class DbService {
   }
 
   //int n user
-  async initUser(n: number) {
+  async initUser(n = 100) {
     for (let i = 0; i < n; i++) {
-      const hashedPassword = await bcrypt.hash('password', 10);
+      setTimeout(async () => {
+        const hashedPassword = await bcrypt.hash('password', 10);
 
-      const roleUser = await this.roleRepo.findOneBy({
-        roleName: ERole.user,
-      });
-
-      const user1 = this.accountRepo.create({
-        id: 'user' + i,
-        username: 'user' + i + '@email.com',
-        hashedPassword: hashedPassword,
-        email: 'user' + i + '@gmail.com',
-        role: roleUser,
-      });
-
-      try {
-        //save user
-        await this.accountRepo.save(user1);
-
-        // save user info
-        const res = await this.accountService.createUserInfo({
-          email: 'user' + i + '@gmail.com',
-          name: 'user' + i,
-          dob: null,
-          phone: null,
+        const roleUser = await this.roleRepo.findOneBy({
+          roleName: ERole.user,
         });
 
-        console.error('\n\nres', res);
-      } catch (error) {
-        console.log(error);
-      }
+        const user1 = this.accountRepo.create({
+          id: 'user' + i,
+          username: 'user' + i + '@email.com',
+          hashedPassword: hashedPassword,
+          email: 'user' + i + '@gmail.com',
+          role: roleUser,
+        });
+
+        try {
+          // save user info
+          const res = await this.accountService.createUserInfo({
+            email: 'user' + i + '@gmail.com',
+            name: 'user' + i,
+            dob: null,
+            phone: null,
+            avatar: undefined,
+          });
+
+          //save user
+          user1.userInfoId = res.data?.['_id'] || null;
+          await this.accountRepo.save(user1);
+          console.error('\n\nres', res);
+        } catch (error) {
+          console.log(error);
+        }
+      }, 0);
     }
   }
   // init all data
@@ -121,7 +135,7 @@ export class DbService {
     try {
       await this.initRoles();
       await this.initAdmin();
-      await this.initUser(10);
+      await this.initUser(3);
     } catch (error) {
       console.log(error);
     }

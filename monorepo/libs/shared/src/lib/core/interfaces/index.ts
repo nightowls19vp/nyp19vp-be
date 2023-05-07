@@ -18,6 +18,7 @@ export interface IJwtPayloadUser {
   username: string;
   email: string;
   role: ERole;
+  userInfoId: string;
   socialAccounts: string[];
 }
 
@@ -26,6 +27,7 @@ export class IUser implements IJwtPayloadUser {
   username: string;
   email: string;
   role: ERole;
+  userInfoId: string;
   password?: string;
   hashedPassword?: string;
   socialAccounts: string[];

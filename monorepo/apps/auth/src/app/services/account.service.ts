@@ -85,6 +85,7 @@ export class AccountService {
         dob: reqDto.dob,
         name: reqDto.name,
         phone: reqDto.phone,
+        avatar: reqDto.avatar,
       };
 
       console.log(createUserReq);
@@ -173,98 +174,6 @@ export class AccountService {
       account = socialAccount.account;
     }
 
-    // if (account) {
-    //   // find the social account with this platform and platformId
-    //   const socialAccounts = await account.socialAccounts;
-    //   const socialAccount = socialAccounts.find(
-    //     (socialAccount) =>
-    //       socialAccount.platform === user.platform &&
-    //       socialAccount.platformId === user.platformId,
-    //   );
-
-    //   if (socialAccount) {
-    //     console.log('CASE ACCOUNT && SOCIAL ACCOUNT');
-
-    //     // if the social account is existed, return the access token and refresh token
-    //     const payload: IJwtPayload = {
-    //       user: {
-    //         id: account.id,
-    //         email: account.email,
-    //         username: account.username,
-    //         role: account.role.roleName,
-    //         socialAccounts: [
-    //           ...new Set(socialAccounts.map((sa) => sa.platform)),
-    //         ],
-    //       },
-    //     };
-    //     return {
-    //       statusCode: HttpStatus.OK,
-    //       message: 'login successfully',
-    //       data: {
-    //         accessToken: this.authService.generateAccessJWT(payload),
-    //         refreshToken: this.authService.generateRefreshJWT(payload),
-    //       },
-    //     };
-    //   }
-
-    //   // if the social account is not existed, create a new social account
-    //   else {
-    //     console.log('CASE ACCOUNT && !SOCIAL ACCOUNT');
-
-    //     const queryRunner = this.dataSource.createQueryRunner();
-
-    //     await queryRunner.connect();
-    //     await queryRunner.startTransaction();
-    //     try {
-    //       const socialMediaAccount: SocialAccountEntity =
-    //         this.socialAccRepo.create({
-    //           account: account,
-    //           platform: user.platform,
-    //           platformId: user.platformId,
-    //         });
-
-    //       await queryRunner.manager.save<SocialAccountEntity>(
-    //         socialMediaAccount,
-    //       );
-
-    //       await queryRunner.commitTransaction();
-
-    //       const payload: IJwtPayload = {
-    //         user: {
-    //           id: account.id,
-    //           email: account.email,
-    //           username: account.username,
-    //           role: account.role.roleName,
-    //           socialAccounts: [
-    //             ...new Set([
-    //               ...socialAccounts.map((sa) => sa.platform),
-    //               user.platform,
-    //             ]),
-    //           ],
-    //         },
-    //       };
-    //       return {
-    //         statusCode: HttpStatus.OK,
-    //         message: 'login successfully',
-    //         data: {
-    //           accessToken: this.authService.generateAccessJWT(payload),
-    //           refreshToken: this.authService.generateRefreshJWT(payload),
-    //         },
-    //       };
-    //     } catch (error) {
-    //       await queryRunner.rollbackTransaction();
-    //       return {
-    //         statusCode: HttpStatus.BAD_REQUEST,
-    //         message: 'login fail',
-    //         error: error.message,
-    //       };
-    //     } finally {
-    //       // you need to release a queryRunner which was manually instantiated
-    //       await queryRunner.release();
-    //     }
-    //   }
-    // }
-
     console.log('sa', socialAccount);
     console.log('acc', account);
 
@@ -284,11 +193,33 @@ export class AccountService {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         if (!account) {
+          const createUserReq: CreateUserReqDto = {
+            email: user.email,
+            dob: null,
+            name: user.name,
+            phone: null,
+            avatar: user.photo,
+          };
+
+          const createUserRes: CreateUserResDto = await firstValueFrom(
+            this.usersClient.send(
+              kafkaTopic.USERS.CREATE,
+              JSON.stringify(createUserReq),
+            ),
+          );
+
+          if (createUserRes.error) {
+            console.log('roll back');
+
+            throw new Error(createUserRes.error);
+          }
+
           account = this.accountRepo.create({
             username: randomUUID(),
             hashedPassword: hashedPassword,
             email: user.email,
             role: roleUser,
+            userInfoId: createUserRes.data?.['_id'],
           });
 
           account = await queryRunner.manager.save<AccountEntity>(account);
@@ -309,26 +240,6 @@ export class AccountService {
         socialAccount = await queryRunner.manager.save<SocialAccountEntity>(
           socialAccount,
         );
-
-        const createUserReq: CreateUserReqDto = {
-          email: user.email,
-          dob: null,
-          name: user.name,
-          phone: null,
-        };
-
-        const createUserRes: CreateUserResDto = await firstValueFrom(
-          this.usersClient.send(
-            kafkaTopic.USERS.CREATE,
-            JSON.stringify(createUserReq),
-          ),
-        );
-
-        if (createUserRes.error) {
-          console.log('roll back');
-
-          throw new Error(createUserRes.error);
-        }
 
         await queryRunner.commitTransaction();
 
@@ -359,8 +270,9 @@ export class AccountService {
       user: {
         id: account.id,
         email: account.email,
-        username: socialAccount.account.username,
-        role: socialAccount.account.role.roleName,
+        username: account?.username,
+        role: account?.role?.roleName,
+        userInfoId: account?.userInfoId,
         socialAccounts: (await account.socialAccounts).map((sa) => sa.platform),
       },
     };
@@ -383,15 +295,7 @@ export class AccountService {
   async createUserInfo(reqDto: CreateUserReqDto): Promise<CreateUserResDto> {
     const createUserInfoRes: CreateUserResDto = await firstValueFrom(
       this.usersClient
-        .send(
-          kafkaTopic.USERS.CREATE,
-          JSON.stringify({
-            email: reqDto.email,
-            dob: reqDto.dob,
-            name: reqDto.name,
-            phone: reqDto.dob,
-          }),
-        )
+        .send(kafkaTopic.USERS.CREATE, JSON.stringify(reqDto))
         .pipe(timeout(toMs('5s'))),
     );
 
@@ -459,7 +363,8 @@ export class AccountService {
           id: account.id,
           email: account.email,
           username: account.username,
-          role: account?.role?.roleName,
+          role: account?.role?.roleName || undefined,
+          userInfoId: account.userInfoId,
           socialAccounts: [
             ...new Set(
               (await account.socialAccounts).map(
@@ -489,11 +394,11 @@ export class AccountService {
   //   throw new RpcException('not implemented');
   // }
 
-  async getUserInfoByEmail(email: string): Promise<GetUserInfoResDto> {
+  async getUserInfoById(id: string): Promise<GetUserInfoResDto> {
     try {
       const getUserInfoRes: GetUserInfoResDto = await firstValueFrom(
         this.usersClient
-          .send(kafkaTopic.USERS.GET_INFO_BY_EMAIL, email)
+          .send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
           .pipe(timeout(toMs('5s'))),
       );
 
