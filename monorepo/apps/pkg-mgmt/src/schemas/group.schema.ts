@@ -2,8 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { GrPkg } from './gr-pkg.schema';
 import { Member } from './member.schema';
+import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
-export type GroupDocument = HydratedDocument<Group>;
+export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class Group {
@@ -35,11 +36,7 @@ export class Group {
     type: Date,
   })
   updatedAt: Date;
-
-  @Prop({
-    type: Date,
-  })
-  deletedAt: Date;
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group);
+GroupSchema.plugin(MongooseDelete, { overrideMethods: true, deletedAt: true });

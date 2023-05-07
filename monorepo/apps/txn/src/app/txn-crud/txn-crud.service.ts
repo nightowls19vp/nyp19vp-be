@@ -1,4 +1,9 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ItemDto,
   Items,
@@ -9,74 +14,245 @@ import {
   ZPCreateOrderResDto,
   ZPGetOrderStatusResDto,
   ZPGetOrderStatusReqDto,
+  CreateTransReqDto,
+  ZPDataCallback,
+  UpdateTrxHistReqDto,
+  EmbedData,
+  CreateTransResDto,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
-import { Observable, catchError, firstValueFrom, of, timeout } from 'rxjs';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import { zpconfig } from '../../core/config/zalopay.config';
 import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
+import { Transaction, TransactionDocument } from '../../schemas/txn.schema';
+import mongoose from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import * as MOP from '../../core/constants/payment_method.constants';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
-export class TxnCrudService implements OnModuleInit {
+export class TxnCrudService {
   constructor(
     private httpService: HttpService,
+    @InjectModel(Transaction.name)
+    private transModel: SoftDeleteModel<TransactionDocument>,
     @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
-    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
+    @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
-  async onModuleInit() {
-    this.pkgMgmtClient.subscribeToResponseOf(
-      kafkaTopic.HEALT_CHECK.PACKAGE_MGMT
-    );
-    for (const key in kafkaTopic.PACKAGE_MGMT) {
-      this.pkgMgmtClient.subscribeToResponseOf(kafkaTopic.PACKAGE_MGMT[key]);
-    }
-    await Promise.all([this.pkgMgmtClient.connect()]);
-  }
 
-  async checkout(updateCartReqDto: UpdateCartReqDto): Promise<any> {
-    const { _id = '6425a5f3f1757ad283e82b23', cart } = updateCartReqDto;
+  async zpCheckout(
+    updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
+    const { _id, cart } = updateCartReqDto;
     const list_id = cart.map((x) => x.package);
-    const res1 = this.pkgMgmtClient
-      .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
-      .pipe(
-        timeout(5000),
-        catchError(() => of(`Request timed out after: 5s`))
-      )
-      .subscribe(async (res: PackageDto[]) => {
+    try {
+      const res = await firstValueFrom(
+        this.pkgMgmtClient
+          .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+          .pipe(timeout(5000))
+      );
+      if (res.length) {
         const zaloPayReq = mapZaloPayReqDto(
           _id,
           mapPkgDtoToItemDto(res, cart),
           this.config
         );
         console.log(zaloPayReq);
-        const zaloRes = await this.zpCreateOrder(zaloPayReq);
-        console.log(zaloRes);
-        const { app_id, app_trans_id } = zaloPayReq;
-        const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto =
-          mapZPGetStatusReqDto(app_id, app_trans_id, this.config);
-        this.CheckStatus(zpGetOrderStatusReqDto);
+        const order = await this.zpCreateOrder(zaloPayReq);
+        if (order.return_code == 1) {
+          const trans = mapZPCreateOrderReqDtoToCreateTransReqDto(zaloPayReq);
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Create order successfully`,
+            order: order,
+            trans: trans,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.BAD_GATEWAY,
+            message: `Create order failed`,
+            order: order,
+            trans: null,
+          });
+        }
+      } else {
+        return Promise.resolve({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Package have been removed',
+          order: null,
+          trans: null,
+        });
+      }
+    } catch (error) {
+      return Promise.resolve({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+        order: null,
+        trans: null,
       });
+    }
   }
 
-  CheckStatus(zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto) {
-    let timer;
-    // eslint-disable-next-line prefer-const
-    timer = setIntervalAsync(async () => {
-      const res: ZPGetOrderStatusResDto = await this.zpGetOrderStatus(
-        zpGetOrderStatusReqDto
-      );
-      if (res.return_code == 1) {
-        console.log(res);
-        await clearIntervalAsync(timer);
+  async zpGetStatus(
+    createTransReqDto: CreateTransReqDto
+  ): Promise<CreateTransResDto> {
+    const { _id, user } = createTransReqDto;
+    const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto = mapZPGetStatusReqDto(
+      _id,
+      this.config
+    );
+    const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
+    console.log('result:', res);
+    if (typeof res === 'string') {
+      return Promise.resolve({
+        statusCode: HttpStatus.REQUEST_TIMEOUT,
+        message: `Request timeout`,
+      });
+    } else {
+      let result: CreateTransResDto;
+      const session = await this.connection.startSession();
+      session.startTransaction();
+      try {
+        const newTrans = new this.transModel({
+          _id: _id,
+          user: user,
+          amount: createTransReqDto.amount,
+          item: createTransReqDto.item,
+          method: {
+            type: MOP.PAYMENT_METHOD.EWALLET,
+            name: MOP.EWALLET.ZALOPAY,
+          },
+        });
+        const trans = (await newTrans.save()).$session(session);
+        if (!trans) {
+          throw new NotFoundException();
+        }
+        const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
+          user,
+          _id,
+          createTransReqDto.item
+        );
+        const res = await firstValueFrom(
+          this.usersClient.send(
+            kafkaTopic.USERS.UPDATE_TRX,
+            updateTrxHistReqDto
+          )
+        );
+        if (res.statusCode == HttpStatus.OK) {
+          await session.commitTransaction();
+          result = {
+            statusCode: HttpStatus.OK,
+            message: `Create Transaction #${_id} successfully`,
+          };
+        } else {
+          await session.abortTransaction();
+          result = {
+            statusCode: res.statusCode,
+            message: res.message,
+          };
+        }
+      } catch (error) {
+        await session.abortTransaction();
+        result = {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        };
+      } finally {
+        session.endSession();
+        // eslint-disable-next-line no-unsafe-finally
+        return Promise.resolve(result);
       }
-    }, 15000);
+    }
+  }
 
-    setTimeout(async () => {
-      await clearIntervalAsync(timer);
-      console.log('stop timeout');
-    }, 15 * 60 * 1000);
+  async zpCreateTrans(
+    zpDataCallback: ZPDataCallback
+  ): Promise<CreateTransResDto> {
+    let result: CreateTransResDto;
+    const item: ItemDto[] = JSON.parse(zpDataCallback.item);
+    const newTrans = new this.transModel({
+      _id: zpDataCallback.app_trans_id,
+      user: zpDataCallback.app_user,
+      item: item,
+      amount: zpDataCallback.amount,
+      method: {
+        type: MOP.PAYMENT_METHOD.EWALLET,
+        name: MOP.EWALLET.ZALOPAY,
+        trans_id: zpDataCallback.zp_trans_id,
+        detail_info: {
+          channel: MOP.ZALOPAY[zpDataCallback.channel],
+          zp_user_id: zpDataCallback.merchant_user_id,
+          user_fee_amount: zpDataCallback.user_fee_amount,
+          discount_amount: zpDataCallback.discount_amount,
+        },
+      },
+    });
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      const trans = (await newTrans.save()).$session(session);
+      if (!trans) {
+        throw new NotFoundException();
+      }
+      const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
+        zpDataCallback.app_user,
+        zpDataCallback.app_trans_id,
+        item
+      );
+      const res = await firstValueFrom(
+        this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+      );
+      if (res.statusCode == HttpStatus.OK) {
+        await session.commitTransaction();
+        result = {
+          statusCode: HttpStatus.OK,
+          message: `Create Transaction #${zpDataCallback.app_trans_id} successfully`,
+        };
+      } else {
+        await session.abortTransaction();
+        result = {
+          statusCode: res.statusCode,
+          message: res.message,
+        };
+      }
+    } catch (error) {
+      await session.abortTransaction();
+      result = {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      };
+    } finally {
+      session.endSession();
+      // eslint-disable-next-line no-unsafe-finally
+      return Promise.resolve(result);
+    }
+  }
+
+  zpCheckStatus(
+    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto
+  ): Promise<ZPGetOrderStatusResDto | string> {
+    let timer;
+    return new Promise((resolve) => {
+      timer = setIntervalAsync(async () => {
+        const res: ZPGetOrderStatusResDto = await this.zpGetOrderStatus(
+          zpGetOrderStatusReqDto
+        );
+        if (res.return_code == 1) {
+          resolve(res);
+          await clearIntervalAsync(timer);
+        }
+      }, 5000);
+      setTimeout(async () => {
+        resolve('Timeout');
+        await clearIntervalAsync(timer);
+      }, 15 * 60 * 1000);
+    });
   }
 
   async zpCreateOrder(
@@ -138,7 +314,7 @@ const totalPrice = (items: ItemDto[]): number => {
   for (const elem of items) {
     total += elem.price * elem.quantity;
   }
-  return total * 1000;
+  return total;
 };
 const getTransId = (): string => {
   const date = new Date();
@@ -149,7 +325,7 @@ const getTransId = (): string => {
     }
   } else {
     if (time[0] != '12') {
-      padTo2Digits(parseInt(time[0], 10));
+      time[0] = padTo2Digits(parseInt(time[0], 10));
     } else {
       time[0] = '00';
     }
@@ -185,6 +361,9 @@ const mapZaloPayReqDto = (
   const mac: string = createHmac('sha256', config.key1)
     .update(hmacinput)
     .digest('hex');
+  const embed_data: EmbedData = {
+    redirecturl: 'https://www.youtube.com/',
+  };
   const res: ZPCreateOrderReqDto = {
     amount: amount,
     app_id: config.app_id,
@@ -201,17 +380,42 @@ const mapZaloPayReqDto = (
   return res;
 };
 const mapZPGetStatusReqDto = (
-  app_id: string,
   app_trans_id: string,
   config: any
 ): ZPGetOrderStatusReqDto => {
-  const hmacinput = [app_id, app_trans_id, config.key1].join('|');
+  const hmacinput = [config.app_id, app_trans_id, config.key1].join('|');
   const mac: string = createHmac('sha256', config.key1)
     .update(hmacinput)
     .digest('hex');
   return {
-    app_id: app_id,
+    app_id: config.app_id,
     app_trans_id: app_trans_id,
     mac: mac,
   };
+};
+const mapUpdateTrxHistReqDto = (
+  app_user: string,
+  app_trans_id: string,
+  item: ItemDto[]
+): UpdateTrxHistReqDto => {
+  const updateTrxHistReqDto: UpdateTrxHistReqDto = {
+    _id: app_user,
+    trx: app_trans_id,
+    cart: item.map((x) => {
+      const item: Items = { package: x.id, quantity: x.quantity };
+      return item;
+    }),
+  };
+  return updateTrxHistReqDto;
+};
+const mapZPCreateOrderReqDtoToCreateTransReqDto = (
+  zpCreateOrderReqDto: ZPCreateOrderReqDto
+): CreateTransReqDto => {
+  const createTransReqDto: CreateTransReqDto = {
+    _id: zpCreateOrderReqDto.app_trans_id,
+    user: zpCreateOrderReqDto.app_user,
+    item: JSON.parse(zpCreateOrderReqDto.item),
+    amount: zpCreateOrderReqDto.amount,
+  };
+  return createTransReqDto;
 };

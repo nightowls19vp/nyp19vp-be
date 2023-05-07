@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
   Inject,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -22,16 +25,17 @@ import {
   UpdateCartResDto,
   UpdateSettingReqDto,
   UpdateSettingResDto,
-  UpdateTrxHistReqDto,
-  UpdateTrxHistResDto,
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
   UsersCollectionProperties,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -40,13 +44,20 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { Patch, Query } from '@nestjs/common/decorators';
+import {
+  Patch,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common/decorators';
 import {
   CollectionDto,
   CollectionResponse,
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { Types } from 'mongoose';
+import { Multer } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Users')
 @Controller('users')
@@ -136,7 +147,21 @@ export class UsersController implements OnModuleInit {
   async deleteUser(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
   ): Promise<CreateUserResDto> {
+    console.log(`delete user #${id}`);
     return this.usersService.deleteUser(id);
+  }
+
+  @Patch(':id/restore')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({
+    description: 'Restore deleted user',
+    type: CreateUserResDto,
+  })
+  async restoreUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+  ): Promise<CreateUserResDto> {
+    console.log(`restore user #${id}`);
+    return this.usersService.restoreUser(id);
   }
 
   @Put(':id')
@@ -164,16 +189,47 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
-  @Put(':id/avatar')
-  @ApiOkResponse({
-    description: 'Updated User Setting',
-    type: UpdateAvatarResDto,
-  })
-  async updateAvatar(
+  // @Post(':id/avatar')
+  // @UseInterceptors(FileInterceptor('file')) // 👈 field name must match
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: { type: 'string', format: 'binary' },
+  //     },
+  //   },
+  // })
+  // uploadFile(
+  //   @Param('id') id: string,
+  //   @UploadedFile(
+  //     'file',
+  //     new ParseFilePipe({
+  //       validators: [
+  //         new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
+  //       ],
+  //     })
+  //   )
+  //   file: Express.Multer.File
+  // ): Promise<UpdateAvatarResDto> {
+  //   console.log(`update user #${id}`, file);
+  //   const updateAvatarReqDto: UpdateAvatarReqDto = {
+  //     _id: id,
+  //     avatar: file,
+  //   };
+  //   return this.usersService.updateAvatar(updateAvatarReqDto);
+  // }
+
+  @Post(':id/avatar')
+  updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto
   ): Promise<UpdateAvatarResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
+    // const updateAvatarReqDto: UpdateAvatarReqDto = {
+    //   _id: id,
+    //   avatar: file,
+    // };
     updateAvatarReqDto._id = id;
     return this.usersService.updateAvatar(updateAvatarReqDto);
   }
@@ -196,17 +252,6 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateCart(updateCartReqDto);
   }
 
-  @Put(':id/trx')
-  @ApiOkResponse({ description: 'Get transaction history' })
-  async updateTrxHist(
-    @Param('id') id: string,
-    @Body() updateTrxHistReqDto: UpdateTrxHistReqDto
-  ): Promise<UpdateTrxHistResDto> {
-    console.log(`update transaction history of from user #${id}`);
-    updateTrxHistReqDto._id = id;
-    return this.usersService.updateTrxHist(updateTrxHistReqDto);
-  }
-
   @Get('healthcheck')
   async healthcheck() {
     // const res = await firstValueFrom(
@@ -218,7 +263,7 @@ export class UsersController implements OnModuleInit {
   async checkout(
     @Param('id') id: string,
     @Body() updateCartReqDto: UpdateCartReqDto
-  ): Promise<any> {
+  ): Promise<ZPCheckoutResDto> {
     console.log(`checkout #${id}`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.checkout(updateCartReqDto);

@@ -44,12 +44,17 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR)
   updateGr(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
-    return this.grCrudService.updateGr(updateGrReqDto._id, updateGrReqDto);
+    return this.grCrudService.updateGr(updateGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_GR)
   removeGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
     return this.grCrudService.removeGr(id);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RESTORE_GR)
+  restoreGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
+    return this.grCrudService.restoreGr(id);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)

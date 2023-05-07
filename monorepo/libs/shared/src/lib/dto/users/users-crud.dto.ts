@@ -4,24 +4,18 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
   IsDateString,
   IsEmail,
   IsOptional,
+  IsEnum,
   IsPhoneNumber,
 } from 'class-validator';
-import { ObjectId } from 'mongodb';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
-import { BaseResDto } from '../base.dto';
-import { IdDto } from '../pkg-mgmt/pkg-crud.dto';
-
-export class UserId {
-  @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  _id: string;
-}
+import { BaseResDto, IdDto } from '../base.dto';
 
 class UserSetting {
   @ApiProperty({
@@ -51,6 +45,40 @@ class UserSetting {
   })
   @IsBoolean()
   newsNoti: boolean;
+}
+
+class FileDto {
+  @ApiProperty({ required: true })
+  fileName: string;
+
+  @ApiProperty({
+    description: "Image's size. Unit: kB",
+    type: Number,
+    minimum: 1000,
+    required: true,
+  })
+  fileSize: number;
+
+  @ApiProperty({
+    type: String,
+    enum: ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'],
+    required: true,
+  })
+  @IsEnum(['image/jpeg', 'image/png', 'image/gif', 'image/jpg'])
+  contentType: string;
+
+  @ApiProperty({
+    type: String,
+    enum: ['hex', 'base64'],
+    required: true,
+  })
+  @IsEnum(['hex', 'base64'])
+  dataType: string;
+
+  @ApiProperty({ type: String, required: true })
+  fileData: string;
+
+  uploadDate: Date;
 }
 
 export class UserInfo {
@@ -100,10 +128,10 @@ export class UserInfo {
   @IsEmail()
   email: string;
 
-  @ApiProperty({
-    description: 'Avatar of user. It could be embbed link or upload file',
-  })
-  avatar: string;
+  @ApiProperty({ description: 'Avatar of user. Only supported upload file' })
+  @Type(() => FileDto)
+  @ValidateNested()
+  avatar: FileDto;
 }
 
 export class Items {
@@ -163,10 +191,8 @@ export class UserDto extends IntersectionType(
   CartDto,
 ) {}
 
-export class UpdateTrxHistReqDto extends UserId {
-  @ApiProperty({
-    description: 'Transaction Id paid by user',
-  })
+export class UpdateTrxHistReqDto extends IntersectionType(IdDto, CartDto) {
+  @ApiProperty({ description: 'Transaction Id paid by user' })
   trx: string;
 }
 
@@ -189,21 +215,18 @@ export class CreateUserReqDto extends UserInfo {}
 export class CreateUserResDto extends BaseResDto {}
 
 export class UpdateUserReqDto extends IntersectionType(
-  UserId,
+  IdDto,
   OmitType(UserInfo, ['email', 'avatar']),
 ) {}
 
 export class UpdateUserResDto extends BaseResDto {}
 
-export class UpdateSettingReqDto extends IntersectionType(
-  UserId,
-  UserSetting,
-) {}
+export class UpdateSettingReqDto extends IntersectionType(IdDto, UserSetting) {}
 
 export class UpdateSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto extends IntersectionType(
-  UserId,
+  IdDto,
   PickType(UserInfo, ['avatar']),
 ) {}
 
@@ -211,6 +234,6 @@ export class UpdateAvatarResDto extends BaseResDto {}
 
 export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}
 
-export class UpdateCartReqDto extends IntersectionType(UserId, CartDto) {}
+export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}

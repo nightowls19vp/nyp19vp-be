@@ -4,18 +4,8 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import {
-  IsString,
-  IsInt,
-  IsPositive,
-  IsAscii,
-  ValidateNested,
-  IsArray,
-  ArrayMinSize,
-} from 'class-validator';
-import { BaseResDto } from '../base.dto';
-import { ObjectId } from 'mongodb';
-import { Transform, TransformFnParams } from 'class-transformer';
+import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
+import { BaseResDto, IdDto } from '../base.dto';
 
 export class PackageDto {
   @ApiProperty({
@@ -42,16 +32,11 @@ export class PackageDto {
   @IsPositive()
   duration: number;
 
-  @ApiProperty({
-    required: true,
-  })
+  @ApiProperty({ required: true })
   @IsPositive()
   price: number;
 
-  @ApiProperty({
-    required: true,
-    minimum: 1,
-  })
+  @ApiProperty({ required: true, minimum: 1 })
   @IsInt()
   @IsPositive()
   noOfMember: number;
@@ -70,11 +55,6 @@ export class PackageDto {
 
   @ApiProperty()
   updatedBy: string;
-}
-
-export class IdDto {
-  @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  _id: string;
 }
 
 export class CreatePkgReqDto extends OmitType(PackageDto, ['updatedBy']) {}
@@ -97,17 +77,11 @@ export class FilterPkgReqDto extends PickType(PackageDto, [
   'duration',
   'noOfMember',
 ]) {
-  @ApiProperty({
-    minimum: 100,
-    maximum: 10000,
-  })
+  @ApiProperty({ minimum: 100000, maximum: 500000 })
   @IsPositive()
   price_lb: number;
 
-  @ApiProperty({
-    minimum: 100,
-    maximum: 10000,
-  })
+  @ApiProperty({ minimum: 100000, maximum: 500000 })
   @IsPositive()
   price_gb: number;
 }

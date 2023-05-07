@@ -1,7 +1,10 @@
+import CookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
+
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import CookieParser from 'cookie-parser';
+
 import { AppModule } from './app/app.module';
 import {
   SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME,
@@ -61,6 +64,8 @@ async function bootstrap() {
 
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(

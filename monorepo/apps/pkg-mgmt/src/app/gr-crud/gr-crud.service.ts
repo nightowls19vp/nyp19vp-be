@@ -15,28 +15,30 @@ import {
   UpdateGrReqDto,
   UpdateGrResDto,
 } from '@nyp19vp-be/shared';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
-import { ObjectId } from 'mongodb';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import {
   CollectionDto,
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
+import { ObjectId } from 'mongodb';
+import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
 export class GrCrudService {
   constructor(
-    @InjectModel(Group.name) private grModel: Model<GroupDocument>,
-    @InjectModel(Package.name) private pkgModel: Model<PackageDocument>
+    @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
+    @InjectModel(Package.name)
+    private pkgModel: SoftDeleteModel<PackageDocument>
   ) {}
   async createGr(createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
     console.log('pkg-mgmt-svc#create-group: ', createGrReqDto);
     const pkgId: ObjectId = new ObjectId(createGrReqDto.package.packageId);
     const start: Date = createGrReqDto.package.startDate;
     const pkg = await this.pkgModel.findById(
-      { _id: pkgId, deletedAt: null },
+      { _id: pkgId },
       { duration: 1, _id: 0 }
     );
     const end: Date = addDays(start, pkg.duration);
@@ -95,10 +97,7 @@ export class GrCrudService {
   async findGrById(id: Types.ObjectId): Promise<GetGrResDto> {
     console.log(`pkg-mgmt-svc#get-group #${id}`);
     return this.grModel
-      .findOne({
-        _id: id,
-        deletedAt: null,
-      })
+      .findById({ _id: id })
       .populate({
         path: 'packages',
         populate: {
@@ -106,21 +105,21 @@ export class GrCrudService {
           model: 'Package',
         },
       })
-      .exec()
       .then((res) => {
-        if (res)
+        if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get group #${id} successfully`,
             group: mapGrSchemaToGrDto(res),
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
             group: mapGrSchemaToGrDto(res),
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -131,27 +130,26 @@ export class GrCrudService {
       });
   }
 
-  async updateGr(
-    id: string,
-    updateGrReqDto: UpdateGrReqDto
-  ): Promise<UpdateGrResDto> {
-    const _id: ObjectId = new ObjectId(id);
-    console.log(`pkg-mgmt-svc#update-group #${id}'s name`);
+  async updateGr(updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
+    const { _id } = updateGrReqDto;
+    console.log(`pkg-mgmt-svc#update-group #${_id}'s name`);
     return await this.grModel
-      .updateOne({ _id: _id, deletedAt: null }, { name: updateGrReqDto.name })
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .updateOne({ _id: _id }, { name: updateGrReqDto.name })
+      .then(async (res) => {
+        if (res.matchedCount && res.modifiedCount) {
+          const data = await this.grModel.findById(_id, { name: 1 });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
-            message: `update group #${id}'s name successfully`,
+            message: `update group #${_id}'s name successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
-            message: `No group #${id} found`,
+            message: `No group #${_id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -164,19 +162,28 @@ export class GrCrudService {
   async removeGr(id: Types.ObjectId): Promise<CreateGrResDto> {
     console.log(`pkg-mgmt-svc#delete-group #${id}`);
     return await this.grModel
-      .updateOne({ _id: id, deletedAt: null }, { deletedAt: new Date() })
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .deleteById(id)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.grModel.findById(id).populate({
+            path: 'packages',
+            populate: {
+              path: 'package',
+              model: 'Package',
+            },
+          });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `delete group #${id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -185,19 +192,48 @@ export class GrCrudService {
         });
       });
   }
+
+  async restoreGr(id: Types.ObjectId): Promise<CreateGrResDto> {
+    console.log(`pkg-mgmt-svc#Restore-deleted-group #${id}`);
+    return await this.grModel
+      .restore({ _id: id })
+      .then(async (res) => {
+        if (res) {
+          const data = await this.grModel.findById(id).populate({
+            path: 'packages',
+            populate: {
+              path: 'package',
+              model: 'Package',
+            },
+          });
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Restore deleted group #${id} successfully`,
+            data: data,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No group #${id} found`,
+            error: 'NOT FOUND',
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+
   async addMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<UpdateGrMbResDto> {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#add-new-member #${user_id} to-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrMbReqDto;
     return await this.grModel
-      .findOne(
-        {
-          _id: _id,
-          deletedAt: { $exists: false },
-        },
-        { members: { $elemMatch: { user: user_id } } }
-      )
+      .findById({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
       .then(async (checkMemb) => {
         if (checkMemb) {
           if (!checkMemb.members.length) {
@@ -214,12 +250,15 @@ export class GrCrudService {
                   },
                 }
               )
-              .then((res) => {
-                if (res.matchedCount && res.modifiedCount)
+              .then(async (res) => {
+                if (res.matchedCount && res.modifiedCount) {
+                  const data = await this.grModel.findById(_id, { members: 1 });
                   return Promise.resolve({
                     statusCode: HttpStatus.OK,
                     message: `add new member #${user_id} to group #${id} successfully`,
+                    data: data,
                   });
+                }
               })
               .catch((error) => {
                 return Promise.resolve({
@@ -247,15 +286,9 @@ export class GrCrudService {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrMbReqDto;
     return await this.grModel
-      .findOne(
-        {
-          _id: _id,
-          deletedAt: { $exists: false },
-        },
-        { members: { $elemMatch: { user: user_id } } }
-      )
+      .findById({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
       .then(async (checkExists) => {
         if (checkExists) {
           if (checkExists.members.length)
@@ -265,12 +298,17 @@ export class GrCrudService {
                   { _id: _id },
                   { $pull: { members: { user: user_id } } }
                 )
-                .then((res) => {
-                  if (res.matchedCount && res.modifiedCount)
+                .then(async (res) => {
+                  if (res.matchedCount && res.modifiedCount) {
+                    const data = await this.grModel.findById(_id, {
+                      members: 1,
+                    });
                     return Promise.resolve({
                       statusCode: HttpStatus.OK,
                       message: `remove member #${user_id} from group #${id} successfully`,
+                      data: data,
                     });
+                  }
                 })
                 .catch((error) => {
                   return Promise.resolve({
@@ -306,25 +344,35 @@ export class GrCrudService {
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#remove-package-from-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrPkgReqDto;
     return await this.grModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
+      .findByIdAndUpdate(
+        { _id: _id },
         { $pull: { packages: updateGrPkgReqDto.package } }
       )
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.grModel
+            .findById(id, { packages: 1 })
+            .populate({
+              path: 'packages',
+              populate: {
+                path: 'package',
+                model: 'Package',
+              },
+            });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `remove package from group #${id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
@@ -338,25 +386,35 @@ export class GrCrudService {
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#add-new-package-to-group #${id}`);
-    const _id: ObjectId = new ObjectId(id);
+    const { _id } = updateGrPkgReqDto;
     return await this.grModel
-      .updateOne(
-        { _id: _id, deletedAt: null },
+      .findByIdAndUpdate(
+        { _id: _id },
         { $pull: { packages: updateGrPkgReqDto.package } }
       )
-      .exec()
-      .then((res) => {
-        if (res.matchedCount && res.modifiedCount)
+      .then(async (res) => {
+        if (res) {
+          const data = await this.grModel
+            .findById(id, { packages: 1 })
+            .populate({
+              path: 'packages',
+              populate: {
+                path: 'package',
+                model: 'Package',
+              },
+            });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `add new package to group #${id} successfully`,
+            data: data,
           });
-        else
+        } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
           });
+        }
       })
       .catch((error) => {
         return Promise.resolve({

@@ -2,8 +2,8 @@ import {
   CollectionDto,
   CollectionResponse,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Inject, OnModuleInit } from '@nestjs/common';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import {
   CreateUserReqDto,
   CreateUserResDto,
@@ -22,13 +22,25 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
 import { Types } from 'mongoose';
 
 @Controller()
-export class UsersCrudController {
-  constructor(private readonly usersCrudService: UsersCrudService) {}
+export class UsersCrudController implements OnModuleInit {
+  constructor(
+    private readonly usersCrudService: UsersCrudService,
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+  ) {}
+
+  async onModuleInit() {
+    this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
+    for (const key in kafkaTopic.TXN) {
+      this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
+    }
+    await Promise.all([this.txnClient.connect()]);
+  }
 
   @MessagePattern(kafkaTopic.USERS.CREATE)
   create(
@@ -82,9 +94,14 @@ export class UsersCrudController {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.DELETE_ONE)
+  @MessagePattern(kafkaTopic.USERS.DELETE_USER)
   removeUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
     return this.usersCrudService.removeUser(id);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.RESTORE_USER)
+  restoreUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
+    return this.usersCrudService.restoreUser(id);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
@@ -107,7 +124,10 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
-  checkout(@Payload() updateCartReqDto: UpdateCartReqDto): Promise<any> {
+  checkout(
+    @Payload() updateCartReqDto: UpdateCartReqDto
+  ): Promise<ZPCheckoutResDto> {
+    console.log('users-svc : checkout');
     return this.usersCrudService.checkout(updateCartReqDto);
   }
 

@@ -9,8 +9,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { BaseResDto } from '../base.dto';
-import { IdDto, PackageDto } from './pkg-crud.dto';
+import { BaseResDto, IdDto } from '../base.dto';
+import { PackageDto } from './pkg-crud.dto';
 import { ObjectId } from 'mongodb';
 
 class MemberDto {
@@ -51,21 +51,15 @@ class GrPkgDto {
   @Type(() => PackageDto)
   package: PackageDto;
 
-  @ApiProperty({
-    type: Date,
-  })
+  @ApiProperty({ type: Date })
   @IsISO8601()
   startDate: Date;
 
-  @ApiProperty({
-    type: Date,
-  })
+  @ApiProperty({ type: Date })
   @IsISO8601()
   endDate: Date;
 
-  @ApiProperty({
-    type: String,
-  })
+  @ApiProperty({ type: String })
   remainingTime: string;
 
   @ApiProperty({

@@ -19,6 +19,8 @@ export * as kafkaTopic from './lib/common/topics.kafka';
 // dto
 export * from './lib/shared';
 
+export * from './lib/dto/base.dto';
+
 export * from './lib/dto/auth/authentication.dto';
 
 export * from './lib/dto/auth/authorization.dto';

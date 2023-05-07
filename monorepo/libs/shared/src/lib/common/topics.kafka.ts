@@ -31,7 +31,8 @@ export const USERS = {
   UPDATE_INFO: 'updateUserInfo',
   UPDATE_SETTING: 'updateUserSetting',
   UPDATE_AVATAR: 'updateUserAvatar',
-  DELETE_ONE: 'deleteUser',
+  DELETE_USER: 'deleteUser',
+  RESTORE_USER: 'restoreUser',
   UPDATE_CART: 'updateShoppingCart',
   GET_CART: 'getShoppingCart',
   UPDATE_TRX: 'updateTransactionHistory',
@@ -45,11 +46,13 @@ export const PACKAGE_MGMT = {
   GET_MANY_PKG: 'getManyPackage',
   UPDATE_PKG: 'updatePackage',
   DELETE_PKG: 'deletePackage',
+  RESTORE_PKG: 'restorePackage',
   CREATE_GR: 'createGroup',
   GET_ALL_GRS: 'getAllGroups',
   GET_GR_BY_ID: 'getGroupById',
   UPDATE_GR: 'updateGroupName',
   DELETE_GR: 'deleteGroup',
+  RESTORE_GR: 'restoreGroup',
   ADD_GR_MEMB: 'addMemberToGroup',
   RM_GR_MEMB: 'removeMemberFromGroup',
   ADD_GR_PKG: 'addPackageToGroup',
@@ -57,5 +60,7 @@ export const PACKAGE_MGMT = {
 };
 
 export const TXN = {
-  CHECKOUT: 'checkOut',
+  ZP_CREATE_ORD: 'zaloPayCreateOrder',
+  ZP_GET_STT: 'zaloPayGetStatus',
+  ZP_CREATE_TRANS: 'zaloPayCallbackCreateTransaction',
 };

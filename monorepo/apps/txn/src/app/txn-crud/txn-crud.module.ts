@@ -6,9 +6,14 @@ import { randomUUID } from 'crypto';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { zpconfig } from '../../core/config/zalopay.config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Transaction, TransactionSchema } from '../../schemas/txn.schema';
 
 @Module({
   imports: [
+    MongooseModule.forFeature([
+      { name: Transaction.name, schema: TransactionSchema },
+    ]),
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -28,6 +33,21 @@ import { zpconfig } from '../../core/config/zalopay.config';
           },
           consumer: {
             groupId: 'pkg-mgmt-consumer' + randomUUID(), // FIXME,
+          },
+        },
+      },
+    ]),
+    ClientsModule.register([
+      {
+        name: 'USERS_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'users',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'users-consumer' + randomUUID(), // FIXME,
           },
         },
       },
