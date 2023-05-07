@@ -5,19 +5,22 @@ export type FileDocument = HydratedDocument<File>;
 
 @Schema()
 export class File {
-  @Prop({ type: String, unique: true, required: true })
+  @Prop()
   fileName: string;
 
-  @Prop({ type: Number, required: true })
-  size: number;
+  @Prop()
+  fileSize: number;
 
-  @Prop({ required: true })
-  data: string;
-
-  @Prop({ type: String, required: true })
+  @Prop()
   contentType: string;
 
-  @Prop({ type: Date, required: true })
+  @Prop({ enum: ['hex', 'base64'] })
+  dataType: string;
+
+  @Prop()
+  fileData: string;
+
+  @Prop()
   uploadDate: Date;
 }
 

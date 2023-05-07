@@ -10,6 +10,7 @@ import {
   IsAscii,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsPhoneNumber,
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
@@ -43,6 +44,40 @@ class UserSetting {
   })
   @IsBoolean()
   newsNoti: boolean;
+}
+
+class FileDto {
+  @ApiProperty({ required: true })
+  fileName: string;
+
+  @ApiProperty({
+    description: "Image's size. Unit: kB",
+    type: Number,
+    minimum: 1000,
+    required: true,
+  })
+  fileSize: number;
+
+  @ApiProperty({
+    type: String,
+    enum: ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'],
+    required: true,
+  })
+  @IsEnum(['image/jpeg', 'image/png', 'image/gif', 'image/jpg'])
+  contentType: string;
+
+  @ApiProperty({
+    type: String,
+    enum: ['hex', 'base64'],
+    required: true,
+  })
+  @IsEnum(['hex', 'base64'])
+  dataType: string;
+
+  @ApiProperty({ type: String, required: true })
+  fileData: string;
+
+  uploadDate: Date;
 }
 
 export class UserInfo {
@@ -91,10 +126,10 @@ export class UserInfo {
   @IsEmail()
   email: string;
 
-  @ApiProperty({
-    description: 'Avatar of user. Only supported upload file',
-  })
-  avatar: any;
+  @ApiProperty({ description: 'Avatar of user. Only supported upload file' })
+  @Type(() => FileDto)
+  @ValidateNested()
+  avatar: FileDto;
 }
 
 export class Items {

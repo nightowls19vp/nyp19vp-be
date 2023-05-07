@@ -189,34 +189,48 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
+  // @Post(':id/avatar')
+  // @UseInterceptors(FileInterceptor('file')) // 👈 field name must match
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: { type: 'string', format: 'binary' },
+  //     },
+  //   },
+  // })
+  // uploadFile(
+  //   @Param('id') id: string,
+  //   @UploadedFile(
+  //     'file',
+  //     new ParseFilePipe({
+  //       validators: [
+  //         new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
+  //       ],
+  //     })
+  //   )
+  //   file: Express.Multer.File
+  // ): Promise<UpdateAvatarResDto> {
+  //   console.log(`update user #${id}`, file);
+  //   const updateAvatarReqDto: UpdateAvatarReqDto = {
+  //     _id: id,
+  //     avatar: file,
+  //   };
+  //   return this.usersService.updateAvatar(updateAvatarReqDto);
+  // }
+
   @Post(':id/avatar')
-  @UseInterceptors(FileInterceptor('file')) // 👈 field name must match
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary' },
-      },
-    },
-  })
-  uploadFile(
+  updateAvatar(
     @Param('id') id: string,
-    @UploadedFile(
-      'file',
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
-        ],
-      })
-    )
-    file: Express.Multer.File
+    @Body() updateAvatarReqDto: UpdateAvatarReqDto
   ): Promise<UpdateAvatarResDto> {
-    console.log(`update user #${id}`, file);
-    const updateAvatarReqDto: UpdateAvatarReqDto = {
-      _id: id,
-      avatar: file,
-    };
+    console.log(`update user #${id}`, updateAvatarReqDto);
+    // const updateAvatarReqDto: UpdateAvatarReqDto = {
+    //   _id: id,
+    //   avatar: file,
+    // };
+    updateAvatarReqDto._id = id;
     return this.usersService.updateAvatar(updateAvatarReqDto);
   }
 
