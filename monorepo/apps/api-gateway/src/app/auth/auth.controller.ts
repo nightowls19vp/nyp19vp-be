@@ -159,7 +159,7 @@ export class AuthController implements OnModuleInit {
           providerId: profile?.id,
           name: profile?.name,
           email: profile?.email,
-          photo: profile?.photo,
+          photo: profile?.picture,
         };
 
         const resDto = await this.authService.googleSignUp(reqDto, null);
@@ -195,7 +195,7 @@ export class AuthController implements OnModuleInit {
           providerId: profile?.id,
           name: profile?.name,
           email: profile?.email,
-          photo: profile?.photo,
+          photo: profile?.picture,
         };
 
         const resDto = await this.authService.linkGoogleAccount(accountId, {
@@ -221,54 +221,6 @@ export class AuthController implements OnModuleInit {
     }
     throw new UnauthorizedException();
   }
-
-  // @Post('create-social-account')
-  // async createSocialAccount(
-  //   @Body() reqDto: SocialAccountReqDto,
-  // ): Promise<SocialSignupResDto> {
-  //   console.log('createSocialAccount', reqDto);
-  //   const resDto = await this.authService.googleSignUp(reqDto);
-
-  //   console.log('resDto', resDto);
-
-  //   if (!resDto) {
-  //     throw new HttpException(
-  //       'Cannot create social account',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  //   return resDto;
-  // }
-
-  // @UseGuards(AccessJwtAuthGuard)
-  // @Post('link-social-account')
-  // async linkSocialAccount(
-  //   @Req() req: Request,
-  //   @Body() reqDto: SocialAccountReqDto,
-  // ): Promise<SocialSignupResDto> {
-  //   console.log('req.user', req?.user);
-
-  //   const resDto = await this.authService.linkGoogleAccount(
-  //     (req?.user as any)?.accountId,
-  //     {
-  //       email: reqDto.email,
-  //       name: reqDto.name,
-  //       photo: reqDto.photo,
-  //       provider: reqDto.provider,
-  //       providerId: reqDto.providerId,
-  //     },
-  //   );
-
-  //   console.log('resDto', resDto);
-
-  //   if (!resDto) {
-  //     throw new HttpException(
-  //       'Cannot create social account',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  //   return resDto;
-  // }
 
   @ApiResponse({
     description: 'response of login',
