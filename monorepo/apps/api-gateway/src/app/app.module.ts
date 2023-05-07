@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { PkgMgmtModule } from './pkg-mgmt/pkg-mgmt.module';
 import { ZalopayModule } from './zalopay/zalopay.module';
 import { zpconfig } from './core/config/zalopay.config';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { zpconfig } from './core/config/zalopay.config';
     UsersModule,
     PkgMgmtModule,
     ZalopayModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: 'ZALOPAY_CONFIG', useValue: zpconfig }],
