@@ -19,6 +19,7 @@ import {
   GetUserSettingResDto,
   kafkaTopic,
   ParseObjectIdPipe,
+  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -64,7 +65,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class UsersController implements OnModuleInit {
   constructor(
     private readonly usersService: UsersService,
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -79,7 +80,7 @@ export class UsersController implements OnModuleInit {
   @ApiCreatedResponse({ description: 'Created user', type: CreateUserResDto })
   @ApiInternalServerErrorResponse({ description: 'Bad Request: Duplicate Key' })
   async create(
-    @Body() createUserReqDto: CreateUserReqDto
+    @Body() createUserReqDto: CreateUserReqDto,
   ): Promise<CreateUserResDto> {
     console.log('createUser', createUserReqDto);
     return this.usersService.createUser(createUserReqDto);
@@ -93,7 +94,7 @@ export class UsersController implements OnModuleInit {
   @ApiOkResponse({ description: 'Got All Users' })
   async getAll(
     @Query(new ValidationPipe(UsersCollectionProperties))
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     console.log('get all users');
     console.log(collectionDto.filter);
@@ -112,7 +113,7 @@ export class UsersController implements OnModuleInit {
   @ApiNotFoundResponse({ description: 'No user found' })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   async getUserById(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetUserInfoResDto> {
     console.log(`get user info by #${id}`);
     return this.usersService.getUserById(id);
@@ -125,7 +126,7 @@ export class UsersController implements OnModuleInit {
   })
   @ApiParam({ name: 'id', type: String })
   async getUserSettingById(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetUserSettingResDto> {
     console.log(`get user setting #${id}`);
     return this.usersService.getUserSettingById(id);
@@ -135,7 +136,7 @@ export class UsersController implements OnModuleInit {
   @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
   @ApiParam({ name: 'id', type: String })
   async getCart(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetCartResDto> {
     console.log(`get items of user #${id}'s cart`);
     return this.usersService.getCart(id);
@@ -145,7 +146,7 @@ export class UsersController implements OnModuleInit {
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
   async deleteUser(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<CreateUserResDto> {
     console.log(`delete user #${id}`);
     return this.usersService.deleteUser(id);
@@ -158,7 +159,7 @@ export class UsersController implements OnModuleInit {
     type: CreateUserResDto,
   })
   async restoreUser(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<CreateUserResDto> {
     console.log(`restore user #${id}`);
     return this.usersService.restoreUser(id);
@@ -168,7 +169,7 @@ export class UsersController implements OnModuleInit {
   @ApiOkResponse({ description: 'Updated User', type: UpdateUserResDto })
   async updateUser(
     @Param('id') id: string,
-    @Body() updateUserReqDto: UpdateUserReqDto
+    @Body() updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     console.log(`update user #${id}`, updateUserReqDto);
     updateUserReqDto._id = id;
@@ -182,7 +183,7 @@ export class UsersController implements OnModuleInit {
   })
   async updateSetting(
     @Param('id') id: string,
-    @Body() updateSettingReqDto: UpdateSettingReqDto
+    @Body() updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     console.log(`update user #${id}`, updateSettingReqDto);
     updateSettingReqDto._id = id;
@@ -223,7 +224,7 @@ export class UsersController implements OnModuleInit {
   @Post(':id/avatar')
   updateAvatar(
     @Param('id') id: string,
-    @Body() updateAvatarReqDto: UpdateAvatarReqDto
+    @Body() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
     // const updateAvatarReqDto: UpdateAvatarReqDto = {
@@ -232,6 +233,20 @@ export class UsersController implements OnModuleInit {
     // };
     updateAvatarReqDto._id = id;
     return this.usersService.updateAvatar(updateAvatarReqDto);
+  }
+
+  @Post(':id/avatar-by-file')
+  updateAvatarByFile(
+    @Param('id') id: string,
+    @Body() reqDto: UpdateAvatarByFileReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    console.log(`update user #${id}`, reqDto);
+    // const updateAvatarReqDto: UpdateAvatarReqDto = {
+    //   _id: id,
+    //   avatar: file,
+    // };
+    reqDto._id = id;
+    return this.usersService.updateAvatarByFile(reqDto);
   }
 
   @Put(':id/cart')
@@ -245,7 +260,7 @@ export class UsersController implements OnModuleInit {
   })
   async updateCart(
     @Param('id') id: string,
-    @Body() updateCartReqDto: UpdateCartReqDto
+    @Body() updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     console.log(`update items of user #${id}'s cart`, updateCartReqDto);
     updateCartReqDto._id = id;
@@ -262,7 +277,7 @@ export class UsersController implements OnModuleInit {
   @Post(':id/checkout')
   async checkout(
     @Param('id') id: string,
-    @Body() updateCartReqDto: UpdateCartReqDto
+    @Body() updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
     console.log(`checkout #${id}`, updateCartReqDto);
     updateCartReqDto._id = id;

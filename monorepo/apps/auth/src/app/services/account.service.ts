@@ -198,7 +198,7 @@ export class AccountService {
             dob: null,
             name: user.name,
             phone: null,
-            avatar: user.photo,
+            avatarUrl: user.photo,
           };
 
           const createUserRes: CreateUserResDto = await firstValueFrom(

@@ -1,5 +1,6 @@
 import {
   ApiProperty,
+  ApiPropertyOptional,
   IntersectionType,
   OmitType,
   PickType,
@@ -131,7 +132,11 @@ export class UserInfo {
   @ApiProperty({ description: 'Avatar of user. Only supported upload file' })
   @Type(() => FileDto)
   @ValidateNested()
-  avatar: FileDto;
+  avatar?: FileDto;
+
+  @ApiPropertyOptional()
+  @IsString()
+  avatarUrl?: string;
 }
 
 export class Items {
@@ -228,6 +233,11 @@ export class UpdateSettingResDto extends BaseResDto {}
 export class UpdateAvatarReqDto extends IntersectionType(
   IdDto,
   PickType(UserInfo, ['avatar']),
+) {}
+
+export class UpdateAvatarByFileReqDto extends IntersectionType(
+  IdDto,
+  PickType(UserInfo, ['avatarUrl']),
 ) {}
 
 export class UpdateAvatarResDto extends BaseResDto {}
