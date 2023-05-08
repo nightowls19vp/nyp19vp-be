@@ -36,7 +36,7 @@ export class UsersCrudService {
   constructor(
     @InjectModel(User.name)
     private userModel: SoftDeleteModel<UserDocument>,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
   ) {}
 
   async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
@@ -46,13 +46,15 @@ export class UsersCrudService {
       dob: createUserReqDto.dob,
       phone: createUserReqDto.phone,
       email: createUserReqDto.email,
+      avatar: createUserReqDto.avatar,
     });
     return await newUser
       .save()
-      .then(() => {
+      .then((user) => {
         return Promise.resolve({
           statusCode: HttpStatus.CREATED,
           message: `create user #${createUserReqDto.email} successfully`,
+          data: user,
         });
       })
       .catch((error) => {
@@ -64,7 +66,7 @@ export class UsersCrudService {
   }
 
   async findAll(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     console.log(`users-svc#get-all-users`);
     const collector = new DocumentCollector<UserDocument>(this.userModel);
@@ -110,6 +112,34 @@ export class UsersCrudService {
       });
   }
 
+  async findInfoByEmail(email: string): Promise<GetUserInfoResDto> {
+    return await this.userModel
+      .findOne({ email: email, deletedAt: { $exists: false } })
+      .then((res) => {
+        if (!res) {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No user with id: #${email} found`,
+            error: 'NOT FOUND',
+            user: res,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `get user #${email} successfully`,
+            user: res,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          user: null,
+        });
+      });
+  }
+
   async findSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {
     console.log(`users-svc#get-setting-by-id:`, id);
     return await this.userModel
@@ -140,7 +170,7 @@ export class UsersCrudService {
   }
 
   async updateInfo(
-    updateUserReqDto: UpdateUserReqDto
+    updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     const { _id } = updateUserReqDto;
     console.log(`users-svc#udpate-user:`, _id);
@@ -151,13 +181,13 @@ export class UsersCrudService {
           name: updateUserReqDto.name,
           dob: updateUserReqDto.dob,
           phone: updateUserReqDto.phone,
-        }
+        },
       )
       .then(async (res) => {
         if (res) {
           const data = await this.userModel.findById(
             { _id: _id },
-            { setting: 0, avatar: 0, cart: 0, trxHist: 0 }
+            { setting: 0, avatar: 0, cart: 0, trxHist: 0 },
           );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
@@ -180,7 +210,7 @@ export class UsersCrudService {
   }
 
   async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
+    updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     const { _id } = updateSettingReqDto;
     console.log(`users-svc#udpate-setting:`, _id);
@@ -190,7 +220,7 @@ export class UsersCrudService {
         if (res) {
           const data = await this.userModel.findById(
             { _id: _id },
-            { setting: 1 }
+            { setting: 1 },
           );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
@@ -213,7 +243,7 @@ export class UsersCrudService {
   }
 
   async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
+    updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     const { _id, avatar } = updateAvatarReqDto;
     const { fileName } = avatar;
@@ -300,7 +330,7 @@ export class UsersCrudService {
   }
 
   async updateCart(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     const { _id, cart } = updateCartReqDto;
     console.log(`update items of user's cart`, cart);
@@ -359,14 +389,14 @@ export class UsersCrudService {
   }
 
   async updateTrxHist(
-    updateTrxHistReqDto: UpdateTrxHistReqDto
+    updateTrxHistReqDto: UpdateTrxHistReqDto,
   ): Promise<UpdateTrxHistResDto> {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
     return await this.userModel
       .findByIdAndUpdate(
         { _id: _id },
-        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } }
+        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } },
       )
       .then((res) => {
         if (!res)
@@ -388,7 +418,7 @@ export class UsersCrudService {
       });
   }
   async checkout(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
     const { _id, cart } = updateCartReqDto;
     console.log(`User #${_id} checkout:`, cart);
@@ -399,13 +429,13 @@ export class UsersCrudService {
           if (value.package == elem.package && value.quantity == elem.quantity)
             return true;
           else return false;
-        })
+        }),
       );
       if (checkItem) {
         return await firstValueFrom(
           this.txnClient
             .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
-            .pipe(timeout(5000))
+            .pipe(timeout(5000)),
         );
       } else {
         return Promise.resolve({

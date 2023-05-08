@@ -1,8 +1,7 @@
 import * as dotenv from 'dotenv';
-import { CONST } from '@nyp19vp-be/shared';
+import { ENV_FILE } from '@nyp19vp-be/shared';
 dotenv.config({
-  path:
-    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : CONST.ENV_FILE.DEV,
+  path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
 export const zpconfig = {

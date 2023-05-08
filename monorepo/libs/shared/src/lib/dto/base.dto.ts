@@ -11,13 +11,18 @@ export class BaseResDto {
   @ApiProperty({ description: 'Response message', maxLength: 255 })
   message: string;
 
+  @ApiProperty({
+    description: 'Error message',
+  })
+  errCode?: string;
+
   @ApiProperty({ description: 'Error message' })
   @IsOptional()
   error?: string;
 
   @ApiProperty({ description: 'Data' })
   @IsOptional()
-  data?: any;
+  data?: unknown;
 }
 
 export class IdDto {

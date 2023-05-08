@@ -6,15 +6,26 @@ export const HEALT_CHECK = {
 };
 
 export const AUTH = {
+  VALIDATE_USER: 'validate_user',
+  VALIDATE_TOKEN: 'validate_token',
+  GOOGLE_AUTH: 'google_auth',
+  GOOGLE_AUTH_REDIRECT: 'google_auth_redirect',
   LOGIN: 'login',
   LOGOUT: 'logout',
-  REGISTER: 'register',
+  CREATE_ACCOUNT: 'create_account',
+  AUTHORIZE: 'authorize',
+  CHANGE_PASSWORD: 'changePassword',
+  DELETE_ACCOUNT: 'deleteAccount',
+  SOCIAL_SIGN_UP: 'social_sign_up',
+  SOCIAL_LINK: 'social_link',
+  REFRESH: 'refresh',
 };
 
 export const USERS = {
   CREATE: 'createUser',
   SEARCH_USER: 'searchFull-textUser',
   GET_INFO_BY_ID: 'getUserInfoById',
+  GET_INFO_BY_EMAIL: 'getUserInfoByEmail',
   GET_SETTING_BY_ID: 'getUserSettingById',
   GET_ALL: 'getAllUsers',
   UPDATE_INFO: 'updateUserInfo',

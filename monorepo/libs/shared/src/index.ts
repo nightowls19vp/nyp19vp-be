@@ -1,5 +1,14 @@
+// config
+export * as config from './lib/config';
+
+//utils
+export * as utils from './lib/utils';
+
 // constants
-export * as CONST from './lib/core/constants';
+export * from './lib/core';
+
+// authorization
+export * from './lib/authorization';
 
 // pipe
 export * from './lib/core/pipe/parseObjectId.pipe';
@@ -13,6 +22,8 @@ export * from './lib/shared';
 export * from './lib/dto/base.dto';
 
 export * from './lib/dto/auth/authentication.dto';
+
+export * from './lib/dto/auth/authorization.dto';
 
 export * from './lib/dto/users/users-crud.dto';
 

@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 
+@Global()
 @Module({
   imports: [
     ClientsModule.register([
@@ -16,7 +17,7 @@ import { randomUUID } from 'crypto';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'users-consumer' + randomUUID(), // FIXME,
+            groupId: 'users-consumer' + randomUUID(),
           },
         },
       },
@@ -24,5 +25,6 @@ import { randomUUID } from 'crypto';
   ],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

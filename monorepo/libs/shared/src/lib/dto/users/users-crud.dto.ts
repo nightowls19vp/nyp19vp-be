@@ -10,6 +10,7 @@ import {
   IsAscii,
   IsDateString,
   IsEmail,
+  IsOptional,
   IsEnum,
   IsPhoneNumber,
 } from 'class-validator';
@@ -100,7 +101,8 @@ export class UserInfo {
     example: '2001-01-01',
   })
   @IsDateString()
-  dob: Date;
+  @IsOptional()
+  dob?: Date;
 
   @ApiProperty({
     description:
@@ -186,7 +188,7 @@ export class UserDto extends IntersectionType(
   UserInfo,
   UserSettingDto,
   TrxHistDto,
-  CartDto
+  CartDto,
 ) {}
 
 export class UpdateTrxHistReqDto extends IntersectionType(IdDto, CartDto) {
@@ -205,16 +207,16 @@ export class GetUserInfoResDto extends BaseResDto {
 
 export class GetUserSettingResDto extends IntersectionType(
   BaseResDto,
-  UserSettingDto
+  UserSettingDto,
 ) {}
 
-export class CreateUserReqDto extends OmitType(UserInfo, ['avatar']) {}
+export class CreateUserReqDto extends UserInfo {}
 
 export class CreateUserResDto extends BaseResDto {}
 
 export class UpdateUserReqDto extends IntersectionType(
   IdDto,
-  OmitType(UserInfo, ['email', 'avatar'])
+  OmitType(UserInfo, ['email', 'avatar']),
 ) {}
 
 export class UpdateUserResDto extends BaseResDto {}
@@ -225,7 +227,7 @@ export class UpdateSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto extends IntersectionType(
   IdDto,
-  PickType(UserInfo, ['avatar'])
+  PickType(UserInfo, ['avatar']),
 ) {}
 
 export class UpdateAvatarResDto extends BaseResDto {}
