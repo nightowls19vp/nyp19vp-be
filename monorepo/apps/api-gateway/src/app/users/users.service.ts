@@ -17,7 +17,6 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
-  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -159,33 +158,6 @@ export class UsersService {
       this.usersClient
         .send(
           kafkaTopic.USERS.UPDATE_AVATAR,
-          JSON.stringify(updateAvatarReqDto),
-        )
-        .pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new RequestTimeoutException();
-          }),
-        ),
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) {
-        return res;
-      } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
-      }
-    });
-  }
-
-  async updateAvatarByFile(
-    updateAvatarReqDto: UpdateAvatarByFileReqDto,
-  ): Promise<UpdateAvatarResDto> {
-    return await firstValueFrom(
-      this.usersClient
-        .send(
-          kafkaTopic.USERS.UPDATE_AVATAR_BY_FILE,
           JSON.stringify(updateAvatarReqDto),
         )
         .pipe(

@@ -6,7 +6,6 @@ import {
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -48,7 +47,6 @@ export class UsersCrudService {
       phone: createUserReqDto.phone,
       email: createUserReqDto.email,
       avatar: createUserReqDto.avatar,
-      avatarUrl: createUserReqDto.avatarUrl,
     });
     return await newUser
       .save()
@@ -248,41 +246,8 @@ export class UsersCrudService {
     updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     const { _id, avatar } = updateAvatarReqDto;
-    const { fileName } = avatar;
-    console.log(`users-svc#udpate-avatar:`, _id, avatar);
-    avatar.fileName = `${Date.now()}-megoo-${fileName}`;
-    avatar.uploadDate = new Date();
     return await this.userModel
       .findByIdAndUpdate({ _id: _id }, { avatar: avatar })
-      .then(async (res) => {
-        const data = await this.userModel.findById(_id, { avatar: 1 });
-        console.log(data);
-        if (res)
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `update user #${_id} successfully`,
-            data: data,
-          });
-        else
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user #${_id} found`,
-          });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
-      });
-  }
-
-  async updateAvatarByFile(
-    updateAvatarReqDto: UpdateAvatarByFileReqDto,
-  ): Promise<UpdateAvatarResDto> {
-    const { _id, avatarUrl } = updateAvatarReqDto;
-    return await this.userModel
-      .findByIdAndUpdate({ _id: _id }, { avatarUrl: avatarUrl })
       .then(async (res) => {
         const data = await this.userModel.findById(_id, { avatar: 1 });
         console.log(data);

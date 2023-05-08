@@ -1,6 +1,5 @@
 import {
   ApiProperty,
-  ApiPropertyOptional,
   IntersectionType,
   OmitType,
   PickType,
@@ -12,8 +11,8 @@ import {
   IsDateString,
   IsEmail,
   IsOptional,
-  IsEnum,
   IsPhoneNumber,
+  IsUrl,
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
@@ -46,40 +45,6 @@ class UserSetting {
   })
   @IsBoolean()
   newsNoti: boolean;
-}
-
-class FileDto {
-  @ApiProperty({ required: true })
-  fileName: string;
-
-  @ApiProperty({
-    description: "Image's size. Unit: kB",
-    type: Number,
-    minimum: 1000,
-    required: true,
-  })
-  fileSize: number;
-
-  @ApiProperty({
-    type: String,
-    enum: ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'],
-    required: true,
-  })
-  @IsEnum(['image/jpeg', 'image/png', 'image/gif', 'image/jpg'])
-  contentType: string;
-
-  @ApiProperty({
-    type: String,
-    enum: ['hex', 'base64'],
-    required: true,
-  })
-  @IsEnum(['hex', 'base64'])
-  dataType: string;
-
-  @ApiProperty({ type: String, required: true })
-  fileData: string;
-
-  uploadDate: Date;
 }
 
 export class UserInfo {
@@ -130,13 +95,8 @@ export class UserInfo {
   email: string;
 
   @ApiProperty({ description: 'Avatar of user. Only supported upload file' })
-  @Type(() => FileDto)
-  @ValidateNested()
-  avatar?: FileDto;
-
-  @ApiPropertyOptional()
-  @IsString()
-  avatarUrl?: string;
+  @IsUrl()
+  avatar?: string;
 }
 
 export class Items {
@@ -233,11 +193,6 @@ export class UpdateSettingResDto extends BaseResDto {}
 export class UpdateAvatarReqDto extends IntersectionType(
   IdDto,
   PickType(UserInfo, ['avatar']),
-) {}
-
-export class UpdateAvatarByFileReqDto extends IntersectionType(
-  IdDto,
-  PickType(UserInfo, ['avatarUrl']),
 ) {}
 
 export class UpdateAvatarResDto extends BaseResDto {}

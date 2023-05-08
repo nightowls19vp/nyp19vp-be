@@ -1,12 +1,9 @@
 import {
   Body,
   Controller,
-  FileTypeValidator,
   Get,
   Inject,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -19,7 +16,6 @@ import {
   GetUserSettingResDto,
   kafkaTopic,
   ParseObjectIdPipe,
-  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -35,8 +31,6 @@ import {
 import { ClientKafka } from '@nestjs/microservices';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import {
-  ApiBody,
-  ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -45,20 +39,13 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  Patch,
-  Query,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common/decorators';
+import { Patch, Query } from '@nestjs/common/decorators';
 import {
   CollectionDto,
   CollectionResponse,
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { Types } from 'mongoose';
-import { Multer } from 'multer';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Users')
 @Controller('users')
@@ -190,63 +177,14 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
-  // @Post(':id/avatar')
-  // @UseInterceptors(FileInterceptor('file')) // 👈 field name must match
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       file: { type: 'string', format: 'binary' },
-  //     },
-  //   },
-  // })
-  // uploadFile(
-  //   @Param('id') id: string,
-  //   @UploadedFile(
-  //     'file',
-  //     new ParseFilePipe({
-  //       validators: [
-  //         new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
-  //       ],
-  //     })
-  //   )
-  //   file: Express.Multer.File
-  // ): Promise<UpdateAvatarResDto> {
-  //   console.log(`update user #${id}`, file);
-  //   const updateAvatarReqDto: UpdateAvatarReqDto = {
-  //     _id: id,
-  //     avatar: file,
-  //   };
-  //   return this.usersService.updateAvatar(updateAvatarReqDto);
-  // }
-
   @Post(':id/avatar')
   updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
-    // const updateAvatarReqDto: UpdateAvatarReqDto = {
-    //   _id: id,
-    //   avatar: file,
-    // };
     updateAvatarReqDto._id = id;
     return this.usersService.updateAvatar(updateAvatarReqDto);
-  }
-
-  @Post(':id/avatar-by-file')
-  updateAvatarByFile(
-    @Param('id') id: string,
-    @Body() reqDto: UpdateAvatarByFileReqDto,
-  ): Promise<UpdateAvatarResDto> {
-    console.log(`update user #${id}`, reqDto);
-    // const updateAvatarReqDto: UpdateAvatarReqDto = {
-    //   _id: id,
-    //   avatar: file,
-    // };
-    reqDto._id = id;
-    return this.usersService.updateAvatarByFile(reqDto);
   }
 
   @Put(':id/cart')

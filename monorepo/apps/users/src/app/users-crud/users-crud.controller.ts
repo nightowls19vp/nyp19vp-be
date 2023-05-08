@@ -11,7 +11,6 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
-  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -93,13 +92,6 @@ export class UsersCrudController implements OnModuleInit {
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.USERS.UPDATE_AVATAR_BY_FILE)
-  updateAvatarByFile(
-    @Payload() updateAvatarReqDto: UpdateAvatarByFileReqDto,
-  ): Promise<UpdateAvatarResDto> {
-    return this.usersCrudService.updateAvatarByFile(updateAvatarReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.DELETE_USER)

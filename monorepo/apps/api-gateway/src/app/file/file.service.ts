@@ -1,5 +1,4 @@
 import { Express } from 'express';
-import { Multer } from 'multer';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UploadedFile } from '@nestjs/common';
 import { CloudinaryService } from 'nestjs-cloudinary';
