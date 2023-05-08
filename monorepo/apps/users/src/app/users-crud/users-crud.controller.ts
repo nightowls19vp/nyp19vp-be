@@ -11,6 +11,7 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -31,7 +32,7 @@ import { Types } from 'mongoose';
 export class UsersCrudController implements OnModuleInit {
   constructor(
     private readonly usersCrudService: UsersCrudService,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -68,7 +69,7 @@ export class UsersCrudController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
   findSettingById(
-    @Payload() id: Types.ObjectId
+    @Payload() id: Types.ObjectId,
   ): Promise<GetUserSettingResDto> {
     return this.usersCrudService.findSettingById(id);
   }
@@ -92,6 +93,13 @@ export class UsersCrudController implements OnModuleInit {
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.UPDATE_AVATAR_BY_FILE)
+  updateAvatarByFile(
+    @Payload() updateAvatarReqDto: UpdateAvatarByFileReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    return this.usersCrudService.updateAvatarByFile(updateAvatarReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.DELETE_USER)
@@ -125,7 +133,7 @@ export class UsersCrudController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
   checkout(
-    @Payload() updateCartReqDto: UpdateCartReqDto
+    @Payload() updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
     console.log('users-svc : checkout');
     return this.usersCrudService.checkout(updateCartReqDto);

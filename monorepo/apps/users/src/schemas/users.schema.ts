@@ -19,7 +19,7 @@ export class User {
   dob: Date;
 
   @Factory((faker, ctx) =>
-    faker.helpers.unique(faker.internet.email, [ctx.name])
+    faker.helpers.unique(faker.internet.email, [ctx.name]),
   )
   @Prop({ unique: true, type: String, required: true })
   email: string;
@@ -31,6 +31,14 @@ export class User {
   // @Factory((faker) => faker.image.avatar())
   @Prop({ required: false })
   avatar: File;
+
+  @Prop({
+    type: String,
+    default:
+      'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
+    required: false,
+  })
+  avatarUrl: string;
 
   @Prop({ required: true, default: Object })
   setting: UserSetting;

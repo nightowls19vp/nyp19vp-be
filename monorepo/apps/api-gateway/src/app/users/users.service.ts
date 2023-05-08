@@ -17,6 +17,7 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  UpdateAvatarByFileReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -34,10 +35,10 @@ import { catchError, firstValueFrom, timeout } from 'rxjs';
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
   async createUser(
-    createUserReqDto: CreateUserReqDto
+    createUserReqDto: CreateUserReqDto,
   ): Promise<CreateUserResDto> {
     const res = await firstValueFrom(
       this.usersClient
@@ -46,8 +47,8 @@ export class UsersService {
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     );
     if (res.statusCode == HttpStatus.CREATED) {
       return res;
@@ -59,7 +60,7 @@ export class UsersService {
     }
   }
   async updateUser(
-    updateUserReqDto: UpdateUserReqDto
+    updateUserReqDto: UpdateUserReqDto,
   ): Promise<UpdateUserResDto> {
     const res = await firstValueFrom(
       this.usersClient
@@ -68,8 +69,8 @@ export class UsersService {
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     );
     if (res.statusCode == HttpStatus.OK) {
       return res;
@@ -86,8 +87,8 @@ export class UsersService {
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -105,8 +106,8 @@ export class UsersService {
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -119,27 +120,27 @@ export class UsersService {
     });
   }
   async getAllUsers(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_ALL, collectionDto)
+      this.usersClient.send(kafkaTopic.USERS.GET_ALL, collectionDto),
     );
   }
   async updateSetting(
-    updateSettingReqDto: UpdateSettingReqDto
+    updateSettingReqDto: UpdateSettingReqDto,
   ): Promise<UpdateSettingResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(
           kafkaTopic.USERS.UPDATE_SETTING,
-          JSON.stringify(updateSettingReqDto)
+          JSON.stringify(updateSettingReqDto),
         )
         .pipe(
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -152,20 +153,20 @@ export class UsersService {
     });
   }
   async updateAvatar(
-    updateAvatarReqDto: UpdateAvatarReqDto
+    updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(
           kafkaTopic.USERS.UPDATE_AVATAR,
-          JSON.stringify(updateAvatarReqDto)
+          JSON.stringify(updateAvatarReqDto),
         )
         .pipe(
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -177,14 +178,42 @@ export class UsersService {
       }
     });
   }
+
+  async updateAvatarByFile(
+    updateAvatarReqDto: UpdateAvatarByFileReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    return await firstValueFrom(
+      this.usersClient
+        .send(
+          kafkaTopic.USERS.UPDATE_AVATAR_BY_FILE,
+          JSON.stringify(updateAvatarReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+
   async deleteUser(id: Types.ObjectId): Promise<CreateUserResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.DELETE_USER, id).pipe(
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -197,7 +226,7 @@ export class UsersService {
     });
   }
   async updateCart(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<UpdateCartResDto> {
     return await firstValueFrom(
       this.usersClient
@@ -206,8 +235,8 @@ export class UsersService {
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -225,8 +254,8 @@ export class UsersService {
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -239,7 +268,7 @@ export class UsersService {
     });
   }
   async checkout(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
     return await firstValueFrom(
       this.usersClient
@@ -248,8 +277,8 @@ export class UsersService {
           timeout(5000),
           catchError(() => {
             throw new RequestTimeoutException();
-          })
-        )
+          }),
+        ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
         return res;
@@ -267,8 +296,8 @@ export class UsersService {
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     );
   }
   async restoreUser(id: Types.ObjectId): Promise<CreateUserResDto> {
@@ -277,8 +306,8 @@ export class UsersService {
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
-        })
-      )
+        }),
+      ),
     );
   }
 }

@@ -31,6 +31,7 @@ export const USERS = {
   UPDATE_INFO: 'updateUserInfo',
   UPDATE_SETTING: 'updateUserSetting',
   UPDATE_AVATAR: 'updateUserAvatar',
+  UPDATE_AVATAR_BY_FILE: 'updateUserAvatarByFile',
   DELETE_USER: 'deleteUser',
   RESTORE_USER: 'restoreUser',
   UPDATE_CART: 'updateShoppingCart',

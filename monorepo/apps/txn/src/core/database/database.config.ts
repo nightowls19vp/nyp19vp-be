@@ -1,11 +1,10 @@
 import * as dotenv from 'dotenv';
 
 import { IDbConfig } from './interfaces/dbConfig.interface';
+import { ENV_FILE } from '@nyp19vp-be/shared';
 
-import { CONST } from '@nyp19vp-be/shared';
 dotenv.config({
-  path:
-    process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : CONST.ENV_FILE.DEV,
+  path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
 export const dbCfg: IDbConfig = {
@@ -21,7 +20,7 @@ export const getMongoConnectionString = (dbCfg: IDbConfig) => {
 
   console.log(
     'connection string: ',
-    `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`
+    `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`,
   );
 
   return `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`;
