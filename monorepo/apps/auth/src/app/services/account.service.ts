@@ -46,7 +46,7 @@ export class AccountService {
     private readonly authService: AuthService,
 
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) {}
+  ) { }
   getData(): { message: string } {
     return { message: 'Welcome to auth/Account service!' };
   }
@@ -195,10 +195,10 @@ export class AccountService {
         if (!account) {
           const createUserReq: CreateUserReqDto = {
             email: user.email,
-            dob: null,
+            dob: undefined,
             name: user.name,
-            phone: null,
-            avatarUrl: user.photo,
+            phone: undefined,
+            avatar: user.photo,
           };
 
           const createUserRes: CreateUserResDto = await firstValueFrom(
