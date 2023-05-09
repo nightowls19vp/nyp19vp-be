@@ -76,12 +76,12 @@ export class UserInfo {
     example: '0987654321',
     minimum: 10,
     maximum: 12,
-    required: true,
-    nullable: false,
+    required: false,
   })
   @Transform(({ value }) => value.replace(/^0/, '+84'))
   @IsPhoneNumber('VI')
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @ApiProperty({
     description: 'Email of user, must be an ascii string',
@@ -94,8 +94,12 @@ export class UserInfo {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'Avatar of user. Only supported upload file' })
+  @ApiProperty({
+    description: 'Avatar of user. Only supported upload file',
+    required: false,
+  })
   @IsUrl()
+  @IsOptional()
   avatar?: string;
 }
 

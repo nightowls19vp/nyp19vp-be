@@ -24,7 +24,14 @@ export class User {
   email: string;
 
   @Factory((faker) => faker.helpers.unique(faker.phone.number, ['0#########']))
-  @Prop({ unique: true, type: String })
+  @Prop({
+    type: String,
+    trim: true,
+    index: {
+      unique: true,
+      partialFilterExpression: { phone: { $type: 'string' } },
+    },
+  })
   phone: string;
 
   @Factory((faker) => faker.image.avatar())
@@ -53,3 +60,5 @@ export class User {
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.plugin(MongooseDelete, { overrideMethods: true, deletedAt: true });
+
+UserSchema.index({ name: 'text', email: 'text', phone: 'text' });
