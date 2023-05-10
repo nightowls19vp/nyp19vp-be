@@ -62,4 +62,30 @@ export class FileService {
       };
     }
   }
+
+  async uploadAvatar(id: string, @UploadedFile() file: Express.Multer.File) {
+    try {
+      const res = await this.cloudinaryService.uploadFile(file, {
+        ...FileService.uploadOptions,
+        folder: id
+          ? `${FileService.uploadOptions.folder}${id}/`
+          : FileService.uploadOptions.folder,
+        overwrite: true,
+        use_filename: true,
+        unique_filename: false,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Upload file successfully',
+        data: res.secure_url,
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Upload file failed',
+        data: error,
+      };
+    }
+  }
 }

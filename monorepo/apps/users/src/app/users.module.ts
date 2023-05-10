@@ -4,10 +4,9 @@ import { UsersCrudModule } from './users-crud/users-crud.module';
 
 import { AppController } from './users.controller';
 import { AppService } from './users.service';
-import { SeederModule } from '../core/seeder/seeder';
 
 @Module({
-  imports: [UsersCrudModule, DataBaseModule, SeederModule],
+  imports: [UsersCrudModule, DataBaseModule],
   controllers: [AppController],
   providers: [AppService],
 })

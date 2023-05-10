@@ -46,7 +46,7 @@ export class AccountService {
     private readonly authService: AuthService,
 
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) { }
+  ) {}
   getData(): { message: string } {
     return { message: 'Welcome to auth/Account service!' };
   }

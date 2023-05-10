@@ -58,7 +58,6 @@ export class UserInfo {
     maxLength: 255,
   })
   @IsString()
-  @IsAscii()
   name: string;
 
   @ApiProperty({

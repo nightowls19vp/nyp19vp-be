@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -38,6 +39,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Patch, Query } from '@nestjs/common/decorators';
 import {
@@ -46,6 +48,8 @@ import {
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { Types } from 'mongoose';
+import { AccessJwtAuthGuard } from '../guards/jwt.guard';
+import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 
 @ApiTags('Users')
 @Controller('users')
@@ -88,12 +92,16 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getAllUsers(collectionDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get('search')
   async searchUser(@Query('keyword') keyword: string): Promise<UserDto[]> {
     console.log('search users');
     return this.usersService.searchUser(keyword);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get(':id')
   @ApiOkResponse({ description: 'Got user by Id', type: GetUserInfoResDto })
   @ApiParam({ name: 'id', type: String })
@@ -106,6 +114,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getUserById(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get(':id/setting')
   @ApiOkResponse({
     description: 'Got User Setting by Id',
@@ -119,6 +129,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getUserSettingById(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get(':id/cart')
   @ApiOkResponse({ description: 'Got shopping cart', type: GetCartResDto })
   @ApiParam({ name: 'id', type: String })
@@ -129,6 +141,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getCart(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Patch(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
@@ -139,6 +153,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.deleteUser(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Patch(':id/restore')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({
@@ -152,6 +168,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.restoreUser(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put(':id')
   @ApiOkResponse({ description: 'Updated User', type: UpdateUserResDto })
   async updateUser(
@@ -163,6 +181,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateUser(updateUserReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put(':id/setting')
   @ApiOkResponse({
     description: 'Updated User Setting',
@@ -177,6 +197,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateSetting(updateSettingReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Post(':id/avatar')
   updateAvatar(
     @Param('id') id: string,
@@ -187,6 +209,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateAvatar(updateAvatarReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put(':id/cart')
   @ApiOkResponse({
     description: "Updated user's shopping cart",
@@ -205,13 +229,8 @@ export class UsersController implements OnModuleInit {
     return this.usersService.updateCart(updateCartReqDto);
   }
 
-  @Get('healthcheck')
-  async healthcheck() {
-    // const res = await firstValueFrom(
-    //   this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
-    // );
-    // return res;
-  }
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Post(':id/checkout')
   async checkout(
     @Param('id') id: string,
@@ -220,5 +239,13 @@ export class UsersController implements OnModuleInit {
     console.log(`checkout #${id}`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.checkout(updateCartReqDto);
+  }
+
+  @Get('healthcheck')
+  async healthcheck() {
+    // const res = await firstValueFrom(
+    //   this.usersClient.send(kafkaTopic.HEALT_CHECK.USERS, {})
+    // );
+    // return res;
   }
 }
