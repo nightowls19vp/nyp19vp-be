@@ -5,10 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PkgCrudModule } from './pkg-crud/pkg-crud.module';
 import { GrCrudModule } from './gr-crud/gr-crud.module';
-import { SeederModule } from '../core/seeder/seeder';
+import { InitDbModule } from '../core/init-db/init-db.module';
 
 @Module({
-  imports: [PkgCrudModule, DataBaseModule, GrCrudModule, SeederModule],
+  imports: [PkgCrudModule, DataBaseModule, GrCrudModule, InitDbModule],
   controllers: [AppController],
   providers: [AppService],
 })

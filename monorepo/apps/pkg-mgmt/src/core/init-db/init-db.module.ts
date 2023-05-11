@@ -1,14 +1,14 @@
-import { seeder } from 'nestjs-seeder';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DataBaseModule } from '../database/database.module';
 import { Package, PackageSchema } from '../../schemas/package.schema';
-import { PackageSeeder } from './package.seeder';
+import { InitDbService } from './init-db.service';
+import { DataBaseModule } from '../database/database.module';
 
-seeder({
+@Module({
   imports: [
     DataBaseModule,
     MongooseModule.forFeature([{ name: Package.name, schema: PackageSchema }]),
   ],
-}).run([PackageSeeder]);
-
-export class SeederModule {}
+  providers: [InitDbService],
+})
+export class InitDbModule {}

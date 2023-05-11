@@ -1,13 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
-import { Factory } from 'nestjs-seeder';
 
 export type PackageDocument = HydratedDocument<Package> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class Package {
-  @Factory((faker) => faker.helpers.unique(faker.company.name))
   @Prop({
     type: String,
     unique: true,
@@ -15,7 +13,6 @@ export class Package {
   })
   name: string;
 
-  @Factory((faker) => faker.datatype.number({ min: 30, max: 365 }))
   @Prop({
     type: Number,
     minimum: 30,
@@ -23,14 +20,12 @@ export class Package {
   })
   duration: number;
 
-  @Factory((faker) => faker.commerce.price(100000, 500000, 0))
   @Prop({
     type: Number,
     required: true,
   })
   price: number;
 
-  @Factory((faker) => faker.datatype.number({ min: 1, max: 50 }))
   @Prop({
     type: Number,
     required: true,
@@ -38,7 +33,6 @@ export class Package {
   })
   noOfMember: number;
 
-  @Factory((faker) => faker.lorem.paragraph())
   @Prop({
     type: String,
     maxlength: 1000,
@@ -46,13 +40,11 @@ export class Package {
   })
   description: string;
 
-  @Factory((faker) => faker.database.mongodbObjectId())
   @Prop({
     type: String,
   })
   createdBy: string;
 
-  @Factory((faker, ctx) => ctx.createdBy)
   @Prop({
     type: String,
   })

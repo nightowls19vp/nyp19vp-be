@@ -2,28 +2,21 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Item } from './item.schema';
 import { UserSetting } from './setting.schema';
-import { Factory } from 'nestjs-seeder';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
 export type UserDocument = HydratedDocument<User> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class User {
-  @Factory((faker) => faker.name.fullName())
   @Prop({ type: String, required: true })
   name: string;
 
-  @Factory((faker) => faker.date.birthdate())
   @Prop({ type: Date })
   dob: Date;
 
-  @Factory((faker, ctx) =>
-    faker.helpers.unique(faker.internet.email, [ctx.name]),
-  )
   @Prop({ unique: true, type: String, required: true })
   email: string;
 
-  @Factory((faker) => faker.helpers.unique(faker.phone.number, ['0#########']))
   @Prop({
     type: String,
     trim: true,
@@ -34,7 +27,6 @@ export class User {
   })
   phone: string;
 
-  @Factory((faker) => faker.image.avatar())
   @Prop({
     required: false,
     type: String,
