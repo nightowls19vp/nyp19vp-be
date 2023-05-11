@@ -26,11 +26,15 @@ export class InitDbService {
             noOfMember: 2,
             description:
               'Essentiels management\nGroup Chat\nGroup Call\nSpending management',
+            coefficient: {
+              inc: 20000,
+              formula: '${price} + ${coefficient.inc}*${noOfMember}',
+            },
           });
           const FamiPkg = new this.pkgModel({
             name: 'Family Package',
             duration: 12,
-            price: 50000,
+            price: 300000,
             noOfMember: 4,
             description:
               'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
@@ -38,18 +42,27 @@ export class InitDbService {
           const AnPkg = new this.pkgModel({
             name: 'Annual Package',
             duration: 12,
-            price: 500000,
+            price: 357000,
             noOfMember: 2,
             description:
               'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+            coefficient: {
+              inc: 153000,
+              formula: '${price} + ${coefficient.inc}*${noOfMember}',
+            },
           });
           const CustomPkg = new this.pkgModel({
             name: 'Customized Package',
             duration: 1,
-            price: 75000,
+            price: 70000,
             noOfMember: 2,
             description:
               'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+            coefficient: {
+              inc: 20000,
+              formula:
+                '${price} + ${coefficient.inc}*${noOfMember}*${duration}',
+            },
           });
           await this.pkgModel.insertMany([ExPkg, FamiPkg, AnPkg, CustomPkg]);
         }

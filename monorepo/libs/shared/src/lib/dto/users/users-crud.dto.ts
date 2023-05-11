@@ -13,6 +13,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsUrl,
+  Min,
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
@@ -117,6 +118,24 @@ export class Items {
     example: 1,
   })
   quantity: number;
+
+  @ApiProperty({
+    description: "Number of package'member",
+    type: Number,
+    minimum: 2,
+  })
+  @IsOptional()
+  @Min(2)
+  noOfMemb?: number;
+
+  @ApiProperty({
+    description: 'Duration of package',
+    type: Number,
+    minimum: 1,
+  })
+  @IsOptional()
+  @Min(1)
+  duration?: number;
 }
 
 class UserSettingDto {
@@ -139,10 +158,8 @@ export class CartDto {
       {
         package: '640ac2ccf227ec441cd97d7b',
         quantity: 1,
-      },
-      {
-        package: '640b22084096fa00812fa128',
-        quantity: 2,
+        noOfMemb: 2,
+        duration: 1,
       },
     ],
   })
