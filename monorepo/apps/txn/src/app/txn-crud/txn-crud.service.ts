@@ -43,11 +43,11 @@ export class TxnCrudService {
     @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
   async zpCheckout(
-    updateCartReqDto: UpdateCartReqDto
+    updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
     const { _id, cart } = updateCartReqDto;
     const list_id = cart.map((x) => x.package);
@@ -55,13 +55,13 @@ export class TxnCrudService {
       const res = await firstValueFrom(
         this.pkgMgmtClient
           .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
-          .pipe(timeout(5000))
+          .pipe(timeout(5000)),
       );
       if (res.length) {
         const zaloPayReq = mapZaloPayReqDto(
           _id,
           mapPkgDtoToItemDto(res, cart),
-          this.config
+          this.config,
         );
         console.log(zaloPayReq);
         const order = await this.zpCreateOrder(zaloPayReq);
@@ -100,12 +100,12 @@ export class TxnCrudService {
   }
 
   async zpGetStatus(
-    createTransReqDto: CreateTransReqDto
+    createTransReqDto: CreateTransReqDto,
   ): Promise<CreateTransResDto> {
     const { _id, user } = createTransReqDto;
     const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto = mapZPGetStatusReqDto(
       _id,
-      this.config
+      this.config,
     );
     const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
     console.log('result:', res);
@@ -136,13 +136,13 @@ export class TxnCrudService {
         const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
           user,
           _id,
-          createTransReqDto.item
+          createTransReqDto.item,
         );
         const res = await firstValueFrom(
           this.usersClient.send(
             kafkaTopic.USERS.UPDATE_TRX,
-            updateTrxHistReqDto
-          )
+            updateTrxHistReqDto,
+          ),
         );
         if (res.statusCode == HttpStatus.OK) {
           await session.commitTransaction();
@@ -172,7 +172,7 @@ export class TxnCrudService {
   }
 
   async zpCreateTrans(
-    zpDataCallback: ZPDataCallback
+    zpDataCallback: ZPDataCallback,
   ): Promise<CreateTransResDto> {
     let result: CreateTransResDto;
     const item: ItemDto[] = JSON.parse(zpDataCallback.item);
@@ -203,10 +203,10 @@ export class TxnCrudService {
       const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
         zpDataCallback.app_user,
         zpDataCallback.app_trans_id,
-        item
+        item,
       );
       const res = await firstValueFrom(
-        this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+        this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto),
       );
       if (res.statusCode == HttpStatus.OK) {
         await session.commitTransaction();
@@ -235,13 +235,13 @@ export class TxnCrudService {
   }
 
   zpCheckStatus(
-    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto
+    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto,
   ): Promise<ZPGetOrderStatusResDto | string> {
     let timer;
     return new Promise((resolve) => {
       timer = setIntervalAsync(async () => {
         const res: ZPGetOrderStatusResDto = await this.zpGetOrderStatus(
-          zpGetOrderStatusReqDto
+          zpGetOrderStatusReqDto,
         );
         if (res.return_code == 1) {
           resolve(res);
@@ -256,7 +256,7 @@ export class TxnCrudService {
   }
 
   async zpCreateOrder(
-    zalopayReqDto: ZPCreateOrderReqDto
+    zalopayReqDto: ZPCreateOrderReqDto,
   ): Promise<ZPCreateOrderResDto> {
     const { data } = await firstValueFrom(
       this.httpService
@@ -266,14 +266,14 @@ export class TxnCrudService {
         .pipe(
           catchError((error: AxiosError) => {
             throw error.response.data;
-          })
-        )
+          }),
+        ),
     );
     return data;
   }
 
   async zpGetOrderStatus(
-    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto
+    zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto,
   ): Promise<ZPGetOrderStatusResDto> {
     const { data } = await firstValueFrom(
       this.httpService
@@ -283,8 +283,8 @@ export class TxnCrudService {
         .pipe(
           catchError((error: AxiosError) => {
             throw error.response.data;
-          })
-        )
+          }),
+        ),
     );
     return data;
   }
@@ -294,15 +294,24 @@ function padTo2Digits(num: number) {
 }
 const mapPkgDtoToItemDto = (
   listPkg: PackageDto[],
-  cart: Items[]
+  cart: Items[],
 ): ItemDto[] => {
   let idx = 0;
   const ListItem: ItemDto[] = cart.map((i) => {
+    const cost =
+      listPkg.at(idx).duration >= 12
+        ? (listPkg.at(idx).price +
+            listPkg.at(idx).coefficient * (i.noOfMemb - 2) * i.duration) *
+          0.7
+        : listPkg.at(idx).price +
+          listPkg.at(idx).coefficient * (i.noOfMemb - 2) * i.duration;
     const item: ItemDto = {
       id: i.package,
       name: listPkg.at(idx).name,
-      price: listPkg.at(idx).price,
+      price: cost,
       quantity: i.quantity,
+      duration: i.duration,
+      noOfMemb: i.noOfMemb,
     };
     idx++;
     return item;
@@ -344,7 +353,7 @@ const getTransId = (): string => {
 const mapZaloPayReqDto = (
   user_id: string,
   items: ItemDto[],
-  config: any
+  config: any,
 ): ZPCreateOrderReqDto => {
   const now: number = Date.now();
   const trans_id = getTransId();
@@ -381,7 +390,7 @@ const mapZaloPayReqDto = (
 };
 const mapZPGetStatusReqDto = (
   app_trans_id: string,
-  config: any
+  config: any,
 ): ZPGetOrderStatusReqDto => {
   const hmacinput = [config.app_id, app_trans_id, config.key1].join('|');
   const mac: string = createHmac('sha256', config.key1)
@@ -396,7 +405,7 @@ const mapZPGetStatusReqDto = (
 const mapUpdateTrxHistReqDto = (
   app_user: string,
   app_trans_id: string,
-  item: ItemDto[]
+  item: ItemDto[],
 ): UpdateTrxHistReqDto => {
   const updateTrxHistReqDto: UpdateTrxHistReqDto = {
     _id: app_user,
@@ -409,7 +418,7 @@ const mapUpdateTrxHistReqDto = (
   return updateTrxHistReqDto;
 };
 const mapZPCreateOrderReqDtoToCreateTransReqDto = (
-  zpCreateOrderReqDto: ZPCreateOrderReqDto
+  zpCreateOrderReqDto: ZPCreateOrderReqDto,
 ): CreateTransReqDto => {
   const createTransReqDto: CreateTransReqDto = {
     _id: zpCreateOrderReqDto.app_trans_id,

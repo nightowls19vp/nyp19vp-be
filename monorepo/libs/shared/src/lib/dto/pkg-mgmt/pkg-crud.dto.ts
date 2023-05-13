@@ -51,6 +51,9 @@ export class PackageDto {
   description: string;
 
   @ApiProperty()
+  coefficient: number;
+
+  @ApiProperty()
   createdBy: string;
 
   @ApiProperty()
@@ -63,7 +66,7 @@ export class CreatePkgResDto extends BaseResDto {}
 
 export class UpdatePkgReqDto extends IntersectionType(
   IdDto,
-  OmitType(PackageDto, ['createdBy'])
+  OmitType(PackageDto, ['createdBy']),
 ) {}
 
 export class UpdatePkgResDto extends BaseResDto {}

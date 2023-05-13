@@ -4,15 +4,6 @@ import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
 export type PackageDocument = HydratedDocument<Package> & SoftDeleteDocument;
 
-@Schema()
-class Coefficient {
-  @Prop({ required: false })
-  inc: number;
-
-  @Prop({ required: false })
-  formula: string;
-}
-
 @Schema({ timestamps: true })
 export class Package {
   @Prop({ type: String, unique: true, required: true })
@@ -31,7 +22,7 @@ export class Package {
   description: string;
 
   @Prop({ required: false })
-  coefficient: Coefficient;
+  coefficient: number;
 
   @Prop({ type: String })
   createdBy: string;

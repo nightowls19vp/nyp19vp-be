@@ -42,6 +42,12 @@ export class ItemDto {
     example: 1,
   })
   quantity: number;
+
+  @ApiProperty({ minimum: 1 })
+  duration: number;
+
+  @ApiProperty({ minimum: 2 })
+  noOfMemb: number;
 }
 
 export class EmbedData {
