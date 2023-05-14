@@ -111,6 +111,9 @@ export class Items {
   })
   package: string;
 
+  @IsOptional()
+  name?: string;
+
   @ApiProperty({
     description: 'Quantity of package',
     type: Number,

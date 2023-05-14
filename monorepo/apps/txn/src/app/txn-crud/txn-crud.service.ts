@@ -308,10 +308,10 @@ const mapPkgDtoToItemDto = (
     const item: ItemDto = {
       id: i.package,
       name: listPkg.at(idx).name,
-      price: cost,
+      price: listPkg.at(idx).coefficient ? cost : listPkg.at(idx).price,
       quantity: i.quantity,
-      duration: i.duration,
-      noOfMemb: i.noOfMemb,
+      duration: i.duration ? i.duration : listPkg.at(idx).duration,
+      noOfMemb: i.noOfMemb ? i.noOfMemb : listPkg.at(idx).noOfMember,
     };
     idx++;
     return item;

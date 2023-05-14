@@ -6,6 +6,7 @@ import {
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  Items,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -37,6 +38,7 @@ export class UsersCrudService {
     @InjectModel(User.name)
     private userModel: SoftDeleteModel<UserDocument>,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
   ) {}
 
   async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
@@ -359,19 +361,34 @@ export class UsersCrudService {
     console.log(`get items from user's cart`, id);
     return await this.userModel
       .findById({ _id: id }, { cart: 1, _id: 0 })
-      .then((res) => {
+      .then(async (res) => {
         if (res) {
+          const list_id = res.cart.map((x) => x.package);
+          const pkgs = await firstValueFrom(
+            this.pkgClient
+              .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+              .pipe(timeout(5000)),
+          );
+          const cart: Items[] = res.cart;
+          if (pkgs) {
+            let i = 0;
+            for (const elem of pkgs) {
+              cart.at(i).name = elem.name;
+              i++;
+            }
+          }
+
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,
-            cart: res.cart,
+            cart: cart,
           });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No items found in user #${id}'s cart`,
             error: 'NOT FOUND',
-            cart: res.cart,
+            cart: null,
           });
         }
       })

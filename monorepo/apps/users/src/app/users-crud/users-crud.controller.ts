@@ -32,6 +32,7 @@ export class UsersCrudController implements OnModuleInit {
   constructor(
     private readonly usersCrudService: UsersCrudService,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -40,6 +41,12 @@ export class UsersCrudController implements OnModuleInit {
       this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
     }
     await Promise.all([this.txnClient.connect()]);
+
+    this.pkgClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.PACKAGE_MGMT);
+    for (const key in kafkaTopic.PACKAGE_MGMT) {
+      this.pkgClient.subscribeToResponseOf(kafkaTopic.PACKAGE_MGMT[key]);
+    }
+    await Promise.all([this.pkgClient.connect()]);
   }
 
   @MessagePattern(kafkaTopic.USERS.CREATE)

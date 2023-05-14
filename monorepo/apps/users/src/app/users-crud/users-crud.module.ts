@@ -24,6 +24,21 @@ import { randomUUID } from 'crypto';
         },
       },
     ]),
+    ClientsModule.register([
+      {
+        name: 'PKG_MGMT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'pkg-mgmt',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'pkg-mgmt-consumer' + randomUUID(), // FIXME,
+          },
+        },
+      },
+    ]),
   ],
   controllers: [UsersCrudController],
   providers: [UsersCrudService],
