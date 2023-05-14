@@ -7,6 +7,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -106,10 +107,14 @@ export class FileController {
   @ApiParam({ name: 'id', type: String, description: "User's Id" })
   async uploadAvatarWithBase64(
     @Param('id') id: string,
+    @Req() req: Express.Request,
     @Body() reqDto: UpdateAvatarWithBase64,
   ) {
     // convert base 64 to Express.Multer.File with fetch
 
-    return this.fileService.uploadAvatarWithBase64(id, reqDto.base64);
+    return this.fileService.uploadAvatarWithBase64(
+      req?.user['id'] ?? id,
+      reqDto.base64,
+    );
   }
 }

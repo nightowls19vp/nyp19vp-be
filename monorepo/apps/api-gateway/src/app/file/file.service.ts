@@ -73,6 +73,8 @@ export class FileService {
         overwrite: true,
         use_filename: true,
         unique_filename: false,
+        format: 'png',
+        public_id: 'avatar',
       });
 
       return {
@@ -101,6 +103,8 @@ export class FileService {
           overwrite: true,
           use_filename: true,
           unique_filename: false,
+          format: 'png',
+          public_id: 'avatar',
         },
       );
 
