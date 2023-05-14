@@ -23,6 +23,8 @@ import {
   UpdateGrPkgReqDto,
   PackageDto,
   GroupDto,
+  BaseResDto,
+  ValidateJoinGroupTokenResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
@@ -30,15 +32,16 @@ import { firstValueFrom } from 'rxjs';
 @Injectable()
 export class PkgMgmtService {
   constructor(
-    @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka
+    @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
 
   async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.CREATE_PKG,
-        JSON.stringify(createPkgReqDto)
-      )
+        JSON.stringify(createPkgReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) return res;
       else
@@ -50,18 +53,18 @@ export class PkgMgmtService {
   }
 
   async getAllPkg(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS,
-        collectionDto
-      )
+        collectionDto,
+      ),
     );
   }
   async getPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -75,8 +78,8 @@ export class PkgMgmtService {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.UPDATE_PKG,
-        JSON.stringify(updatePkgReqDto)
-      )
+        JSON.stringify(updatePkgReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -88,7 +91,7 @@ export class PkgMgmtService {
   }
   async deletePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_PKG, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_PKG, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -100,7 +103,7 @@ export class PkgMgmtService {
   }
   async restorePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RESTORE_GR, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RESTORE_GR, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -114,8 +117,8 @@ export class PkgMgmtService {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.CREATE_GR,
-        JSON.stringify(createGrReqDto)
-      )
+        JSON.stringify(createGrReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) return res;
       else
@@ -126,18 +129,18 @@ export class PkgMgmtService {
     });
   }
   async getAllGr(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS,
-        collectionDto
-      )
+        collectionDto,
+      ),
     );
   }
   async getGrById(id: Types.ObjectId): Promise<GetGrResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -151,8 +154,8 @@ export class PkgMgmtService {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.UPDATE_GR,
-        JSON.stringify(updatePkgReqDto)
-      )
+        JSON.stringify(updatePkgReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -164,7 +167,7 @@ export class PkgMgmtService {
   }
   async deleteGr(id: Types.ObjectId): Promise<CreateGrResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_GR, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_GR, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -176,7 +179,7 @@ export class PkgMgmtService {
   }
   async restoreGr(id: Types.ObjectId): Promise<CreateGrResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RESTORE_GR, id)
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RESTORE_GR, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -190,8 +193,8 @@ export class PkgMgmtService {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
-        JSON.stringify(updateGrMbReqDto)
-      )
+        JSON.stringify(updateGrMbReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -205,8 +208,8 @@ export class PkgMgmtService {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB,
-        JSON.stringify(updateGrMbReqDto)
-      )
+        JSON.stringify(updateGrMbReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -217,13 +220,13 @@ export class PkgMgmtService {
     });
   }
   async rmGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto
+    updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.RM_GR_PKG,
-        JSON.stringify(updateGrPkgReqDto)
-      )
+        JSON.stringify(updateGrPkgReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -234,13 +237,13 @@ export class PkgMgmtService {
     });
   }
   async addGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto
+    updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG,
-        JSON.stringify(updateGrPkgReqDto)
-      )
+        JSON.stringify(updateGrPkgReqDto),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -249,5 +252,52 @@ export class PkgMgmtService {
           description: res.error,
         });
     });
+  }
+
+  async invToJoinGr(
+    addedByUserInfoId: string,
+    grId: string,
+  ): Promise<BaseResDto> {
+    // log all params
+    console.log('addedByUserInfoId', addedByUserInfoId);
+    console.log('grId', grId);
+
+    const reqDto: AddGrMbReqDto = {
+      _id: grId,
+      addedBy: addedByUserInfoId,
+      user: null,
+    };
+
+    const resDto = await firstValueFrom(
+      this.authClient.send(
+        kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN,
+        JSON.stringify(reqDto),
+      ),
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Invitation sent',
+      data: '/pkg-mgmt/gr/join?token=' + resDto,
+    };
+  }
+
+  async joinGr(userInfoId: string, token: string): Promise<BaseResDto> {
+    const decodeRes: ValidateJoinGroupTokenResDto = await firstValueFrom(
+      this.authClient.send(
+        kafkaTopic.AUTH.VALIDATE_JOIN_GR_TOKEN,
+        JSON.stringify({ token }),
+      ),
+    );
+
+    console.log('decodeRes', decodeRes);
+    decodeRes.user = userInfoId;
+
+    return firstValueFrom(
+      this.packageMgmtClient.send(
+        kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
+        JSON.stringify(decodeRes),
+      ),
+    );
   }
 }

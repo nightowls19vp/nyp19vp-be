@@ -9,12 +9,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  AddGrMbReqDto,
   config,
   ERole,
   LoginReqDto,
   LoginResWithTokensDto,
   LogoutResDto,
   RefreshTokenResDto,
+  ValidateJoinGroupTokenReqDto,
+  ValidateJoinGroupTokenResDto,
   ValidateUserReqDto,
   ValidateUserResDto,
 } from '@nyp19vp-be/shared';
@@ -294,5 +297,24 @@ export class AuthService {
         message: 'Refresh token fail cause user has been logout',
       };
     }
+  }
+
+  async genJoinGrToken(reqDto: AddGrMbReqDto): Promise<string> {
+    return this.jwtService.sign(reqDto, {
+      expiresIn: config.auth.strategies.strategyConfig.joinGroupJwtTtl,
+      secret: config.auth.strategies.strategyConfig.joinGroupJwtSecret,
+    });
+  }
+
+  async validateJoinGrToken(
+    reqDto: ValidateJoinGroupTokenReqDto,
+  ): Promise<ValidateJoinGroupTokenResDto> {
+    const result = this.jwtService.verify(reqDto.token, {
+      secret: config.auth.strategies.strategyConfig.joinGroupJwtSecret,
+    });
+
+    console.log('verify result', result);
+
+    return result;
   }
 }

@@ -17,9 +17,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
-import { AccessJwtAuthGuard } from '../guards/jwt.guard';
 import { UpdateAvatarWithBase64 } from '@nyp19vp-be/shared';
 import { ATUser } from '../decorators/at-user.decorator';
+import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('file')
 export class FileController {

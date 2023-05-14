@@ -3,6 +3,7 @@ import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  AddGrMbReqDto,
   CreateAccountReqDto,
   CreateAccountResDto,
   kafkaTopic,
@@ -17,6 +18,8 @@ import {
   SocialLinkResDto,
   SocialSignupReqDto,
   SocialSignupResDto,
+  ValidateJoinGroupTokenReqDto,
+  ValidateJoinGroupTokenResDto,
   ValidateUserReqDto,
   ValidateUserResDto,
 } from '@nyp19vp-be/shared';
@@ -103,5 +106,17 @@ export class AuthController implements OnModuleInit {
     console.log('MessagePattern(kafkaTopic.AUTH.SOCIAL_LINK) ', reqDto);
 
     return this.accountService.socialLink(reqDto);
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN)
+  async genJoinGrToken(@Payload() reqDto: AddGrMbReqDto): Promise<string> {
+    return this.authService.genJoinGrToken(reqDto);
+  }
+
+  @MessagePattern(kafkaTopic.AUTH.VALIDATE_JOIN_GR_TOKEN)
+  async validateJoinGrToken(
+    @Payload() reqDto: ValidateJoinGroupTokenReqDto,
+  ): Promise<ValidateJoinGroupTokenResDto> {
+    return this.authService.validateJoinGrToken(reqDto);
   }
 }

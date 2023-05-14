@@ -9,6 +9,8 @@ import {
   Inject,
   Put,
   Query,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -17,6 +19,8 @@ import {
   ApiOperation,
   ApiTags,
   ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import {
   AddGrMbReqDto,
@@ -41,6 +45,7 @@ import {
   GroupDto,
   ParseObjectIdPipe,
   IdDto,
+  BaseResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -49,6 +54,10 @@ import {
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { Types } from 'mongoose';
+import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
+import { ATUser } from '../decorators/at-user.decorator';
+import { isEmpty } from 'class-validator';
+import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 
 @ApiTags('Package Management')
 @Controller('pkg-mgmt')
@@ -56,6 +65,7 @@ export class PkgMgmtController implements OnModuleInit {
   constructor(
     private readonly pkgMgmtService: PkgMgmtService,
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
   async onModuleInit() {
     this.packageMgmtClient.subscribeToResponseOf(
@@ -67,6 +77,15 @@ export class PkgMgmtController implements OnModuleInit {
         kafkaTopic.PACKAGE_MGMT[key],
       );
     }
+
+    // subscribe to kafka topics "kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN"
+    this.authClient.subscribeToResponseOf(
+      kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN,
+    );
+
+    this.authClient.subscribeToResponseOf(
+      kafkaTopic.AUTH.VALIDATE_JOIN_GR_TOKEN,
+    );
 
     await Promise.all([this.packageMgmtClient.connect()]);
   }
@@ -158,6 +177,55 @@ export class PkgMgmtController implements OnModuleInit {
   ): Promise<CollectionResponse<GroupDto>> {
     console.log('Get all groups');
     return this.pkgMgmtService.getAllGr(collectionDto);
+  }
+
+  // create a magic link to invite user to join group
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @ApiOkResponse({
+    description: 'Join group by magic link',
+    type: BaseResDto,
+  })
+  @ApiQuery({ name: 'grId', type: String })
+  @UseGuards(AccessJwtAuthGuard)
+  @Get('gr/inv')
+  invToJoinGr(
+    @Query('grId') grId: string,
+    @ATUser() user: unknown,
+  ): Promise<BaseResDto> {
+    console.log(`invite to join group #${grId}`);
+
+    if (isEmpty(user?.['userInfo']?.['_id'])) {
+      throw new UnauthorizedException();
+    }
+
+    // log
+    console.log(
+      `invite to join group #${grId} by user #${user['userInfo']['_id']}`,
+    );
+
+    return this.pkgMgmtService.invToJoinGr(user['userInfo']['_id'], grId);
+  }
+
+  // join group by magic link
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @ApiOkResponse({
+    description: 'Join group by magic link',
+    type: BaseResDto,
+  })
+  @ApiQuery({ name: 'token', type: String })
+  @UseGuards(AccessJwtAuthGuard)
+  @Get('gr/join')
+  joinGr(
+    @Query('token') token: string,
+    @ATUser() user: unknown,
+  ): Promise<BaseResDto> {
+    console.log(`join group by magic link #${token}`);
+
+    if (isEmpty(user?.['userInfo']?.['_id'])) {
+      throw new UnauthorizedException();
+    }
+
+    return this.pkgMgmtService.joinGr(user['userInfo']['_id'], token);
   }
 
   @Get('gr/:id')

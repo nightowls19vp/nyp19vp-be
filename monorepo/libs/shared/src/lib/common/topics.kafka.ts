@@ -19,6 +19,8 @@ export const AUTH = {
   SOCIAL_SIGN_UP: 'social_sign_up',
   SOCIAL_LINK: 'social_link',
   REFRESH: 'refresh',
+  GENERATE_JOIN_GR_TOKEN: 'generate_join_gr_token',
+  VALIDATE_JOIN_GR_TOKEN: 'validate_join_gr_token',
 };
 
 export const USERS = {
