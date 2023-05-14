@@ -86,9 +86,6 @@ export class AuthController implements OnModuleInit {
       throw new UnauthorizedException();
     }
 
-    console.log('req params', req.params);
-
-    console.log('gpai auth ctrl: reach redirect');
     const webUrl =
       req.params.from || process.env.WEB_URL || 'http://localhost:8080';
 
@@ -142,17 +139,11 @@ export class AuthController implements OnModuleInit {
   async googleSignUpMobile(
     @Body() googleSignUpReqDto: GoogleSignUpReqDto,
   ): Promise<SocialSignupResDto> {
-    console.log('mobile/google-sign-up');
-
     const token = googleSignUpReqDto.googleAccessToken;
-
-    console.log('token', token);
 
     if (token) {
       try {
         const profile: any = await this.authService.getUserData(token);
-
-        console.log('profile', profile);
 
         const reqDto: SocialAccountReqDto = {
           provider: 'google',
@@ -163,8 +154,6 @@ export class AuthController implements OnModuleInit {
         };
 
         const resDto = await this.authService.googleSignUp(reqDto, null);
-
-        console.log('resDto', resDto);
 
         if (!resDto) {
           throw new HttpException(
@@ -206,8 +195,6 @@ export class AuthController implements OnModuleInit {
           providerId: reqDto.providerId,
         });
 
-        console.log('resDto', resDto);
-
         if (!resDto) {
           throw new HttpException(
             'Cannot create social account',
@@ -232,8 +219,6 @@ export class AuthController implements OnModuleInit {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    console.log('login', reqDto);
-
     const loginResWithTokensDto: LoginResWithTokensDto =
       await this.authService.login(reqDto);
 
@@ -269,8 +254,6 @@ export class AuthController implements OnModuleInit {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    console.log('login', reqDto);
-
     const loginResWithTokensDto: LoginResWithTokensDto =
       await this.authService.login(reqDto);
 
@@ -310,8 +293,6 @@ export class AuthController implements OnModuleInit {
 
   @Post('register')
   register(@Body() reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
-    console.log('register', reqDto);
-
     return this.authService.register(reqDto);
   }
 
@@ -327,8 +308,6 @@ export class AuthController implements OnModuleInit {
   @UseGuards(RefreshJwtAuthGuard)
   async refresh(@Req() req: Request) {
     const refreshToken = getRefreshToken(req) || '';
-
-    console.log('refreshToken', refreshToken);
 
     return this.authService.refresh(refreshToken);
   }

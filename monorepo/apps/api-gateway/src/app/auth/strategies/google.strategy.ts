@@ -66,7 +66,6 @@ export class GoogleStrategy extends PassportStrategy(
     profile: Profile,
     done: VerifyCallback,
   ): Promise<any> {
-    // console.log('gg vlt pf', profile);
     const googleUser = {
       provider: 'google',
       providerId: profile?.id,

@@ -1,3 +1,4 @@
+import { JOIN_GR_JWT_DEFAULT_SECRET } from './../../../../../../../apps/api-gateway/src/app/constants/authentication/index';
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '../../../core';
 
@@ -17,4 +18,6 @@ export const strategyConfig = {
   accessJwtTtl: process.env.ACCESS_JWT_TLL || '1d',
   refreshJwtSecret: process.env.REFRESH_JWT_SECRET || 'refresh',
   refreshJwtTtl: process.env.REFRESH_JWT_TTL || '10d',
+  joinGroupJwtSecret: process.env.JOIN_GR_JWT_DEFAULT_SECRET || 'join_gr',
+  joinGroupJwtTtl: process.env.JOIN_GR_JWT_DEFAULT_TTL || '3d',
 };

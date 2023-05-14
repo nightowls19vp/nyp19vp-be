@@ -48,8 +48,8 @@ import {
   ValidationPipe,
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { Types } from 'mongoose';
-import { AccessJwtAuthGuard } from '../guards/jwt.guard';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @ApiTags('Users')
 @Controller('users')

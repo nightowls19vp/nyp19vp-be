@@ -81,7 +81,6 @@ export class AuthService {
           )
           .pipe(timeout(toMs('5s'))),
       );
-      // console.log('resDto success', resDto);
       return resDto;
     } catch (error) {
       console.error('timeout', error);
@@ -152,11 +151,6 @@ export class AuthService {
   }
 
   setCookie(res: Response, accessToken: string, refreshToken: string) {
-    console.log({
-      accessToken,
-      refreshToken,
-    });
-
     res.cookie(ACCESS_JWT_COOKIE_NAME, accessToken, {
       httpOnly: true,
       secure: true,

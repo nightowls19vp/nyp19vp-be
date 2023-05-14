@@ -31,9 +31,6 @@ export class RefreshJwtStrategy extends PassportStrategy(
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
           const refreshToken = getRefreshToken(request);
-
-          console.log('refreshToken', refreshToken);
-
           if (!refreshToken) {
             throw new UnauthorizedException();
           }

@@ -17,9 +17,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
-import { AccessJwtAuthGuard } from '../guards/jwt.guard';
 import { UpdateAvatarWithBase64 } from '@nyp19vp-be/shared';
 import { ATUser } from '../decorators/at-user.decorator';
+import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('file')
 export class FileController {
@@ -110,19 +110,9 @@ export class FileController {
   @UseGuards(AccessJwtAuthGuard)
   @Post('upload-avatar-with-base64')
   async uploadAvatarWithBase64(
-    @Req() req: Express.Request,
     @ATUser() user: unknown,
     @Body() reqDto: UpdateAvatarWithBase64,
   ) {
-    console.log('req.user', req.user);
-
-    console.log(user, 'userrrrrrrrrrrr');
-    console.log(
-      "user?.['auth']?.['user']?.['id']",
-      user?.['auth']?.['user']?.['id'],
-    );
-    console.log("user?.['userInfo']?.['_id']", user?.['userInfo']?.['_id']);
-
     return this.fileService.uploadAvatarWithBase64(
       user?.['auth']?.['user']?.['id'] ||
         user?.['userInfo']?.['_id'] ||
