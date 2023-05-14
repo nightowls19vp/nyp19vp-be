@@ -60,8 +60,6 @@ export class DbService {
         avatar: undefined,
       });
 
-      console.log('\n\nres', resDto);
-
       if (![200, 201].includes(resDto.statusCode)) {
         throw new Error(resDto.message);
       }

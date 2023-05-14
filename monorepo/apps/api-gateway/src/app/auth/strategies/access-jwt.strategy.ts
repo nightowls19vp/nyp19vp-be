@@ -40,11 +40,8 @@ export class AccessJwtStrategy extends PassportStrategy(
 
   async validate(req: Request) {
     const at = getAccessToken(req);
-    console.log('access token', at);
 
     const resDto: BaseResDto = await this.authService.validateAccessToken(at);
-
-    console.log('validateAccessToken res', resDto);
 
     return resDto.data;
   }

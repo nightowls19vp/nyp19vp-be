@@ -9,8 +9,6 @@ export const SocialUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): ISocialUser => {
     const request = ctx.switchToHttp().getRequest();
 
-    console.log(request.user);
-
     return (request?.user as ISocialUser) ?? null;
   },
 );

@@ -110,19 +110,9 @@ export class FileController {
   @UseGuards(AccessJwtAuthGuard)
   @Post('upload-avatar-with-base64')
   async uploadAvatarWithBase64(
-    @Req() req: Express.Request,
     @ATUser() user: unknown,
     @Body() reqDto: UpdateAvatarWithBase64,
   ) {
-    console.log('req.user', req.user);
-
-    console.log(user, 'userrrrrrrrrrrr');
-    console.log(
-      "user?.['auth']?.['user']?.['id']",
-      user?.['auth']?.['user']?.['id'],
-    );
-    console.log("user?.['userInfo']?.['_id']", user?.['userInfo']?.['_id']);
-
     return this.fileService.uploadAvatarWithBase64(
       user?.['auth']?.['user']?.['id'] ||
         user?.['userInfo']?.['_id'] ||

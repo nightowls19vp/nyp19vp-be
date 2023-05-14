@@ -23,18 +23,11 @@ export class LocalStrategy extends PassportStrategy(
   }
 
   async validate(username: string, password: string): Promise<IUser> {
-    console.log({
-      username,
-      password,
-    });
-
     const user = await this.authService.validateUser(
       username,
       password,
       ELoginType.username,
     );
-
-    console.log('LocalStrategy.validate user ', user);
 
     return user;
   }

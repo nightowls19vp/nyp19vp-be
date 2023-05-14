@@ -7,8 +7,6 @@ dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
-console.log('process.env.ENV_FILE', process.env.ENV_FILE);
-
 console.log({
   host: process.env.DB_AUTH_HOST,
   port: process.env.DB_AUTH_PORT,

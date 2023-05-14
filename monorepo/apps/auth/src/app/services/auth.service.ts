@@ -67,8 +67,6 @@ export class AuthService {
     username,
     password,
   }: ValidateUserReqDto): Promise<ValidateUserResDto> {
-    console.log('validateUser', username, password);
-
     const accountFound: AccountEntity = await this.accountRepo.findOne({
       where: [
         {
@@ -140,16 +138,11 @@ export class AuthService {
   }
 
   decodeToken(token: string): IJwtPayload {
-    console.log('------------------------');
-
-    console.log('decodeToken', token);
-
     const decodeResult = this.jwtService.decode(token);
 
     const jwtPayload: IJwtPayload = {
       ...(decodeResult as IJwtPayload),
     };
-    console.log('decodeResult', decodeResult);
 
     if (
       !jwtPayload.user ||
@@ -159,20 +152,8 @@ export class AuthService {
       !jwtPayload.iat ||
       !jwtPayload.exp
     ) {
-      // find what condition is not matched
-      console.log('------------------------');
-
-      console.log(!decodeResult?.['user']?.username);
-      console.log(!decodeResult?.['user']?.hashedPassword);
-      console.log(!decodeResult?.['user']?.role);
-      console.log(
-        ![ERole.admin, ERole.user].includes(decodeResult?.['user']?.role),
-      );
-      console.log(!decodeResult?.['iat']);
-      console.log(!decodeResult?.['exp']);
-
       const rpcExc: BaseResDto = {
-        message: 'Jwt payload error xyz',
+        message: 'Jwt payload error',
         statusCode: HttpStatus.UNAUTHORIZED,
       };
 
@@ -220,7 +201,6 @@ export class AuthService {
   async logout(refreshToken: string): Promise<LogoutResDto> {
     try {
       const decoded = this.decodeToken(refreshToken);
-      console.log(decoded);
 
       const account = await this.accountRepo.findOneBy({
         username: decoded.user.username,
@@ -248,8 +228,6 @@ export class AuthService {
 
       await this.refreshTokenBlacklistRepo.save(refreshTokenRecord);
 
-      console.log('add token', refreshTokenRecord.token, ' to blacklist');
-
       return {
         statusCode: HttpStatus.OK,
         message: 'Logout successfully',
@@ -267,8 +245,6 @@ export class AuthService {
     const hash = crypto.createHash('sha256');
     hash.update(refreshToken);
     const hashedToken = hash.digest('hex');
-
-    console.log('hashedToken', hashedToken);
 
     return !this.refreshTokenBlacklistRepo.exist({
       where: {

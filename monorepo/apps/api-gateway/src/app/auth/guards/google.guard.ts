@@ -20,8 +20,6 @@ export class GoogleAuthGuard extends AuthGuard(GOOGLE_STRATEGY_NAME) {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest() as Request;
 
-    // log state
-    console.log('state', request.query.state);
     const res = (request.query.state as string)?.replace(/@/g, '/').split(';');
     const activate = (await super.canActivate(context)) as boolean;
 

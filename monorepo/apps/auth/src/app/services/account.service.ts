@@ -88,8 +88,6 @@ export class AccountService {
         avatar: reqDto.avatar,
       };
 
-      console.log(createUserReq);
-
       if (platform && platformId) {
         const socialMediaAccount: SocialAccountEntity =
           this.socialAccRepo.create({
@@ -110,15 +108,12 @@ export class AccountService {
         ),
       );
 
-      console.log('createUserRes', createUserRes);
-
       if (createUserRes.error) {
         console.log('roll back');
 
         throw new Error(createUserRes.error);
       }
 
-      console.log(saveResult);
       await queryRunner.commitTransaction();
       return {
         statusCode: saveResult ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST,
@@ -158,11 +153,6 @@ export class AccountService {
   // It will create a new account, new social medial account too if not account_id found
   // It will return the access token and refresh token if the account is existed
   async socialSignup(user: SocialSignupReqDto): Promise<SocialSignupResDto> {
-    console.log('find condition', {
-      platform: user.platform,
-      platformId: user.platformId,
-    });
-
     // find the social account
     let socialAccount = await this.socialAccRepo.findOneBy({
       platform: user.platform,
@@ -173,10 +163,6 @@ export class AccountService {
     if (socialAccount) {
       account = socialAccount.account;
     }
-
-    console.log('sa', socialAccount);
-    console.log('acc', account);
-
     if (!socialAccount) {
       const queryRunner = this.dataSource.createQueryRunner();
 
@@ -242,8 +228,6 @@ export class AccountService {
         );
 
         await queryRunner.commitTransaction();
-
-        console.log('socialAccount', socialAccount);
       } catch (error) {
         await queryRunner.rollbackTransaction();
         return {
@@ -263,8 +247,6 @@ export class AccountService {
         message: 'SignUp failed',
       };
     }
-
-    console.log('await account.socialAccounts', await account.socialAccounts);
 
     const payload: IJwtPayload = {
       user: {
@@ -298,8 +280,6 @@ export class AccountService {
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(reqDto))
         .pipe(timeout(toMs('5s'))),
     );
-
-    console.log(createUserInfoRes);
 
     if (
       !createUserInfoRes.statusCode.toString().startsWith('2') ||
@@ -346,8 +326,6 @@ export class AccountService {
       },
     });
 
-    console.log('account', account);
-
     if (!isExist) {
       // link social account to account
       const socialAccount = this.socialAccRepo.create({
@@ -357,7 +335,6 @@ export class AccountService {
       });
 
       await this.socialAccRepo.save(socialAccount);
-      console.log('await account.socialAccounts', await account.socialAccounts);
       const payload: IJwtPayload = {
         user: {
           id: account.id,
