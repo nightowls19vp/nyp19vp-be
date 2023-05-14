@@ -318,7 +318,7 @@ export class AuthController implements OnModuleInit {
   @Get('validate')
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  validate(@Req() req: Request): Express.User {
+  validate(@Req() req: Request) {
     return req.user;
   }
 

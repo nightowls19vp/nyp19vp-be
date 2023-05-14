@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { ACCESS_JWT_STRATEGY_NAME } from '../constants/authentication';
-import { GetUserInfoResDto, config } from '@nyp19vp-be/shared';
+import { BaseResDto, GetUserInfoResDto, config } from '@nyp19vp-be/shared';
 
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
@@ -38,14 +38,14 @@ export class AccessJwtStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: IJwtPayload) {
+  async validate(req: Request) {
     const at = getAccessToken(req);
     console.log('access token', at);
 
-    const resDto = await this.authService.validateAccessToken(at);
+    const resDto: BaseResDto = await this.authService.validateAccessToken(at);
 
     console.log('validateAccessToken res', resDto);
 
-    return resDto;
+    return resDto.data;
   }
 }

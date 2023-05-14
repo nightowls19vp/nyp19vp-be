@@ -19,6 +19,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 import { AccessJwtAuthGuard } from '../guards/jwt.guard';
 import { UpdateAvatarWithBase64 } from '@nyp19vp-be/shared';
+import { ATUser } from '../decorators/at-user.decorator';
 
 @Controller('file')
 export class FileController {
@@ -76,10 +77,9 @@ export class FileController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post(':id/upload-avatar')
+  @Post('upload-avatar')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'id', type: String, description: "User's Id" })
   @ApiBody({
     schema: {
       type: 'object',
@@ -87,7 +87,7 @@ export class FileController {
     },
   })
   async uploadAvatar(
-    @Param('id') id: string,
+    @ATUser() user: unknown,
     @UploadedFile(
       'file',
       new ParseFilePipe({
@@ -98,22 +98,35 @@ export class FileController {
     )
     file: Express.Multer.File,
   ) {
-    return this.fileService.uploadAvatar(id, file);
+    return this.fileService.uploadAvatar(
+      user?.['auth']?.['user']?.['id'] ||
+        user?.['userInfo']?.['_id'] ||
+        'default',
+      file,
+    );
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post(':id/upload-avatar-with-base64')
-  @ApiParam({ name: 'id', type: String, description: "User's Id" })
+  @Post('upload-avatar-with-base64')
   async uploadAvatarWithBase64(
-    @Param('id') id: string,
     @Req() req: Express.Request,
+    @ATUser() user: unknown,
     @Body() reqDto: UpdateAvatarWithBase64,
   ) {
-    // convert base 64 to Express.Multer.File with fetch
+    console.log('req.user', req.user);
+
+    console.log(user, 'userrrrrrrrrrrr');
+    console.log(
+      "user?.['auth']?.['user']?.['id']",
+      user?.['auth']?.['user']?.['id'],
+    );
+    console.log("user?.['userInfo']?.['_id']", user?.['userInfo']?.['_id']);
 
     return this.fileService.uploadAvatarWithBase64(
-      req?.user['id'] ?? id,
+      user?.['auth']?.['user']?.['id'] ||
+        user?.['userInfo']?.['_id'] ||
+        'default',
       reqDto.base64,
     );
   }
