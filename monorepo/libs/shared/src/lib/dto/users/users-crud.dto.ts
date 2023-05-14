@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
+import { PackageDto } from '../pkg-mgmt/pkg-crud.dto';
 
 class UserSetting {
   @ApiProperty({
@@ -111,9 +112,6 @@ export class Items {
   })
   package: string;
 
-  @IsOptional()
-  name?: string;
-
   @ApiProperty({
     description: 'Quantity of package',
     type: Number,
@@ -129,7 +127,7 @@ export class Items {
   })
   @IsOptional()
   @Min(2)
-  noOfMemb?: number;
+  noOfMember?: number;
 
   @ApiProperty({
     description: 'Duration of package',
@@ -161,7 +159,7 @@ export class CartDto {
       {
         package: '640ac2ccf227ec441cd97d7b',
         quantity: 1,
-        noOfMemb: 2,
+        noOfMember: 2,
         duration: 1,
       },
     ],
@@ -231,7 +229,19 @@ export class UpdateAvatarWithBase64 {
 
 export class UpdateAvatarResDto extends BaseResDto {}
 
-export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}
+class CartPackage extends PackageDto {
+  @ApiProperty({
+    description: 'Quantity of package',
+    type: Number,
+    minimum: 1,
+    example: 1,
+  })
+  quantity: number;
+}
+
+export class GetCartResDto extends IntersectionType(BaseResDto) {
+  @ApiProperty() cart: CartPackage[];
+}
 
 export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
 

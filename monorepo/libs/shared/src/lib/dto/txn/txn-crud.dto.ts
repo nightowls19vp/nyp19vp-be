@@ -47,7 +47,7 @@ export class ItemDto {
   duration: number;
 
   @ApiProperty({ minimum: 2 })
-  noOfMemb: number;
+  noOfMember: number;
 }
 
 export class EmbedData {

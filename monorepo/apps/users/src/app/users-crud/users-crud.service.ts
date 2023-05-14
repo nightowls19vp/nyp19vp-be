@@ -6,7 +6,6 @@ import {
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
-  Items,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -369,20 +368,33 @@ export class UsersCrudService {
               .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
               .pipe(timeout(5000)),
           );
-          const cart: Items[] = res.cart;
           if (pkgs) {
             let i = 0;
-            for (const elem of pkgs) {
-              cart.at(i).name = elem.name;
+            const result = pkgs.map((pkg) => {
+              const cost =
+                res.cart.at(i).duration >= 12
+                  ? (pkg.price +
+                      pkg.coefficient *
+                        (res.cart.at(i).noOfMember - 2) *
+                        res.cart.at(i).duration) *
+                    0.7
+                  : pkg.price +
+                    pkg.coefficient *
+                      (res.cart.at(i).noOfMember - 2) *
+                      res.cart.at(i).duration;
+              pkg.price = pkg.coefficient ? cost : pkg.price;
+              pkg.noOfMember = res.cart.at(i).noOfMember;
+              pkg.duration = res.cart.at(i).duration;
+              pkg.quantity = res.cart.at(i).quantity;
               i++;
-            }
+              return pkg;
+            });
+            return Promise.resolve({
+              statusCode: HttpStatus.OK,
+              message: `get user #${id}'s cart successfully`,
+              cart: result,
+            });
           }
-
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user #${id}'s cart successfully`,
-            cart: cart,
-          });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,

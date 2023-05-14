@@ -22,7 +22,7 @@ import { SoftDeleteModel } from 'mongoose-delete';
 export class PkgCrudService {
   constructor(
     @InjectModel(Package.name)
-    private pkgModel: SoftDeleteModel<PackageDocument>
+    private pkgModel: SoftDeleteModel<PackageDocument>,
   ) {}
   async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
     console.log('pkg-mgmt-svc#create-package: ', createPkgReqDto);
@@ -51,7 +51,7 @@ export class PkgCrudService {
   }
 
   async findAllPkgs(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     console.log('pkg-mgmt-svc#get-all-packages');
     const collector = new DocumentCollector<PackageDocument>(this.pkgModel);
@@ -109,7 +109,7 @@ export class PkgCrudService {
           noOfMember: updatePkgReqDto.noOfMember,
           description: updatePkgReqDto.description,
           updatedBy: updatePkgReqDto.updatedBy,
-        }
+        },
       )
       .then(async (res) => {
         if (res.matchedCount && res.modifiedCount) {

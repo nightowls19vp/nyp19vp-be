@@ -301,17 +301,17 @@ const mapPkgDtoToItemDto = (
     const cost =
       listPkg.at(idx).duration >= 12
         ? (listPkg.at(idx).price +
-            listPkg.at(idx).coefficient * (i.noOfMemb - 2) * i.duration) *
+            listPkg.at(idx).coefficient * (i.noOfMember - 2) * i.duration) *
           0.7
         : listPkg.at(idx).price +
-          listPkg.at(idx).coefficient * (i.noOfMemb - 2) * i.duration;
+          listPkg.at(idx).coefficient * (i.noOfMember - 2) * i.duration;
     const item: ItemDto = {
       id: i.package,
       name: listPkg.at(idx).name,
       price: listPkg.at(idx).coefficient ? cost : listPkg.at(idx).price,
       quantity: i.quantity,
       duration: i.duration ? i.duration : listPkg.at(idx).duration,
-      noOfMemb: i.noOfMemb ? i.noOfMemb : listPkg.at(idx).noOfMember,
+      noOfMember: i.noOfMember ? i.noOfMember : listPkg.at(idx).noOfMember,
     };
     idx++;
     return item;
