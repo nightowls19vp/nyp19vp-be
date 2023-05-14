@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import { Multer } from 'multer';
 import {
+  Body,
   Controller,
   FileTypeValidator,
   Param,
@@ -16,6 +17,7 @@ import { FileService } from './file.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 import { AccessJwtAuthGuard } from '../guards/jwt.guard';
+import { UpdateAvatarWithBase64 } from '@nyp19vp-be/shared';
 
 @Controller('file')
 export class FileController {
@@ -45,6 +47,7 @@ export class FileController {
   ) {
     return this.fileService.uploadFile(file);
   }
+
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Post('upload-and-get-url')
@@ -95,5 +98,18 @@ export class FileController {
     file: Express.Multer.File,
   ) {
     return this.fileService.uploadAvatar(id, file);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post(':id/upload-avatar-with-base64')
+  @ApiParam({ name: 'id', type: String, description: "User's Id" })
+  async uploadAvatarWithBase64(
+    @Param('id') id: string,
+    @Body() reqDto: UpdateAvatarWithBase64,
+  ) {
+    // convert base 64 to Express.Multer.File with fetch
+
+    return this.fileService.uploadAvatarWithBase64(id, reqDto.base64);
   }
 }

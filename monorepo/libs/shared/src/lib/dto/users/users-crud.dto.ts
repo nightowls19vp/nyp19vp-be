@@ -215,6 +215,17 @@ export class UpdateAvatarReqDto extends IntersectionType(
   PickType(UserInfo, ['avatar']),
 ) {}
 
+export class UpdateAvatarWithBase64 {
+  @ApiProperty({
+    description: 'Base64 string of image',
+    type: String,
+    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...',
+  })
+  @IsString()
+  @IsAscii()
+  base64: string;
+}
+
 export class UpdateAvatarResDto extends BaseResDto {}
 
 export class GetCartResDto extends IntersectionType(BaseResDto, CartDto) {}

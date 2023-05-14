@@ -88,4 +88,33 @@ export class FileService {
       };
     }
   }
+
+  async uploadAvatarWithBase64(id: string, base64: string) {
+    try {
+      const res = await this.cloudinaryService.cloudinary.uploader.upload(
+        base64,
+        {
+          ...FileService.uploadOptions,
+          folder: id
+            ? `${FileService.uploadOptions.folder}${id}/`
+            : FileService.uploadOptions.folder,
+          overwrite: true,
+          use_filename: true,
+          unique_filename: false,
+        },
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Upload file successfully',
+        data: res.secure_url,
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Upload file failed',
+        data: error,
+      };
+    }
+  }
 }
