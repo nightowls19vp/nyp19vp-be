@@ -249,11 +249,11 @@ export class AuthService {
     hash.update(refreshToken);
     const hashedToken = hash.digest('hex');
 
-    return !this.refreshTokenBlacklistRepo.exist({
+    return !(await this.refreshTokenBlacklistRepo.exist({
       where: {
         token: hashedToken,
       },
-    });
+    }));
   }
 
   refreshAccessToken(payload: IJwtPayload): string {
