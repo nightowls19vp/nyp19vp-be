@@ -332,7 +332,6 @@ export class CreateTransReqDto {
   @IsNumber()
   amount: number;
 
-  @ApiProperty({ required: false })
   @ValidateNested()
   @Type(() => PaymentMethodDto)
   @IsOptional()
