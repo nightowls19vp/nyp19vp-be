@@ -46,6 +46,8 @@ import {
   ParseObjectIdPipe,
   IdDto,
   BaseResDto,
+  MemberDto,
+  GetGrsByUserResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -177,6 +179,24 @@ export class PkgMgmtController implements OnModuleInit {
   ): Promise<CollectionResponse<GroupDto>> {
     console.log('Get all groups');
     return this.pkgMgmtService.getAllGr(collectionDto);
+  }
+
+  @Get('gr/user_id')
+  @ApiQuery({ name: 'user_id', type: String, required: true })
+  @ApiQuery({ name: 'role', enum: ['All', 'User', 'Super User'] })
+  getGrByUserId(
+    @Query('user_id') user_id: string,
+    @Query('role') role: string,
+  ): Promise<GetGrsByUserResDto> {
+    console.log("Get groups by user's id", user_id);
+    const memberDto: MemberDto = {
+      user: user_id,
+    };
+    if (role != 'All') {
+      memberDto.role = role;
+    }
+
+    return this.pkgMgmtService.getGrByUserId(memberDto);
   }
 
   // create a magic link to invite user to join group

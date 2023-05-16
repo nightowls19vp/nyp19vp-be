@@ -52,6 +52,7 @@ export const PACKAGE_MGMT = {
   RESTORE_PKG: 'restorePackage',
   CREATE_GR: 'createGroup',
   GET_ALL_GRS: 'getAllGroups',
+  GET_GRS_BY_USER: 'getPackagesByUserId',
   GET_GR_BY_ID: 'getGroupById',
   UPDATE_GR: 'updateGroupName',
   DELETE_GR: 'deleteGroup',

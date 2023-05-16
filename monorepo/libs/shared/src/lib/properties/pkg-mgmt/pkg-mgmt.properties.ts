@@ -17,4 +17,12 @@ export class PkgCollectionProperties extends BaseCollectionProperties {
   readonly price: 'desc' | 'asc';
 }
 
-export class GrCollectionProperties extends BaseCollectionProperties {}
+export class GrCollectionProperties extends BaseCollectionProperties {
+  @Expose({
+    name: 'members',
+    default: true,
+    filterable: true,
+    sortable: true,
+  })
+  readonly members: 'desc' | 'asc';
+}

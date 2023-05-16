@@ -7,13 +7,14 @@ import {
   IsISO8601,
   IsOptional,
   IsString,
+  IsUrl,
   ValidateNested,
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
 import { Items } from '../users/users-crud.dto';
 
-class MemberDto {
+export class MemberDto {
   @ApiProperty({
     type: String,
     nullable: true,
@@ -95,6 +96,14 @@ export class GroupDto {
   @IsAscii()
   name: string;
 
+  @ApiProperty({
+    description: 'Avatar of group. Only supported upload file',
+    required: false,
+  })
+  @IsUrl()
+  @IsOptional()
+  avatar?: string;
+
   @ApiProperty()
   @ValidateNested()
   @Type(() => GrPkgDto)
@@ -147,7 +156,16 @@ export class CreateGrResDto extends BaseResDto {}
 
 export class GetGrResDto extends BaseResDto {
   @ApiProperty()
+  @ValidateNested()
+  @Type(() => GroupDto)
   group: GroupDto;
+}
+
+export class GetGrsByUserResDto extends BaseResDto {
+  @ApiProperty()
+  @ValidateNested({ each: true })
+  @Type(() => GroupDto)
+  groups: GroupDto[];
 }
 
 export class UpdateGrReqDto extends IntersectionType(

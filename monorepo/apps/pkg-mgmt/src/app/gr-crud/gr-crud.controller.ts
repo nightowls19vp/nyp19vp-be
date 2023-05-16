@@ -14,6 +14,8 @@ import {
   UpdateGrPkgReqDto,
   UpdateGrPkgResDto,
   GroupDto,
+  MemberDto,
+  GetGrsByUserResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -32,7 +34,7 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS)
   findAllGrs(
-    @Payload() collectionDto: CollectionDto
+    @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
     return this.grCrudService.findAllGrs(collectionDto);
   }
@@ -59,7 +61,7 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)
   addMemb(
-    @Payload() updateGrMbReqDto: AddGrMbReqDto
+    @Payload() updateGrMbReqDto: AddGrMbReqDto,
   ): Promise<UpdateGrMbResDto> {
     return this.grCrudService.addMemb(updateGrMbReqDto);
   }
@@ -71,15 +73,20 @@ export class GrCrudController {
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG)
   addGrPkg(
-    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto
+    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     return this.grCrudService.addGrPkg(updateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_PKG)
   rmGrPkg(
-    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto
+    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     return this.grCrudService.rmGrPkg(updateGrPkgReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GRS_BY_USER)
+  getGrByUserId(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+    return this.grCrudService.getGrByUserId(memberDto);
   }
 }

@@ -25,9 +25,11 @@ import {
   GroupDto,
   BaseResDto,
   ValidateJoinGroupTokenResDto,
+  MemberDto,
+  GetGrsByUserResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
+import { async, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PkgMgmtService {
@@ -299,5 +301,20 @@ export class PkgMgmtService {
         JSON.stringify(decodeRes),
       ),
     );
+  }
+  async getGrByUserId(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient.send(
+        kafkaTopic.PACKAGE_MGMT.GET_GRS_BY_USER,
+        JSON.stringify(memberDto),
+      ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) return res;
+      else
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+    });
   }
 }

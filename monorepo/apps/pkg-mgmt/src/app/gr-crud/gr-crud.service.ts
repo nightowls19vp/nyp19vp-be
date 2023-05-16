@@ -14,6 +14,8 @@ import {
   UpdateGrPkgResDto,
   UpdateGrReqDto,
   UpdateGrResDto,
+  MemberDto,
+  GetGrsByUserResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -100,13 +102,6 @@ export class GrCrudService {
     console.log(`pkg-mgmt-svc#get-group #${id}`);
     return this.grModel
       .findById({ _id: id })
-      .populate({
-        path: 'packages',
-        populate: {
-          path: 'package',
-          model: 'Package',
-        },
-      })
       .then((res) => {
         if (res) {
           return Promise.resolve({
@@ -128,6 +123,41 @@ export class GrCrudService {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
           group: null,
+        });
+      });
+  }
+  getGrByUserId(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+    const { user, role } = memberDto;
+    console.log(`pkg-mgmt-svc#get-groups-userId #${user}`);
+    const query = { user: user };
+    role ? (query['role'] = role) : null;
+    console.log(query);
+
+    return this.grModel
+      .find({ members: { $elemMatch: query } })
+      .then((res) => {
+        if (res) {
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `get groups by userId #${user} successfully`,
+            groups: res.map((ele) => {
+              return mapGrSchemaToGrDto(ele);
+            }),
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No group found by userId #${user}`,
+            error: 'NOT FOUND',
+            groups: null,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          groups: null,
         });
       });
   }
@@ -467,6 +497,7 @@ const mapGrSchemaToGrDto = (model: any): GroupDto => {
   }
   let result = new GroupDto();
   result.name = model.name;
+  result.avatar = model.avatar;
   result.packages = model.packages;
   result.members = model.members;
   return result;
