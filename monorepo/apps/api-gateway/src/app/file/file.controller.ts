@@ -99,9 +99,11 @@ export class FileController {
     file: Express.Multer.File,
   ) {
     return this.fileService.uploadAvatar(
-      user?.['auth']?.['user']?.['id'] ||
+      `users/${
+        user?.['auth']?.['user']?.['id'] ||
         user?.['userInfo']?.['_id'] ||
-        'default',
+        'default'
+      }`,
       file,
     );
   }
@@ -114,9 +116,49 @@ export class FileController {
     @Body() reqDto: UpdateAvatarWithBase64,
   ) {
     return this.fileService.uploadAvatarWithBase64(
-      user?.['auth']?.['user']?.['id'] ||
+      `users/${
+        user?.['auth']?.['user']?.['id'] ||
         user?.['userInfo']?.['_id'] ||
-        'default',
+        'default'
+      }`,
+      reqDto.base64,
+    );
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('upload-gr-avatar/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  async uploadGrAvatar(
+    @Param('id') id: string,
+    @UploadedFile(
+      'file',
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif|webp)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.fileService.uploadAvatar(`groups/${id}`, file);
+  }
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('upload-gr-avatar-with-base64/:id')
+  async uploadGrAvatarWithBase64(
+    @Param('id') id: string,
+    @Body() reqDto: UpdateAvatarWithBase64,
+  ) {
+    return this.fileService.uploadAvatarWithBase64(
+      `groups/${id}`,
       reqDto.base64,
     );
   }

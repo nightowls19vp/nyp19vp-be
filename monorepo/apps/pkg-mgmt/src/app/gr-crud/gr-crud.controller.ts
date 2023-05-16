@@ -16,6 +16,8 @@ import {
   GroupDto,
   MemberDto,
   GetGrsByUserResDto,
+  UpdateAvatarReqDto,
+  UpdateAvatarResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -88,5 +90,12 @@ export class GrCrudController {
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GRS_BY_USER)
   getGrByUserId(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
     return this.grCrudService.getGrByUserId(memberDto);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR)
+  updateAvatar(
+    @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    return this.grCrudService.updateAvatar(updateAvatarReqDto);
   }
 }

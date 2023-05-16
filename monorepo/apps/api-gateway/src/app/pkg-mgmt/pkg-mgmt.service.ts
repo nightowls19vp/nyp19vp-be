@@ -2,7 +2,13 @@ import {
   CollectionDto,
   CollectionResponse,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
   AddGrMbReqDto,
@@ -27,9 +33,11 @@ import {
   ValidateJoinGroupTokenResDto,
   MemberDto,
   GetGrsByUserResDto,
+  UpdateAvatarReqDto,
+  UpdateAvatarResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
-import { async, firstValueFrom } from 'rxjs';
+import { async, catchError, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class PkgMgmtService {
@@ -315,6 +323,32 @@ export class PkgMgmtService {
           cause: new Error(res.error),
           description: res.error,
         });
+    });
+  }
+  async updateAvatar(
+    updateAvatarReqDto: UpdateAvatarReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR,
+          JSON.stringify(updateAvatarReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
     });
   }
 }

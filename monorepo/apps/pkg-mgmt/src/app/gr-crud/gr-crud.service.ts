@@ -16,6 +16,8 @@ import {
   UpdateGrResDto,
   MemberDto,
   GetGrsByUserResDto,
+  UpdateAvatarReqDto,
+  UpdateAvatarResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -447,6 +449,34 @@ export class GrCrudService {
             error: 'NOT FOUND',
           });
         }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+  async updateAvatar(
+    updateAvatarReqDto: UpdateAvatarReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    const { _id, avatar } = updateAvatarReqDto;
+    return await this.grModel
+      .findByIdAndUpdate({ _id: _id }, { avatar: avatar })
+      .then(async (res) => {
+        const data = await this.grModel.findById(_id, { avatar: 1 });
+        console.log(data);
+        if (res)
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `update group #${_id}'s avatar successfully`,
+            data: data,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No group #${_id} found`,
+          });
       })
       .catch((error) => {
         return Promise.resolve({

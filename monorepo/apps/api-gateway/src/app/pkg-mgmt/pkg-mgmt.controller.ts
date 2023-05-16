@@ -48,6 +48,8 @@ import {
   BaseResDto,
   MemberDto,
   GetGrsByUserResDto,
+  UpdateAvatarReqDto,
+  UpdateAvatarResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -167,6 +169,8 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.createGr(createGrReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get('gr')
   @ApiOperation({
     description:
@@ -181,6 +185,8 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.getAllGr(collectionDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Get('gr/user_id')
   @ApiQuery({ name: 'user_id', type: String, required: true })
   @ApiQuery({ name: 'role', enum: ['All', 'User', 'Super User'] })
@@ -278,6 +284,8 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.restoreGr(id);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put('gr/:id')
   @ApiOkResponse({
     description: `Updated Group's name`,
@@ -292,6 +300,8 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.updateGr(updateGrReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put('gr/:id/memb')
   @ApiOkResponse({
     description: `Added new member to group`,
@@ -304,6 +314,18 @@ export class PkgMgmtController implements OnModuleInit {
     console.log(`add new member to group #${id}`, updateGrMbReqDto);
     updateGrMbReqDto._id = id;
     return this.pkgMgmtService.addGrMemb(updateGrMbReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('gr/:id/avatar')
+  updateAvatar(
+    @Param('id') id: string,
+    @Body() updateAvatarReqDto: UpdateAvatarReqDto,
+  ): Promise<UpdateAvatarResDto> {
+    console.log(`update user #${id}`, updateAvatarReqDto);
+    updateAvatarReqDto._id = id;
+    return this.pkgMgmtService.updateAvatar(updateAvatarReqDto);
   }
 
   @Put('gr/:id/memb/rm')

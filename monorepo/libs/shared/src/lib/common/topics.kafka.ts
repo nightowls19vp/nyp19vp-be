@@ -55,6 +55,7 @@ export const PACKAGE_MGMT = {
   GET_GRS_BY_USER: 'getPackagesByUserId',
   GET_GR_BY_ID: 'getGroupById',
   UPDATE_GR: 'updateGroupName',
+  UPDATE_GR_AVATAR: 'updateGroupAvatar',
   DELETE_GR: 'deleteGroup',
   RESTORE_GR: 'restoreGroup',
   ADD_GR_MEMB: 'addMemberToGroup',
