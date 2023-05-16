@@ -418,6 +418,7 @@ export class UsersCrudService {
   ): Promise<UpdateTrxHistResDto> {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
+    console.log(cart)
     return await this.userModel
       .findByIdAndUpdate(
         { _id: _id },

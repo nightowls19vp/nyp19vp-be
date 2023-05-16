@@ -463,7 +463,12 @@ const mapUpdateTrxHistReqDto = (
     _id: app_user,
     trx: app_trans_id,
     cart: item.map((x) => {
-      const item: Items = { package: x.id, quantity: x.quantity };
+      const item: Items = {
+        package: x.id,
+        quantity: x.quantity,
+        noOfMember: x.noOfMember,
+        duration: x.duration,
+      };
       return item;
     }),
   };
