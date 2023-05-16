@@ -1,5 +1,5 @@
 /* eslint-disable prefer-const */
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateGrReqDto,
@@ -23,49 +23,51 @@ import {
   CollectionResponse,
   DocumentCollector,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { ObjectId } from 'mongodb';
 import { SoftDeleteModel } from 'mongoose-delete';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class GrCrudService {
   constructor(
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
-    private pkgModel: SoftDeleteModel<PackageDocument>
+    private pkgModel: SoftDeleteModel<PackageDocument>,
   ) {}
   async createGr(createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
     console.log('pkg-mgmt-svc#create-group: ', createGrReqDto);
-    const pkgId: ObjectId = new ObjectId(createGrReqDto.package.packageId);
-    const start: Date = createGrReqDto.package.startDate;
-    const pkg = await this.pkgModel.findById(
-      { _id: pkgId },
-      { duration: 1, _id: 0 }
-    );
-    const end: Date = addDays(start, pkg.duration);
-    const newGr = new this.grModel({
-      name: createGrReqDto.name,
-      members: [
-        {
-          user: createGrReqDto.member.user,
-          role: 'Super User',
-        },
-      ],
-      packages: [
-        {
-          package: pkgId,
-          startDate: new Date(start),
-          endDate: end,
-          remainingTime: getDayDiff(new Date(), end),
-          status: setStatus(start, end),
-        },
-      ],
-    });
-    return await newGr
-      .save()
+    const { user } = createGrReqDto.member;
+    const listPkg = [];
+    for (const elem of createGrReqDto.packages) {
+      const pkg = await this.pkgModel.findById({ _id: elem._id });
+      if (pkg) {
+        for (let i = 0; i < elem.quantity; i++) {
+          const grName = `${pkg.name.split(/\s+/).shift()}_${v4()}`;
+          const newGr = new this.grModel({
+            name: grName,
+            members: [{ user: user, role: 'Super User' }],
+            packages: [
+              {
+                package: {
+                  _id: elem._id,
+                  duration: elem.duration,
+                  noOfMember: elem.noOfMember,
+                },
+                status: 'Not Activated',
+              },
+            ],
+          });
+          listPkg.push(newGr);
+        }
+      } else {
+        throw new NotFoundException();
+      }
+    }
+    return await this.grModel
+      .insertMany(listPkg)
       .then(() => {
         return Promise.resolve({
           statusCode: HttpStatus.CREATED,
-          message: `create user #${createGrReqDto.name} successfully`,
+          message: `create groups successfully`,
         });
       })
       .catch((error) => {
@@ -77,7 +79,7 @@ export class GrCrudService {
   }
 
   async findAllGrs(
-    collectionDto: CollectionDto
+    collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
     console.log('pkg-mgmt-svc#get-all-groups');
     const collector = new DocumentCollector<GroupDocument>(this.grModel);
@@ -248,7 +250,7 @@ export class GrCrudService {
                       addedBy: updateGrMbReqDto.addedBy,
                     },
                   },
-                }
+                },
               )
               .then(async (res) => {
                 if (res.matchedCount && res.modifiedCount) {
@@ -296,7 +298,7 @@ export class GrCrudService {
               return await this.grModel
                 .updateOne(
                   { _id: _id },
-                  { $pull: { members: { user: user_id } } }
+                  { $pull: { members: { user: user_id } } },
                 )
                 .then(async (res) => {
                   if (res.matchedCount && res.modifiedCount) {
@@ -340,7 +342,7 @@ export class GrCrudService {
       });
   }
   async rmGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto
+    updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#remove-package-from-group #${id}`);
@@ -348,7 +350,7 @@ export class GrCrudService {
     return await this.grModel
       .findByIdAndUpdate(
         { _id: _id },
-        { $pull: { packages: updateGrPkgReqDto.package } }
+        { $pull: { packages: updateGrPkgReqDto.package } },
       )
       .then(async (res) => {
         if (res) {
@@ -382,7 +384,7 @@ export class GrCrudService {
       });
   }
   async addGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto
+    updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#add-new-package-to-group #${id}`);
@@ -390,7 +392,7 @@ export class GrCrudService {
     return await this.grModel
       .findByIdAndUpdate(
         { _id: _id },
-        { $pull: { packages: updateGrPkgReqDto.package } }
+        { $pull: { packages: updateGrPkgReqDto.package } },
       )
       .then(async (res) => {
         if (res) {
@@ -449,7 +451,7 @@ function convertMsToTime(milliseconds: number) {
   hours = hours % 24;
 
   return `${days}T${padTo2Digits(hours)}:${padTo2Digits(
-    minutes
+    minutes,
   )}:${padTo2Digits(seconds)}`;
 }
 const addDays = (date: Date, days: number): Date => {

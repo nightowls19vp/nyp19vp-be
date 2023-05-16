@@ -5,10 +5,7 @@ export type MemberDocument = HydratedDocument<Member>;
 
 @Schema({ timestamps: true })
 export class Member {
-  @Prop({
-    type: String,
-    required: true,
-  })
+  @Prop({ type: String, required: true })
   user: string;
 
   @Prop({
@@ -19,14 +16,10 @@ export class Member {
   })
   role: string;
 
-  @Prop({
-    type: String,
-  })
+  @Prop({ type: String })
   addedBy: string;
 
-  @Prop({
-    type: Date,
-  })
+  @Prop({ type: Date })
   addedAt: Date;
 }
 

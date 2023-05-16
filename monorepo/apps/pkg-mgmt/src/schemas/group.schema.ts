@@ -8,33 +8,27 @@ export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
 @Schema({ timestamps: true })
 export class Group {
-  @Prop({
-    type: String,
-    unique: true,
-    required: true,
-  })
+  @Prop({ type: String, unique: true, required: true })
   name: string;
 
   @Prop({
-    required: true,
-    minlength: 1,
+    required: false,
+    type: String,
+    default:
+      'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
   })
+  avatar: string;
+
+  @Prop({ required: true, minlength: 1 })
   packages: GrPkg[];
 
-  @Prop({
-    required: true,
-    minlength: 1,
-  })
+  @Prop({ required: true, minlength: 1 })
   members: Member[];
 
-  @Prop({
-    type: Date,
-  })
+  @Prop({ type: Date })
   createdAt: Date;
 
-  @Prop({
-    type: Date,
-  })
+  @Prop({ type: Date })
   updatedAt: Date;
 }
 

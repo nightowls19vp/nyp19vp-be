@@ -20,6 +20,7 @@ import {
   EmbedData,
   CreateTransResDto,
   ZPCheckoutResDto,
+  CreateGrReqDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
@@ -107,6 +108,7 @@ export class TxnCrudService {
       _id,
       this.config,
     );
+    await delay(4 * 1000 * 60);
     const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
     console.log('result:', res);
     if (typeof res === 'string') {
@@ -115,59 +117,86 @@ export class TxnCrudService {
         message: `Request timeout`,
       });
     } else {
-      let result: CreateTransResDto;
-      const session = await this.connection.startSession();
-      session.startTransaction();
-      try {
-        const newTrans = new this.transModel({
-          _id: _id,
-          user: user,
-          amount: createTransReqDto.amount,
-          item: createTransReqDto.item,
-          method: {
-            type: MOP.PAYMENT_METHOD.EWALLET,
-            name: MOP.EWALLET.ZALOPAY,
-          },
-        });
-        const trans = (await newTrans.save()).$session(session);
-        if (!trans) {
-          throw new NotFoundException();
+      this.transModel.findById({ _id: _id }).then(async (checkExist) => {
+        if (!checkExist) {
+          let result: CreateTransResDto;
+          const session = await this.connection.startSession();
+          session.startTransaction();
+          try {
+            const newTrans = new this.transModel({
+              _id: _id,
+              user: user,
+              amount: createTransReqDto.amount,
+              item: createTransReqDto.item,
+              method: {
+                type: MOP.PAYMENT_METHOD.EWALLET,
+                name: MOP.EWALLET.ZALOPAY,
+              },
+            });
+            const trans = (await newTrans.save()).$session(session);
+            if (!trans) {
+              throw new NotFoundException();
+            }
+            const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
+              createTransReqDto.item,
+              user,
+            );
+            const createGr = await firstValueFrom(
+              this.pkgMgmtClient.send(
+                kafkaTopic.PACKAGE_MGMT.CREATE_GR,
+                createGrReqDto,
+              ),
+            );
+            if (createGr.statusCode == HttpStatus.CREATED) {
+              await session.commitTransaction();
+              result = {
+                statusCode: HttpStatus.CREATED,
+                message: `Create groups successfully`,
+              };
+            } else {
+              await session.abortTransaction();
+              result = {
+                statusCode: createGr.statusCode,
+                message: createGr.message,
+              };
+            }
+            const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
+              user,
+              _id,
+              createTransReqDto.item,
+            );
+            const res = await firstValueFrom(
+              this.usersClient.send(
+                kafkaTopic.USERS.UPDATE_TRX,
+                updateTrxHistReqDto,
+              ),
+            );
+            if (res.statusCode == HttpStatus.OK) {
+              await session.commitTransaction();
+              result = {
+                statusCode: HttpStatus.OK,
+                message: `Create Transaction #${_id} successfully`,
+              };
+            } else {
+              await session.abortTransaction();
+              result = {
+                statusCode: res.statusCode,
+                message: res.message,
+              };
+            }
+          } catch (error) {
+            await session.abortTransaction();
+            result = {
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              message: error.message,
+            };
+          } finally {
+            session.endSession();
+            // eslint-disable-next-line no-unsafe-finally
+            return Promise.resolve(result);
+          }
         }
-        const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
-          user,
-          _id,
-          createTransReqDto.item,
-        );
-        const res = await firstValueFrom(
-          this.usersClient.send(
-            kafkaTopic.USERS.UPDATE_TRX,
-            updateTrxHistReqDto,
-          ),
-        );
-        if (res.statusCode == HttpStatus.OK) {
-          await session.commitTransaction();
-          result = {
-            statusCode: HttpStatus.OK,
-            message: `Create Transaction #${_id} successfully`,
-          };
-        } else {
-          await session.abortTransaction();
-          result = {
-            statusCode: res.statusCode,
-            message: res.message,
-          };
-        }
-      } catch (error) {
-        await session.abortTransaction();
-        result = {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        };
-      } finally {
-        session.endSession();
-        // eslint-disable-next-line no-unsafe-finally
-        return Promise.resolve(result);
-      }
+      });
     }
   }
 
@@ -199,6 +228,29 @@ export class TxnCrudService {
       const trans = (await newTrans.save()).$session(session);
       if (!trans) {
         throw new NotFoundException();
+      }
+      const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
+        item,
+        zpDataCallback.app_user,
+      );
+      const createGr = await firstValueFrom(
+        this.pkgMgmtClient.send(
+          kafkaTopic.PACKAGE_MGMT.CREATE_GR,
+          createGrReqDto,
+        ),
+      );
+      if (createGr.statusCode == HttpStatus.CREATED) {
+        await session.commitTransaction();
+        result = {
+          statusCode: HttpStatus.CREATED,
+          message: `Create groups successfully`,
+        };
+      } else {
+        await session.abortTransaction();
+        result = {
+          statusCode: createGr.statusCode,
+          message: createGr.message,
+        };
       }
       const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
         zpDataCallback.app_user,
@@ -247,7 +299,7 @@ export class TxnCrudService {
           resolve(res);
           await clearIntervalAsync(timer);
         }
-      }, 5000);
+      }, 5 * 60 * 1000);
       setTimeout(async () => {
         resolve('Timeout');
         await clearIntervalAsync(timer);
@@ -428,3 +480,23 @@ const mapZPCreateOrderReqDtoToCreateTransReqDto = (
   };
   return createTransReqDto;
 };
+
+const mapCreateGrReqDto = (item: ItemDto[], user: string): CreateGrReqDto => {
+  const packages = item.map((elem) => {
+    const res = {
+      duration: elem.duration,
+      noOfMember: elem.noOfMember,
+      quantity: elem.quantity,
+      _id: elem.id,
+    };
+    return res;
+  });
+  const createGrReqDto: CreateGrReqDto = {
+    packages: packages,
+    member: { user: user },
+  };
+  return createGrReqDto;
+};
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

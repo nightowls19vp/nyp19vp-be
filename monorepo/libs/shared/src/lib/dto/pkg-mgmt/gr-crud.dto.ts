@@ -10,8 +10,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
-import { PackageDto } from './pkg-crud.dto';
 import { ObjectId } from 'mongodb';
+import { Items } from '../users/users-crud.dto';
 
 class MemberDto {
   @ApiProperty({
@@ -45,11 +45,20 @@ class MemberDto {
   addedBy?: string;
 }
 
+class PkgDto extends PickType(Items, ['duration', 'noOfMember']) {
+  @ApiProperty({
+    required: true,
+    description: 'Package ID',
+    example: '646095c6a962a5a8f865aa77',
+  })
+  _id: string;
+}
+
 class GrPkgDto {
   @ApiProperty()
   @ValidateNested()
-  @Type(() => PackageDto)
-  package: PackageDto;
+  @Type(() => PkgDto)
+  package: PkgDto;
 
   @ApiProperty({ type: Date })
   @IsISO8601()
@@ -99,17 +108,30 @@ export class GroupDto {
   members: MemberDto[];
 }
 
-export class CreateGrReqDto extends PickType(GroupDto, ['name']) {
+class CreateGrReqDto_Pkg extends PkgDto {
   @ApiProperty({
-    example: {
-      packageId: '642925cf9d2a83d281bbc4fc',
-      startDate: new Date(),
-    },
+    description: 'Quantity of package',
+    type: Number,
+    minimum: 1,
+    example: 1,
   })
-  package: {
-    packageId: string;
-    startDate: Date;
-  };
+  quantity: number;
+}
+
+export class CreateGrReqDto {
+  @ApiProperty({
+    example: [
+      {
+        duration: 12,
+        noOfMember: 4,
+        quantity: 2,
+        _id: '646095c6a962a5a8f865aa77',
+      },
+    ],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => CreateGrReqDto_Pkg)
+  packages: CreateGrReqDto_Pkg[];
 
   @ApiProperty({
     example: {
@@ -130,19 +152,19 @@ export class GetGrResDto extends BaseResDto {
 
 export class UpdateGrReqDto extends IntersectionType(
   IdDto,
-  PickType(GroupDto, ['name'])
+  PickType(GroupDto, ['name']),
 ) {}
 
 export class UpdateGrResDto extends BaseResDto {}
 
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
-  PickType(MemberDto, ['user', 'addedBy'])
+  PickType(MemberDto, ['user', 'addedBy']),
 ) {}
 
 export class RmGrMbReqDto extends IntersectionType(
   IdDto,
-  PickType(MemberDto, ['user'])
+  PickType(MemberDto, ['user']),
 ) {}
 
 export class UpdateGrMbResDto extends BaseResDto {}

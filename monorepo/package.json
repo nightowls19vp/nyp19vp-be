@@ -70,6 +70,7 @@
     "@types/passport-google-oauth20": "^2.0.11",
     "@types/passport-jwt": "^3.0.8",
     "@types/passport-local": "^1.0.35",
+    "@types/uuid": "^9.0.1",
     "@types/validator": "^13.7.13",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
