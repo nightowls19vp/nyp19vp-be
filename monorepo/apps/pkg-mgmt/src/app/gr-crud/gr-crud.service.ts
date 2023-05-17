@@ -530,6 +530,7 @@ const mapGrSchemaToGrDto = (model: any): GroupDto => {
     packages.push(pkg);
   }
   let result = new GroupDto();
+  result._id = model._id;
   result.name = model.name;
   result.avatar = model.avatar;
   result.packages = model.packages;

@@ -81,7 +81,7 @@ class GrPkgDto {
   status: string;
 }
 
-export class GroupDto {
+export class GroupDto extends IdDto {
   @ApiProperty({
     type: String,
     minLength: 3,
