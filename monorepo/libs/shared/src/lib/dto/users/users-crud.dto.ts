@@ -229,7 +229,7 @@ export class UpdateAvatarWithBase64 {
 
 export class UpdateAvatarResDto extends BaseResDto {}
 
-class CartPackage extends PackageDto {
+export class CartPackage extends PackageDto {
   @ApiProperty({
     description: 'Quantity of package',
     type: Number,

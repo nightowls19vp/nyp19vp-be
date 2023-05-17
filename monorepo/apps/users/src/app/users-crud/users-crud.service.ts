@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  CartPackage,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -368,33 +369,46 @@ export class UsersCrudService {
               .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
               .pipe(timeout(5000)),
           );
-          if (pkgs) {
-            let i = 0;
-            const result = pkgs.map((pkg) => {
-              const cost =
-                res.cart.at(i).duration >= 12
-                  ? (pkg.price +
-                      pkg.coefficient *
-                        (res.cart.at(i).noOfMember - 2) *
-                        res.cart.at(i).duration) *
-                    0.7
-                  : pkg.price +
-                    pkg.coefficient *
-                      (res.cart.at(i).noOfMember - 2) *
-                      res.cart.at(i).duration;
-              pkg.price = pkg.coefficient ? cost : pkg.price;
-              pkg.noOfMember = res.cart.at(i).noOfMember;
-              pkg.duration = res.cart.at(i).duration;
-              pkg.quantity = res.cart.at(i).quantity;
-              i++;
-              return pkg;
-            });
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `get user #${id}'s cart successfully`,
-              cart: result,
-            });
+          const result = [];
+          for (const item of res.cart) {
+            const pack = pkgs.find((elem) => elem._id == item.package);
+            if (pack) {
+              const pkg: CartPackage = {
+                name: pack.name,
+                duration: item.duration,
+                price:
+                  item.duration >= 12
+                    ? (pack.price +
+                        (pack.coefficient ?? 0) *
+                          (item.noOfMember - 2) *
+                          item.duration) *
+                      0.7
+                    : pack.price +
+                      (pack.coefficient ?? 0) *
+                        (item.noOfMember - 2) *
+                        item.duration,
+                noOfMember: item.noOfMember,
+                coefficient: pack.coefficient,
+                description: pack.description,
+                createdBy: pack.createdBy,
+                updatedBy: pack.updatedBy,
+                quantity: item.quantity,
+              };
+              result.push(pkg);
+            } else {
+              return Promise.resolve({
+                statusCode: HttpStatus.NOT_FOUND,
+                message: `Package #${item.package} have been removed`,
+                cart: result,
+              });
+            }
           }
+
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `get user #${id}'s cart successfully`,
+            cart: result,
+          });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
@@ -418,7 +432,7 @@ export class UsersCrudService {
   ): Promise<UpdateTrxHistResDto> {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
-    console.log(cart)
+    console.log(cart);
     return await this.userModel
       .findByIdAndUpdate(
         { _id: _id },
