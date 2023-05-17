@@ -18,6 +18,7 @@ import {
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  ActivateGrPkgReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -132,7 +133,7 @@ export class GrCrudService {
     const { user, role } = memberDto;
     console.log(`pkg-mgmt-svc#get-groups-userId #${user}`);
     const query = { user: user };
-    role ? (query['role'] = role) : null;
+    role != 'All' ? (query['role'] = role) : null;
     console.log(query);
 
     return this.grModel
@@ -484,6 +485,9 @@ export class GrCrudService {
           message: error.message,
         });
       });
+  }
+  activateGrPkg(activateGrPkgReqDto: ActivateGrPkgReqDto): Promise<any> {
+    return;
   }
 }
 const setStatus = (startDate: Date, endDate: Date): string => {

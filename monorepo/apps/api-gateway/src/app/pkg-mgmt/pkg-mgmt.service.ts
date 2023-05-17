@@ -35,9 +35,10 @@ import {
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  ActivateGrPkgReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
-import { async, catchError, firstValueFrom, timeout } from 'rxjs';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class PkgMgmtService {
@@ -333,6 +334,30 @@ export class PkgMgmtService {
         .send(
           kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR,
           JSON.stringify(updateAvatarReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async activateGrPkg(activateGrPkgReqDto: ActivateGrPkgReqDto): Promise<any> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG,
+          JSON.stringify(activateGrPkgReqDto),
         )
         .pipe(
           timeout(5000),

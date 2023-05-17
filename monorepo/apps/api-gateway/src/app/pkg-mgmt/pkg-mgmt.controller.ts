@@ -50,6 +50,7 @@ import {
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  ActivateGrPkgReqDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -188,20 +189,13 @@ export class PkgMgmtController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Get('gr/user_id')
-  @ApiQuery({ name: 'user_id', type: String, required: true })
   @ApiQuery({ name: 'role', enum: ['All', 'User', 'Super User'] })
   getGrByUserId(
-    @Query('user_id') user_id: string,
+    @ATUser() user: unknown,
     @Query('role') role: string,
   ): Promise<GetGrsByUserResDto> {
-    console.log("Get groups by user's id", user_id);
-    const memberDto: MemberDto = {
-      user: user_id,
-    };
-    if (role != 'All') {
-      memberDto.role = role;
-    }
-
+    console.log("Get groups by user's id", user['userInfo']['_id']);
+    const memberDto: MemberDto = { user: user['userInfo']['_id'], role };
     return this.pkgMgmtService.getGrByUserId(memberDto);
   }
 
@@ -326,6 +320,18 @@ export class PkgMgmtController implements OnModuleInit {
     console.log(`update user #${id}`, updateAvatarReqDto);
     updateAvatarReqDto._id = id;
     return this.pkgMgmtService.updateAvatar(updateAvatarReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('gr/:id/pkg/:pkg_id/activate')
+  activateGrPkg(
+    @Param('id') id: string,
+    @Body() activateGrPkgReqDto: ActivateGrPkgReqDto,
+  ): Promise<any> {
+    console.log(`activate package #${activateGrPkgReqDto} in  group #${id}`);
+    activateGrPkgReqDto._id = id;
+    return this.pkgMgmtService.activateGrPkg(activateGrPkgReqDto);
   }
 
   @Put('gr/:id/memb/rm')

@@ -61,6 +61,7 @@ export const PACKAGE_MGMT = {
   ADD_GR_MEMB: 'addMemberToGroup',
   RM_GR_MEMB: 'removeMemberFromGroup',
   ADD_GR_PKG: 'addPackageToGroup',
+  ACTIVATE_GR_PKG: 'activatePackageInGroup',
   RM_GR_PKG: 'removePackageFromGroup',
 };
 

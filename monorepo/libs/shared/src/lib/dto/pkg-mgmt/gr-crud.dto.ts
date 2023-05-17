@@ -175,6 +175,11 @@ export class UpdateGrReqDto extends IntersectionType(
 
 export class UpdateGrResDto extends BaseResDto {}
 
+export class ActivateGrPkgReqDto extends IntersectionType(
+  IdDto,
+  PickType(GrPkgDto, ['package']),
+) {}
+
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
   PickType(MemberDto, ['user', 'addedBy']),

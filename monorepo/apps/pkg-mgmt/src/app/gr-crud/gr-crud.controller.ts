@@ -18,6 +18,7 @@ import {
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
+  ActivateGrPkgReqDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -97,5 +98,12 @@ export class GrCrudController {
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return this.grCrudService.updateAvatar(updateAvatarReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG)
+  activateGrPkg(
+    @Payload() activateGrPkgReqDto: ActivateGrPkgReqDto,
+  ): Promise<any> {
+    return this.grCrudService.activateGrPkg(activateGrPkgReqDto);
   }
 }
