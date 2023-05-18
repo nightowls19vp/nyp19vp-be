@@ -36,6 +36,7 @@ import {
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
+  ActivateGrPkgResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -352,7 +353,9 @@ export class PkgMgmtService {
       }
     });
   }
-  async activateGrPkg(activateGrPkgReqDto: ActivateGrPkgReqDto): Promise<any> {
+  async activateGrPkg(
+    activateGrPkgReqDto: ActivateGrPkgReqDto,
+  ): Promise<ActivateGrPkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(

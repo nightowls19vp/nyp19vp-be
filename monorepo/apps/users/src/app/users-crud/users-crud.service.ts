@@ -374,6 +374,7 @@ export class UsersCrudService {
             const pack = pkgs.find((elem) => elem._id == item.package);
             if (pack) {
               const pkg: CartPackage = {
+                _id: item.package,
                 name: pack.name,
                 duration: item.duration,
                 price:

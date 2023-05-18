@@ -44,13 +44,13 @@ import {
   GrCollectionProperties,
   GroupDto,
   ParseObjectIdPipe,
-  IdDto,
   BaseResDto,
   MemberDto,
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
+  ActivateGrPkgResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -324,13 +324,17 @@ export class PkgMgmtController implements OnModuleInit {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post('gr/:id/pkg/:pkg_id/activate')
+  @Post('gr/:id/activate')
   activateGrPkg(
+    @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() activateGrPkgReqDto: ActivateGrPkgReqDto,
-  ): Promise<any> {
-    console.log(`activate package #${activateGrPkgReqDto} in  group #${id}`);
+  ): Promise<ActivateGrPkgResDto> {
+    console.log(
+      `activate package #${activateGrPkgReqDto.package._id} in  group #${id}`,
+    );
     activateGrPkgReqDto._id = id;
+    activateGrPkgReqDto.user = user?.['userInfo']?.['_id'];
     return this.pkgMgmtService.activateGrPkg(activateGrPkgReqDto);
   }
 
@@ -348,17 +352,25 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.rmGrMemb(updateGrMbReqDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
   @Put('gr/:id/pkg')
+  @ApiOperation({ description: 'Renewed/upgraded package' })
   @ApiOkResponse({
-    description: `Added new package to group`,
+    description: `Renewed/upgraded package in group`,
     type: UpdatePkgResDto,
   })
   addGrPkg(
+    @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
-    console.log(`add new member to group #${id}`, updateGrPkgReqDto);
+    console.log(
+      `Renew/upgrade package #${updateGrPkgReqDto.package._id} in group #${id}`,
+      updateGrPkgReqDto,
+    );
     updateGrPkgReqDto._id = id;
+    updateGrPkgReqDto.user = user?.['userInfo']?.['_id'];
     return this.pkgMgmtService.addGrPkg(updateGrPkgReqDto);
   }
 

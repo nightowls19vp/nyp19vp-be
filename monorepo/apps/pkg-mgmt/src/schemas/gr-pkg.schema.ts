@@ -26,9 +26,6 @@ export class GrPkg {
   @Prop({ type: Date, required: false })
   endDate: Date;
 
-  @Prop({ type: String, required: false })
-  remainingTime: string;
-
   @Prop({
     type: String,
     enum: ['Active', 'Expired', 'Not Activated'],

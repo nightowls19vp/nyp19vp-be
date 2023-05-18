@@ -7,7 +7,7 @@ import {
 import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 
-export class PackageDto {
+export class PackageDto extends IdDto {
   @ApiProperty({
     type: String,
     minLength: 3,

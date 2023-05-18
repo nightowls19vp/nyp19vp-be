@@ -19,6 +19,8 @@ import {
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
+  ActivateGrPkgResDto,
+  GrPkgDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -419,44 +421,75 @@ export class GrCrudService {
   async addGrPkg(
     updateGrPkgReqDto: UpdateGrPkgReqDto,
   ): Promise<UpdateGrPkgResDto> {
-    const id = updateGrPkgReqDto._id;
-    console.log(`pkg-mgmt-svc#add-new-package-to-group #${id}`);
-    const { _id } = updateGrPkgReqDto;
-    return await this.grModel
-      .findByIdAndUpdate(
-        { _id: _id },
-        { $pull: { packages: updateGrPkgReqDto.package } },
-      )
-      .then(async (res) => {
-        if (res) {
-          const data = await this.grModel
-            .findById(id, { packages: 1 })
-            .populate({
-              path: 'packages',
-              populate: {
-                path: 'package',
-                model: 'Package',
-              },
+    const { _id, user } = updateGrPkgReqDto;
+    console.log(`pkg-mgmt-svc#add-new-package-to-group #${_id}`);
+    const grPkgs = await this.grModel.findById(
+      {
+        _id: _id,
+        packages: {
+          $elemMatch: { status: 'Active' },
+        },
+      },
+      { packages: 1 },
+    );
+    if (grPkgs) {
+      const activatedPkg = grPkgs.packages.find(
+        (elem) => elem.status == 'Active',
+      );
+      const start: Date = activatedPkg.endDate;
+      const end: Date = addDays(start, updateGrPkgReqDto.package.duration);
+      const pkg: GrPkgDto = {
+        package: updateGrPkgReqDto.package,
+        startDate: start,
+        endDate: end,
+        status: setStatus(start, end),
+      };
+      console.log(activatedPkg);
+      return await this.grModel
+        .findByIdAndUpdate(
+          {
+            _id: _id,
+            members: { $elemMatch: { user: user, role: 'Super User' } },
+          },
+          { $addToSet: { packages: pkg } },
+        )
+        .then(async (res) => {
+          if (res) {
+            const data = await this.grModel
+              .findById(_id, { packages: 1 })
+              .populate({
+                path: 'packages',
+                populate: {
+                  path: 'package',
+                  model: 'Package',
+                },
+              });
+            return Promise.resolve({
+              statusCode: HttpStatus.OK,
+              message: `Renewed/upgraded package in group #${_id} successfully`,
+              data: data,
             });
+          } else {
+            return Promise.resolve({
+              statusCode: HttpStatus.UNAUTHORIZED,
+              message: `Must be super user to renew/upgrade package`,
+              error: 'UNAUTHORIZED',
+            });
+          }
+        })
+        .catch((error) => {
           return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `add new package to group #${id} successfully`,
-            data: data,
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: error.message,
           });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No group #${id} found`,
-            error: 'NOT FOUND',
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
         });
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `No group #${_id} found`,
+        error: 'NOT FOUND',
       });
+    }
   }
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
@@ -486,8 +519,73 @@ export class GrCrudService {
         });
       });
   }
-  activateGrPkg(activateGrPkgReqDto: ActivateGrPkgReqDto): Promise<any> {
-    return;
+  async activateGrPkg(
+    activateGrPkgReqDto: ActivateGrPkgReqDto,
+  ): Promise<ActivateGrPkgResDto> {
+    const { _id, user } = activateGrPkgReqDto;
+    const activatedPkg = await this.grModel.findById({
+      _id: _id,
+      packages: { $elemMatch: { status: 'Active' } },
+    });
+    if (!activatedPkg) {
+      const start: Date = new Date();
+      const end: Date = addDays(
+        start,
+        activateGrPkgReqDto.package.duration * 30,
+      );
+      return await this.grModel
+        .findByIdAndUpdate(
+          {
+            _id: _id,
+            package: {
+              $elemMatch: {
+                package: activateGrPkgReqDto.package,
+                status: 'Not Activated',
+              },
+            },
+            members: { $elemMatch: { user: user, role: 'Super User' } },
+          },
+          {
+            $set: {
+              'packages.$[].startDate': start,
+              'packages.$[].endDate': end,
+              'packages.$[].status': setStatus(start, end),
+            },
+          },
+        )
+        .then(async (res) => {
+          const data = await this.grModel.findById(
+            {
+              _id: _id,
+              package: { $elemMatch: { package: activateGrPkgReqDto.package } },
+            },
+            { packages: 1 },
+          );
+          if (res) {
+            return Promise.resolve({
+              statusCode: HttpStatus.OK,
+              message: `Activated package #${activateGrPkgReqDto.package._id} in  group #${_id}`,
+              data: data,
+            });
+          } else {
+            return Promise.resolve({
+              statusCode: HttpStatus.NOT_FOUND,
+              message: 'Group not found',
+            });
+          }
+        })
+        .catch((error) => {
+          return Promise.resolve({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: error.message,
+          });
+        });
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Already have an activated package',
+      });
+    }
   }
 }
 const setStatus = (startDate: Date, endDate: Date): string => {

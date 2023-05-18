@@ -55,7 +55,7 @@ class PkgDto extends PickType(Items, ['duration', 'noOfMember']) {
   _id: string;
 }
 
-class GrPkgDto {
+export class GrPkgDto {
   @ApiProperty()
   @ValidateNested()
   @Type(() => PkgDto)
@@ -68,9 +68,6 @@ class GrPkgDto {
   @ApiProperty({ type: Date })
   @IsISO8601()
   endDate: Date;
-
-  @ApiProperty({ type: String })
-  remainingTime: string;
 
   @ApiProperty({
     type: String,
@@ -178,7 +175,11 @@ export class UpdateGrResDto extends BaseResDto {}
 export class ActivateGrPkgReqDto extends IntersectionType(
   IdDto,
   PickType(GrPkgDto, ['package']),
-) {}
+) {
+  user: string;
+}
+
+export class ActivateGrPkgResDto extends BaseResDto {}
 
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
@@ -192,8 +193,6 @@ export class RmGrMbReqDto extends IntersectionType(
 
 export class UpdateGrMbResDto extends BaseResDto {}
 
-export class UpdateGrPkgReqDto extends IdDto {
-  package: GrPkgDto;
-}
+export class UpdateGrPkgReqDto extends ActivateGrPkgReqDto {}
 
 export class UpdateGrPkgResDto extends BaseResDto {}
