@@ -196,3 +196,7 @@ export class UpdateGrMbResDto extends BaseResDto {}
 export class UpdateGrPkgReqDto extends ActivateGrPkgReqDto {}
 
 export class UpdateGrPkgResDto extends BaseResDto {}
+
+export class CheckGrSUReqDto extends IdDto {
+  user: string;
+}

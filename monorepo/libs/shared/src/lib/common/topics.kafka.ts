@@ -40,6 +40,7 @@ export const USERS = {
   GET_CART: 'getShoppingCart',
   UPDATE_TRX: 'updateTransactionHistory',
   CHECKOUT: 'checkOut',
+  RENEW_PKG: 'renewGroupPackage',
 };
 
 export const PACKAGE_MGMT = {
@@ -63,6 +64,7 @@ export const PACKAGE_MGMT = {
   ADD_GR_PKG: 'addPackageToGroup',
   ACTIVATE_GR_PKG: 'activatePackageInGroup',
   RM_GR_PKG: 'removePackageFromGroup',
+  CHECK_GR_SU: 'isSuperUserOfAGroup',
 };
 
 export const TXN = {

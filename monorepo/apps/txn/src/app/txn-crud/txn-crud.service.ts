@@ -21,6 +21,7 @@ import {
   CreateTransResDto,
   ZPCheckoutResDto,
   CreateGrReqDto,
+  UpdateGrPkgReqDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
@@ -66,6 +67,7 @@ export class TxnCrudService {
         );
         console.log(zaloPayReq);
         const order = await this.zpCreateOrder(zaloPayReq);
+        console.log(order);
         if (order.return_code == 1) {
           const trans = mapZPCreateOrderReqDtoToCreateTransReqDto(zaloPayReq);
           return Promise.resolve({
@@ -229,28 +231,59 @@ export class TxnCrudService {
       if (!trans) {
         throw new NotFoundException();
       }
-      const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
-        item,
-        zpDataCallback.app_user,
-      );
-      const createGr = await firstValueFrom(
-        this.pkgMgmtClient.send(
-          kafkaTopic.PACKAGE_MGMT.CREATE_GR,
-          createGrReqDto,
-        ),
-      );
-      if (createGr.statusCode == HttpStatus.CREATED) {
-        await session.commitTransaction();
-        result = {
-          statusCode: HttpStatus.CREATED,
-          message: `Create groups successfully`,
+      const embedData = JSON.parse(zpDataCallback.embed_data);
+      if (embedData.columninfo) {
+        const columninfo = JSON.parse(embedData.columninfo);
+        const updateGrPkgReqDto: UpdateGrPkgReqDto = {
+          _id: columninfo.group_id,
+          package: {
+            _id: item[0].id,
+            duration: item[0].duration,
+            noOfMember: item[0].noOfMember,
+          },
+          user: zpDataCallback.app_user,
         };
+        const renewGrPkg = await firstValueFrom(
+          this.pkgMgmtClient
+            .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
+            .pipe(timeout(5000)),
+        );
+        if (renewGrPkg.statusCode == HttpStatus.OK) {
+          await session.commitTransaction();
+          result = {
+            statusCode: HttpStatus.OK,
+            message: renewGrPkg.message,
+          };
+        } else {
+          await session.abortTransaction();
+          result = {
+            statusCode: renewGrPkg.statusCode,
+            message: renewGrPkg.message,
+          };
+        }
       } else {
-        await session.abortTransaction();
-        result = {
-          statusCode: createGr.statusCode,
-          message: createGr.message,
-        };
+        const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
+          item,
+          zpDataCallback.app_user,
+        );
+        const createGr = await firstValueFrom(
+          this.pkgMgmtClient
+            .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
+            .pipe(timeout(5000)),
+        );
+        if (createGr.statusCode == HttpStatus.CREATED) {
+          await session.commitTransaction();
+          result = {
+            statusCode: HttpStatus.CREATED,
+            message: `Create groups successfully`,
+          };
+        } else {
+          await session.abortTransaction();
+          result = {
+            statusCode: createGr.statusCode,
+            message: createGr.message,
+          };
+        }
       }
       const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
         zpDataCallback.app_user,
@@ -258,7 +291,9 @@ export class TxnCrudService {
         item,
       );
       const res = await firstValueFrom(
-        this.usersClient.send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto),
+        this.usersClient
+          .send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+          .pipe(timeout(5000)),
       );
       if (res.statusCode == HttpStatus.OK) {
         await session.commitTransaction();
@@ -410,21 +445,23 @@ const mapZaloPayReqDto = (
   const now: number = Date.now();
   const trans_id = getTransId();
   const amount = totalPrice(items);
+  const embed_data: EmbedData = {
+    redirecturl:
+      'https://www.youtube.com/watch?v=q8AzTS4Yq3I&ab_channel=Quy%C3%AAnLouis',
+    columninfo: '{"group_id": "64633ea2fe325e11501d4f64"}',
+  };
   const hmacinput = [
     config.app_id,
     trans_id,
     user_id,
     amount,
     now,
-    JSON.stringify({}),
+    JSON.stringify(embed_data),
     JSON.stringify(items),
   ].join('|');
   const mac: string = createHmac('sha256', config.key1)
     .update(hmacinput)
     .digest('hex');
-  const embed_data: EmbedData = {
-    redirecturl: 'https://www.youtube.com/',
-  };
   const res: ZPCreateOrderReqDto = {
     amount: amount,
     app_id: config.app_id,
@@ -435,7 +472,7 @@ const mapZaloPayReqDto = (
     bank_code: '',
     callback_url: config.callback_URL,
     description: `Megoo - Paymemt for the order #${trans_id}`,
-    embed_data: JSON.stringify({}),
+    embed_data: JSON.stringify(embed_data),
     mac: mac,
   };
   return res;

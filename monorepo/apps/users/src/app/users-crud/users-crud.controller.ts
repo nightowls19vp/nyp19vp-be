@@ -11,6 +11,7 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -141,5 +142,10 @@ export class UsersCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.USERS.SEARCH_USER)
   searchUser(@Payload() keyword: string): Promise<UserDto[]> {
     return this.usersCrudService.searchUser(keyword);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.RENEW_PKG)
+  renewPkg(@Payload() renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+    return this.usersCrudService.renewPkg(renewGrPkgReqDto);
   }
 }

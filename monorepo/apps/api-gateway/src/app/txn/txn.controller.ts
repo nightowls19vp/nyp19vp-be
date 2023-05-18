@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  OnModuleInit,
-  Inject,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, Body, OnModuleInit, Inject } from '@nestjs/common';
 import { TxnService } from './txn.service';
 import {
   CreateTransReqDto,
@@ -19,14 +8,14 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Transaction')
 @Controller('txn')
 export class TxnController implements OnModuleInit {
   constructor(
     private readonly txnService: TxnService,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
   ) {}
   async onModuleInit() {
     this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);

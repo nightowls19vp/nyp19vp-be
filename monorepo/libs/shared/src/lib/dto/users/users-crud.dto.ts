@@ -139,6 +139,8 @@ export class Items {
   duration?: number;
 }
 
+export class Item extends OmitType(Items, ['quantity']) {}
+
 class UserSettingDto {
   @ApiProperty()
   @Type(() => UserSetting)
@@ -246,3 +248,12 @@ export class GetCartResDto extends IntersectionType(BaseResDto) {
 export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}
+
+export class RenewGrPkgReqDto extends IdDto {
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => Items)
+  cart: Item;
+
+  group: string;
+}

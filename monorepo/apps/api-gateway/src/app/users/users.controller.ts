@@ -17,6 +17,7 @@ import {
   GetUserSettingResDto,
   kafkaTopic,
   ParseObjectIdPipe,
+  RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -50,6 +51,7 @@ import {
 import { Types } from 'mongoose';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
+import { ATUser } from '../decorators/at-user.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -231,14 +233,30 @@ export class UsersController implements OnModuleInit {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post(':id/checkout')
+  @Post('checkout')
   async checkout(
-    @Param('id') id: string,
+    @ATUser() user: unknown,
     @Body() updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
-    console.log(`checkout #${id}`, updateCartReqDto);
-    updateCartReqDto._id = id;
+    const _id = user?.['userInfo']?.['_id'];
+    console.log(`checkout #${_id}`, updateCartReqDto);
+    updateCartReqDto._id = _id;
     return this.usersService.checkout(updateCartReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('renew/:grId')
+  async renewPkg(
+    @ATUser() user: unknown,
+    @Param('grId') grId: string,
+    @Body() renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<any> {
+    const _id = user?.['userInfo']?.['_id'];
+    console.log(`renew package in group #${_id}`, renewGrPkgReqDto);
+    renewGrPkgReqDto._id = _id;
+    renewGrPkgReqDto.group = grId;
+    return this.usersService.renewPkg(renewGrPkgReqDto);
   }
 
   @Get('healthcheck')

@@ -2,11 +2,14 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CartPackage,
+  CheckGrSUReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  Items,
+  RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -493,6 +496,33 @@ export class UsersCrudService {
         order: null,
         trans: null,
       });
+    }
+  }
+  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+    const { _id, cart, group } = renewGrPkgReqDto;
+    const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
+    const isSU: boolean = await firstValueFrom(
+      this.pkgClient.send(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU, checkGrSUReqDto),
+    );
+    if (!isSU) {
+      return Promise.resolve({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: `User #${_id} is not Super User. Only Super User can renew or upgrade package`,
+        error: 'UNAUTHORIZED',
+      });
+    } else {
+      const cartItem: Items = {
+        package: cart.package,
+        quantity: 1,
+        noOfMember: cart.noOfMember,
+        duration: cart.duration,
+      };
+      const updateCartReqDto: UpdateCartReqDto = { _id: _id, cart: [cartItem] };
+      return await firstValueFrom(
+        this.txnClient
+          .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+          .pipe(timeout(5000)),
+      );
     }
   }
   async searchUser(keyword: string): Promise<UserDto[]> {

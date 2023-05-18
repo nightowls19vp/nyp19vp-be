@@ -20,6 +20,7 @@ import {
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
+  CheckGrSUReqDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -106,5 +107,10 @@ export class GrCrudController {
     @Payload() activateGrPkgReqDto: ActivateGrPkgReqDto,
   ): Promise<ActivateGrPkgResDto> {
     return this.grCrudService.activateGrPkg(activateGrPkgReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU)
+  checkGrSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
+    return this.grCrudService.checkGrSU(checkGrSUReqDto);
   }
 }

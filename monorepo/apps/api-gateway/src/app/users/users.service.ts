@@ -17,6 +17,7 @@ import {
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
   UpdateCartReqDto,
@@ -281,5 +282,26 @@ export class UsersService {
         }),
       ),
     );
+  }
+  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+    return await firstValueFrom(
+      this.usersClient
+        .send(kafkaTopic.USERS.RENEW_PKG, JSON.stringify(renewGrPkgReqDto))
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
   }
 }

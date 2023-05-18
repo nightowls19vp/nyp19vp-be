@@ -63,6 +63,16 @@ export class EmbedData {
 
   @ApiProperty({
     type: JSON,
+    example: { group_id: '64633ea2fe325e11501d4f64' },
+    description:
+      'Add information into the section Management of transaction details on Merchant site',
+  })
+  @IsOptional()
+  @IsJSON()
+  columninfo?: string;
+
+  @ApiProperty({
+    type: JSON,
     example: { campaigncode: 'code' },
     description: 'Use to launch promotions campaign',
   })

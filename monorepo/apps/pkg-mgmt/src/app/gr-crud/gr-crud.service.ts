@@ -21,6 +21,7 @@ import {
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
   GrPkgDto,
+  CheckGrSUReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -433,10 +434,13 @@ export class GrCrudService {
       { packages: 1 },
     );
     if (grPkgs) {
-      const activatedPkg = grPkgs.packages.find(
-        (elem) => elem.status == 'Active',
+      const notAcitivatedPkg = grPkgs.packages.filter(
+        (elem) => elem.status == 'Not Activated',
       );
-      const start: Date = activatedPkg.endDate;
+      const endDateArray = notAcitivatedPkg.map((x) => x.endDate);
+      console.log(notAcitivatedPkg);
+      const start: Date = maxDate(endDateArray);
+      console.log(start);
       const end: Date = addDays(start, updateGrPkgReqDto.package.duration);
       const pkg: GrPkgDto = {
         package: updateGrPkgReqDto.package,
@@ -444,7 +448,6 @@ export class GrCrudService {
         endDate: end,
         status: setStatus(start, end),
       };
-      console.log(activatedPkg);
       return await this.grModel
         .findByIdAndUpdate(
           {
@@ -587,10 +590,19 @@ export class GrCrudService {
       });
     }
   }
+  async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
+    const { _id, user } = checkGrSUReqDto;
+    const isSU = await this.grModel.findById({
+      _id: _id,
+      members: { $elemMatch: { user: user, role: 'Super User' } },
+    });
+    if (isSU) return true;
+    return false;
+  }
 }
 const setStatus = (startDate: Date, endDate: Date): string => {
   const now = new Date();
-  if (startDate > now) return 'Not Activate';
+  if (startDate > now) return 'Not Activated';
   else if (now < endDate) return 'Active';
   else return 'Expired';
 };
@@ -635,3 +647,4 @@ const mapGrSchemaToGrDto = (model: any): GroupDto => {
   result.members = model.members;
   return result;
 };
+const maxDate = (dates: Date[]) => new Date(Math.max(...dates.map(Number)));
