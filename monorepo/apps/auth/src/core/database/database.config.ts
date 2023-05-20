@@ -10,15 +10,15 @@ dotenv.config({
 console.log({
   host: process.env.DB_AUTH_HOST,
   port: process.env.DB_AUTH_PORT,
-  username: 'root',
-  password: 'root',
+  username: process.env.DB_AUTH_USERNAME,
+  password: process.env.DB_AUTH_PASSWORD,
   database: process.env.DB_AUTH_DATABASE,
 });
 
 export const dbCfg: IDbConfig = {
   host: process.env.DB_AUTH_HOST,
   port: process.env.DB_AUTH_PORT,
-  username: 'root',
-  password: 'root',
+  username: process.env.DB_AUTH_USERNAME,
+  password: process.env.DB_AUTH_PASSWORD,
   database: process.env.DB_AUTH_DATABASE,
 };

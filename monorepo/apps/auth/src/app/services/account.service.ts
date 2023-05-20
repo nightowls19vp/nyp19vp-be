@@ -78,7 +78,6 @@ export class AccountService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      saveResult = await queryRunner.manager.save<AccountEntity>(account);
       // await send user profile to users service
       const createUserReq: CreateUserReqDto = {
         email: reqDto.username,
@@ -113,7 +112,8 @@ export class AccountService {
 
         throw new Error(createUserRes.error);
       }
-
+      account.userInfoId = createUserRes.data?.['_id'] || null;
+      saveResult = await queryRunner.manager.save<AccountEntity>(account);
       await queryRunner.commitTransaction();
       return {
         statusCode: saveResult ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST,

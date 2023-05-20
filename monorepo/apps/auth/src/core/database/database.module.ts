@@ -25,7 +25,7 @@ console.log({
       database: dbCfg.database,
       entities: [],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       logging: false,
     }),
   ],

@@ -1,0 +1,40 @@
+version: "3.4"
+services:
+  kafka:
+    container_name: kafka
+    image: obsidiandynamics/kafka
+    restart: "no"
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+    environment:
+      KAFKA_LISTENERS: "INTERNAL://:29092,EXTERNAL://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_ZOOKEEPER_SESSION_TIMEOUT: "6000"
+      KAFKA_RESTART_ATTEMPTS: "10"
+      KAFKA_RESTART_DELAY: "5"
+      ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: "0"
+
+  nyp19vpbe:
+    container_name: nyp19vpbe
+    image: nyp19vpbe
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: npx nx run-many --target=serve --all --maxParallel=100
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+    ports:
+      - 3000:3000
+    depends_on:
+      - kafka

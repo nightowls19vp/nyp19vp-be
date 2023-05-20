@@ -124,7 +124,9 @@ export class AuthService {
   async login(reqDto: LoginReqDto): Promise<LoginResWithTokensDto> {
     try {
       return await firstValueFrom(
-        this.authClient.send(kafkaTopic.AUTH.LOGIN, JSON.stringify(reqDto)),
+        this.authClient
+          .send(kafkaTopic.AUTH.LOGIN, JSON.stringify(reqDto))
+          .pipe(timeout(toMs('5s'))),
       );
     } catch (error) {
       console.error('error', error);

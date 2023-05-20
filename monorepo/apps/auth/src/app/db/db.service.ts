@@ -25,7 +25,11 @@ export class DbService {
 
     private readonly accountService: AccountService,
   ) {
-    this.init();
+    this.accountRepo.find().then((res) => {
+      if (res.length === 0) {
+        this.init();
+      }
+    });
   }
 
   async initAdmin() {

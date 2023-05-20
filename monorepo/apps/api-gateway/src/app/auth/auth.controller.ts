@@ -137,6 +137,7 @@ export class AuthController implements OnModuleInit {
 
   @Post('mobile/google-sign-up')
   async googleSignUpMobile(
+    @Res() res: Response,
     @Body() googleSignUpReqDto: GoogleSignUpReqDto,
   ): Promise<SocialSignupResDto> {
     const token = googleSignUpReqDto.googleAccessToken;
@@ -161,6 +162,14 @@ export class AuthController implements OnModuleInit {
             HttpStatus.BAD_REQUEST,
           );
         }
+
+        this.authService.setCookie(
+          res,
+          resDto.data.accessToken,
+          resDto.data.refreshToken,
+        );
+
+        res.status(resDto.statusCode).json(resDto);
         return resDto;
       } catch (error) {
         throw new UnauthorizedException();

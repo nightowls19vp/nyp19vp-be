@@ -69,6 +69,8 @@ export class AuthController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.AUTH.LOGIN)
   async login(reqDto: LoginReqDto): Promise<LoginResDto> {
+    console.log('MessagePattern(kafkaTopic.AUTH.LOGIN) ', reqDto);
+
     return this.authService.login(reqDto);
   }
 

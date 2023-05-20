@@ -21,12 +21,12 @@ const extractBearerTokenFromReqHeader = (req: Request) => {
  * Cookie first then request header
  */
 export const getAccessToken = (req: Request): string => {
-  // extract from cookie
-  let accessToken: string = req?.cookies?.[ACCESS_JWT_COOKIE_NAME];
+  // extract from request header
+  let accessToken = extractBearerTokenFromReqHeader(req);
 
-  // if token not provided in cookie
+  // if not provided in request header
   if (!accessToken) {
-    accessToken = extractBearerTokenFromReqHeader(req);
+    accessToken = req?.cookies?.[ACCESS_JWT_COOKIE_NAME];
   }
 
   return accessToken;
@@ -38,12 +38,12 @@ export const getAccessToken = (req: Request): string => {
  * Cookie first then request header
  */
 export const getRefreshToken = (req: Request): string => {
-  // extract from cookie
-  let refreshToken: string = req?.cookies?.[REFRESH_JWT_COOKIE_NAME];
+  // extract from request header
+  let refreshToken = extractBearerTokenFromReqHeader(req);
 
-  // if token not provided in cookie
+  // if not provided in request header
   if (!refreshToken) {
-    refreshToken = extractBearerTokenFromReqHeader(req);
+    refreshToken = req?.cookies?.[REFRESH_JWT_COOKIE_NAME];
   }
 
   return refreshToken;

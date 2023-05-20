@@ -24,6 +24,14 @@ import { AuthService } from './services/auth.service';
 import { RefreshTokenBlacklistService } from './services/refresh-token-blacklist.service';
 import { RoleService } from './services/role.service';
 
+import * as dotenv from 'dotenv';
+
+console.log('NODE_ENV: ', process.env.NODE_ENV);
+
+dotenv.config({
+  path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
+});
+
 @Global()
 @Module({
   imports: [
@@ -68,7 +76,7 @@ import { RoleService } from './services/role.service';
         options: {
           client: {
             clientId: 'users',
-            brokers: ['localhost:9092'],
+            brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
             groupId: 'users-consumer' + randomUUID(),

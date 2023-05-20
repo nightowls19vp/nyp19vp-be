@@ -18,10 +18,14 @@ export const dbCfg: IDbConfig = {
 export const getMongoConnectionString = (dbCfg: IDbConfig) => {
   console.log(`process.env.NODE_ENV ${process.env.NODE_ENV}`);
 
-  console.log(
-    'connection string: ',
-    `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`,
-  );
+  if (process.env.NODE_ENV === 'dev') {
+    const connectionStr = `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`;
+    console.log('connection string', connectionStr);
+    return connectionStr;
+  } else {
+    const connectionStr = `mongodb+srv://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}/${dbCfg.database}?serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`;
+    console.log('connection string', connectionStr);
 
-  return `mongodb://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}:${dbCfg.port}/${dbCfg.database}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`;
+    return connectionStr;
+  }
 };
