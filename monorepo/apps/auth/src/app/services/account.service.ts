@@ -5,7 +5,7 @@ import { toMs } from 'libs/shared/src/lib/utils';
 import { firstValueFrom, timeout } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,6 +28,8 @@ import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
+import { MailerService } from '@nestjs-modules/mailer';
+import { sendMailWithRetries } from '../utils/mail';
 
 @Injectable()
 export class AccountService {
@@ -45,6 +47,8 @@ export class AccountService {
 
     private readonly authService: AuthService,
 
+    private readonly mailService: MailerService,
+
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
   getData(): { message: string } {
@@ -56,6 +60,17 @@ export class AccountService {
     platform: string = null,
     platformId: string = null,
   ): Promise<CreateAccountResDto> {
+    sendMailWithRetries(this.mailService, {
+      to: reqDto.email,
+      subject: 'Welcome to NYP19VP',
+      template: 'welcome.hbs',
+      context: {
+        name: reqDto.name,
+        link: 'http://localhost:8080',
+      },
+    });
+    return null;
+
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(reqDto.password, salt);
 
@@ -113,7 +128,24 @@ export class AccountService {
         throw new Error(createUserRes.error);
       }
       account.userInfoId = createUserRes.data?.['_id'] || null;
+
+      if (account.userInfoId === null) {
+        throw new Error('create user fail');
+      }
+
       saveResult = await queryRunner.manager.save<AccountEntity>(account);
+
+      // not use await here, because we want to send email in background
+      sendMailWithRetries(this.mailService, {
+        to: reqDto.email,
+        subject: 'Welcome to NYP19VP',
+        template: 'welcome.hbs',
+        context: {
+          name: reqDto.name,
+          link: 'localhost:8080',
+        },
+      });
+
       await queryRunner.commitTransaction();
       return {
         statusCode: saveResult ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST,
@@ -280,6 +312,8 @@ export class AccountService {
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(reqDto))
         .pipe(timeout(toMs('5s'))),
     );
+
+    console.log('createUserInfoRes', createUserInfoRes);
 
     if (
       !createUserInfoRes.statusCode.toString().startsWith('2') ||

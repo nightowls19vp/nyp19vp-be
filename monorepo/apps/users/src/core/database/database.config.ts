@@ -16,6 +16,8 @@ export const dbCfg: IDbConfig = {
   database: process.env.DB_USERS_DATABASE,
 };
 
+console.log('dbCfg', dbCfg);
+
 export const getMongoConnectionString = (dbCfg: IDbConfig) => {
   console.log(`process.env.NODE_ENV ${process.env.NODE_ENV}`);
 

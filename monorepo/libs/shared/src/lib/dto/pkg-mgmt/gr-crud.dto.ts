@@ -184,7 +184,15 @@ export class ActivateGrPkgResDto extends BaseResDto {}
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
   PickType(MemberDto, ['user', 'addedBy']),
-) {}
+) {
+  // @ApiProperty({
+  //   type: String,
+  //   isArray: true,
+  //   required: true,
+  // })
+  // @IsString({ each: true })
+  // email: string[];
+}
 
 export class RmGrMbReqDto extends IntersectionType(
   IdDto,

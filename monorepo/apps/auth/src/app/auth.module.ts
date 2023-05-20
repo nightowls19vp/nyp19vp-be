@@ -3,6 +3,7 @@ import { join } from 'path';
 
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,7 +18,6 @@ import { AccountEntity } from './entities/account.entity';
 import { RefreshTokenBlacklistEntity } from './entities/refresh-token-blacklist.entity';
 import { RoleEntity } from './entities/role.entity';
 import { SocialAccountEntity } from './entities/social-media-account.entity';
-import { StatusEmbeddedEntity } from './entities/status.entity';
 import { AccountService } from './services/account.service';
 import { ActionService } from './services/action.service';
 import { AuthService } from './services/auth.service';
@@ -41,20 +41,20 @@ dotenv.config({
         return {
           transport: {
             host: config.get('MAIL_HOST'),
-            secure: config.get('NODE_ENV') !== ENV_FILE.DEV,
+            secure: config.get('NODE_ENV') !== 'dev',
             auth: {
               user: config.get('MAIL_USER'),
               pass: config.get('MAIL_PASSWORD'),
             },
             tls: {
-              rejectUnauthorized: config.get('NODE_ENV') === ENV_FILE.DEV,
+              rejectUnauthorized: config.get('NODE_ENV') === 'dev',
             },
           },
           defaults: {
             from: config.get('MAIL_FROM'),
           },
           template: {
-            dir: join(__dirname, 'templates/email'),
+            dir: join(__dirname, 'assets/templates/email'),
             adapter: new HandlebarsAdapter(),
             options: {
               strict: true,
