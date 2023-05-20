@@ -245,15 +245,19 @@ export class GetCartResDto extends IntersectionType(BaseResDto) {
   @ApiProperty() cart: CartPackage[];
 }
 
-export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
+export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {
+  @IsOptional()
+  group?: string;
+}
 
 export class UpdateCartResDto extends BaseResDto {}
 
-export class RenewGrPkgReqDto extends IdDto {
+export class RenewGrPkgReqDto extends IntersectionType(
+  IdDto,
+  PickType(UpdateCartReqDto, ['group']),
+) {
   @ApiProperty()
   @ValidateNested()
   @Type(() => Items)
   cart: Item;
-
-  group: string;
 }

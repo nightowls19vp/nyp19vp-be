@@ -51,7 +51,8 @@ export class TxnCrudService {
   async zpCheckout(
     updateCartReqDto: UpdateCartReqDto,
   ): Promise<ZPCheckoutResDto> {
-    const { _id, cart } = updateCartReqDto;
+    const { _id, cart, group } = updateCartReqDto;
+    console.log(`Checkout #${_id}`, cart);
     const list_id = cart.map((x) => x.package);
     try {
       const res = await firstValueFrom(
@@ -63,6 +64,7 @@ export class TxnCrudService {
         const zaloPayReq = mapZaloPayReqDto(
           _id,
           mapPkgDtoToItemDto(res, cart),
+          group,
           this.config,
         );
         console.log(zaloPayReq);
@@ -383,24 +385,22 @@ const mapPkgDtoToItemDto = (
   listPkg: PackageDto[],
   cart: Items[],
 ): ItemDto[] => {
-  let idx = 0;
   const ListItem: ItemDto[] = cart.map((i) => {
-    const cost =
-      listPkg.at(idx).duration >= 12
-        ? (listPkg.at(idx).price +
-            listPkg.at(idx).coefficient * (i.noOfMember - 2) * i.duration) *
-          0.7
-        : listPkg.at(idx).price +
-          listPkg.at(idx).coefficient * (i.noOfMember - 2) * i.duration;
+    const pack = listPkg.find((elem) => elem._id == i.package);
     const item: ItemDto = {
       id: i.package,
-      name: listPkg.at(idx).name,
-      price: listPkg.at(idx).coefficient ? cost : listPkg.at(idx).price,
+      name: pack.name,
+      price:
+        pack.duration >= 12
+          ? (pack.price +
+              (pack.coefficient ?? 0) * (i.noOfMember - 2) * i.duration) *
+            0.7
+          : pack.price +
+            (pack.coefficient ?? 0) * (i.noOfMember - 2) * i.duration,
       quantity: i.quantity,
-      duration: i.duration ? i.duration : listPkg.at(idx).duration,
-      noOfMember: i.noOfMember ? i.noOfMember : listPkg.at(idx).noOfMember,
+      duration: i.duration ? i.duration : pack.duration,
+      noOfMember: i.noOfMember ? i.noOfMember : pack.noOfMember,
     };
-    idx++;
     return item;
   });
   return ListItem;
@@ -440,6 +440,7 @@ const getTransId = (): string => {
 const mapZaloPayReqDto = (
   user_id: string,
   items: ItemDto[],
+  group_id: string,
   config: any,
 ): ZPCreateOrderReqDto => {
   const now: number = Date.now();
@@ -448,8 +449,11 @@ const mapZaloPayReqDto = (
   const embed_data: EmbedData = {
     redirecturl:
       'https://www.youtube.com/watch?v=q8AzTS4Yq3I&ab_channel=Quy%C3%AAnLouis',
-    columninfo: '{"group_id": "64633ea2fe325e11501d4f64"}',
   };
+  if (group_id) {
+    embed_data['columninfo'] = `{"group_id": ${group_id}}`;
+  }
+
   const hmacinput = [
     config.app_id,
     trans_id,

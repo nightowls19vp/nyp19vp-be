@@ -517,7 +517,11 @@ export class UsersCrudService {
         noOfMember: cart.noOfMember,
         duration: cart.duration,
       };
-      const updateCartReqDto: UpdateCartReqDto = { _id: _id, cart: [cartItem] };
+      const updateCartReqDto: UpdateCartReqDto = {
+        _id: _id,
+        cart: [cartItem],
+        group: group,
+      };
       return await firstValueFrom(
         this.txnClient
           .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
