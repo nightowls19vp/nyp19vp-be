@@ -25,9 +25,9 @@ console.log({
       database: dbCfg.database,
       entities: [],
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
       logging: false,
     }),
   ],
 })
-export class DataBaseModule {}
+export class DataBaseModule { }

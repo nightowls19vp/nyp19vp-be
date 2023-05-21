@@ -437,29 +437,46 @@ export class UsersCrudService {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
     console.log(cart);
-    return await this.userModel
-      .findByIdAndUpdate(
-        { _id: _id },
-        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } },
-      )
-      .then((res) => {
-        if (!res)
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user #${_id} found`,
-          });
-        else
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `updated user #${_id}'s cart successfully`,
-          });
-      })
-      .catch((error) => {
+    try {
+      const user = await this.userModel.findById({ _id: _id });
+
+      if (!user) {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `No user #${_id} found`,
         });
+      } else {
+        user.trxHist.push(trx);
+        user.cart = user.cart.filter((elem) => {
+          if (
+            cart.some(
+              (item) =>
+                item.package == elem.package &&
+                item.quantity == elem.quantity &&
+                item.duration == elem.duration &&
+                item.noOfMember == elem.noOfMember,
+            )
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+
+        await user.save();
+
+        return {
+          statusCode: HttpStatus.OK,
+          message: `updated user #${_id}'s cart successfully`,
+          data: user,
+        };
+      }
+    } catch (error) {
+      return Promise.resolve({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
       });
+    }
   }
   async checkout(
     updateCartReqDto: UpdateCartReqDto,
