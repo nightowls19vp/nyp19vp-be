@@ -12,6 +12,7 @@ import {
   LoginResWithTokensDto,
   LogoutReqDto,
   LogoutResDto,
+  PkgGrInvReqDto,
   RefreshTokenReqDto,
   RefreshTokenResDto,
   SocialLinkReqDto,
@@ -111,7 +112,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN)
-  async genJoinGrToken(@Payload() reqDto: AddGrMbReqDto): Promise<string> {
+  async genJoinGrToken(@Payload() reqDto: PkgGrInvReqDto): Promise<string> {
     return this.authService.genJoinGrToken(reqDto);
   }
 

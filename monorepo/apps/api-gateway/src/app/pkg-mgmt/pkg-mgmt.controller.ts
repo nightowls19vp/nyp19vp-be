@@ -51,6 +51,7 @@ import {
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
+  PkgGrInvReqDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -205,25 +206,32 @@ export class PkgMgmtController implements OnModuleInit {
     description: 'Join group by magic link',
     type: BaseResDto,
   })
-  @ApiQuery({ name: 'grId', type: String })
+  @ApiQuery({
+    name: 'feUrl',
+    type: String,
+    required: true,
+    description:
+      'The front end url point to FE that concat with token (e.g. `feUrl?token=xxx`)',
+    example: 'http://localhost:8080/pgk-mgmt/gr/join',
+  })
   @UseGuards(AccessJwtAuthGuard)
-  @Get('gr/inv')
+  @Post('gr/inv')
   invToJoinGr(
-    @Query('grId') grId: string,
+    @Body() reqDto: PkgGrInvReqDto,
+    @Query('feUrl') feUrl: string,
     @ATUser() user: unknown,
   ): Promise<BaseResDto> {
-    console.log(`invite to join group #${grId}`);
+    console.log(
+      `invite ${JSON.stringify(reqDto.emails)} to join group #${
+        reqDto.grId
+      } by user #${user['userInfo']['_id']}`,
+    );
 
     if (isEmpty(user?.['userInfo']?.['_id'])) {
       throw new UnauthorizedException();
     }
 
-    // log
-    console.log(
-      `invite to join group #${grId} by user #${user['userInfo']['_id']}`,
-    );
-
-    return this.pkgMgmtService.invToJoinGr(user['userInfo']['_id'], grId);
+    return this.pkgMgmtService.invToJoinGr();
   }
 
   // join group by magic link

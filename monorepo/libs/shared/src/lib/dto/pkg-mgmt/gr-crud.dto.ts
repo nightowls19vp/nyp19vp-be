@@ -3,8 +3,10 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
+  IsEmail,
   IsEnum,
   IsISO8601,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -184,15 +186,7 @@ export class ActivateGrPkgResDto extends BaseResDto {}
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
   PickType(MemberDto, ['user', 'addedBy']),
-) {
-  // @ApiProperty({
-  //   type: String,
-  //   isArray: true,
-  //   required: true,
-  // })
-  // @IsString({ each: true })
-  // email: string[];
-}
+) {}
 
 export class RmGrMbReqDto extends IntersectionType(
   IdDto,
@@ -207,4 +201,31 @@ export class UpdateGrPkgResDto extends BaseResDto {}
 
 export class CheckGrSUReqDto extends IdDto {
   user: string;
+}
+
+export class PkgGrInvReqDto extends PickType(MemberDto, ['addedBy']) {
+  @ApiProperty({
+    description: 'Group ID, mongo object id',
+    type: String,
+    required: true,
+  })
+  @IsNotEmpty()
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  grId: string;
+
+  @ApiProperty({
+    description: 'Emails of users to invite',
+    type: String,
+    isArray: true,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEmail(undefined, { each: true })
+  emails: string[];
+
+  // NOT show to swagger, retrieve by access token
+  addedBy?: string;
+
+  // NOT show to swagger, pass by query string
+  feUrl?: string;
 }

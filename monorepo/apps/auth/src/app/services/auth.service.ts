@@ -1,20 +1,29 @@
 import * as bcrypt from 'bcrypt';
+import { time } from 'console';
+import * as crypto from 'crypto';
 import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
 import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
+import { toMs } from 'libs/shared/src/lib/utils';
+import moment from 'moment';
+import { firstValueFrom, timeout } from 'rxjs';
 import { Repository } from 'typeorm';
 
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { JwtService } from '@nestjs/jwt';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  AddGrMbReqDto,
   config,
   ERole,
+  GetGrResDto,
+  GetUserInfoResDto,
+  kafkaTopic,
   LoginReqDto,
   LoginResWithTokensDto,
   LogoutResDto,
+  PkgGrInvReqDto,
   RefreshTokenResDto,
   ValidateJoinGroupTokenReqDto,
   ValidateJoinGroupTokenResDto,
@@ -25,8 +34,9 @@ import {
 import { AccountEntity } from '../entities/account.entity';
 import { RefreshTokenBlacklistEntity } from '../entities/refresh-token-blacklist.entity';
 import { RoleEntity } from '../entities/role.entity';
+import { TokenEntity } from '../entities/token.entity';
+import { sendMailWithRetries } from '../utils/mail';
 import { AccountService } from './account.service';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -49,11 +59,17 @@ export class AuthService {
     @InjectRepository(RefreshTokenBlacklistEntity)
     private refreshTokenBlacklistRepo: Repository<RefreshTokenBlacklistEntity>,
 
+    @InjectRepository(TokenEntity)
+    private tokenRepo: Repository<TokenEntity>,
+
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
 
     // service
     @Inject(forwardRef(() => AccountService))
     private readonly accountService: AccountService,
+
+    private readonly mailerService: MailerService,
   ) {}
   getData(): { message: string } {
     return { message: 'Welcome to auth/Auth!' };
@@ -299,11 +315,97 @@ export class AuthService {
     }
   }
 
-  async genJoinGrToken(reqDto: AddGrMbReqDto): Promise<string> {
-    return this.jwtService.sign(reqDto, {
-      expiresIn: config.auth.strategies.strategyConfig.joinGroupJwtTtl,
-      secret: config.auth.strategies.strategyConfig.joinGroupJwtSecret,
+  async genJoinGrToken(reqDto: PkgGrInvReqDto): Promise<BaseResDto> {
+    const tokenList = reqDto.emails.map((email) => {
+      const payload: PkgGrInvReqDto = {
+        ...reqDto,
+        emails: [email],
+        feUrl: undefined,
+      };
+
+      return this.jwtService.sign(payload, {
+        expiresIn: config.auth.strategies.strategyConfig.joinGroupJwtTtl,
+        secret: config.auth.strategies.strategyConfig.joinGroupJwtSecret,
+      });
     });
+
+    const hashTokenList = tokenList.map((token) => {
+      return crypto.createHash('sha256').update(token, 'utf-8').digest('hex');
+    });
+
+    let tokenInsList = hashTokenList.map((hashToken) => {
+      return this.tokenRepo.create({
+        hashToken: hashToken,
+        expiredAt: moment()
+          .add(
+            toMs(config.auth.strategies.strategyConfig.joinGroupJwtTtl),
+            'ms',
+          )
+          .toDate(),
+      });
+    });
+
+    try {
+      tokenInsList = await this.tokenRepo.save(tokenInsList);
+    } catch (error) {
+      throw new RpcException(error);
+    }
+
+    // retrieve inviter info
+    let userInfoResDto: GetUserInfoResDto = null;
+    try {
+      userInfoResDto = await firstValueFrom(
+        this.usersClient
+          .send(kafkaTopic.USERS.GET_INFO_BY_ID, reqDto.addedBy)
+          .pipe(timeout(toMs('5s'))),
+      );
+    } catch (error) {
+      console.error('error', error);
+    }
+
+    // retrieve group info
+    let grResDto: GetGrResDto = null;
+    try {
+      grResDto = await firstValueFrom(
+        this.pkgMgmtClient
+          .send(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID, reqDto.grId)
+          .pipe(timeout(toMs('5s'))),
+      );
+    } catch (error) {
+      console.error('error', error);
+    }
+
+    // for each email, send email with token
+    const res: unknown[] = await Promise.all([
+      reqDto.emails.map(async (email, index) => {
+        const tokenIns = tokenInsList[index];
+        const url = `${reqDto.feUrl}?token=${tokenIns.hashToken}`;
+
+        await sendMailWithRetries(this.mailerService, {
+          to: email,
+          subject: 'Join group invitation',
+          template: 'invite-to-gr.hbs',
+          context: {
+            inviterName: userInfoResDto?.user?.name,
+            groupName: grResDto.group.name,
+            url: url,
+            code: tokenIns.id,
+          },
+        });
+      }),
+    ]);
+
+    const emailsFailed = res.map((item, idx) => {
+      return item === false ? reqDto.emails[idx] : null;
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Generate join group token successfully',
+      data: {
+        emailsFailed: emailsFailed,
+      },
+    };
   }
 
   async validateJoinGrToken(

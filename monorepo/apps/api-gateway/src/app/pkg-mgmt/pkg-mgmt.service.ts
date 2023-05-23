@@ -37,6 +37,7 @@ import {
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
+  PkgGrInvReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -266,20 +267,7 @@ export class PkgMgmtService {
     });
   }
 
-  async invToJoinGr(
-    addedByUserInfoId: string,
-    grId: string,
-  ): Promise<BaseResDto> {
-    // log all params
-    console.log('addedByUserInfoId', addedByUserInfoId);
-    console.log('grId', grId);
-
-    const reqDto: AddGrMbReqDto = {
-      _id: grId,
-      addedBy: addedByUserInfoId,
-      user: null,
-    };
-
+  async invToJoinGr(reqDto: PkgGrInvReqDto): Promise<BaseResDto> {
     const resDto = await firstValueFrom(
       this.authClient.send(
         kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN,

@@ -25,6 +25,7 @@ import { RefreshTokenBlacklistService } from './services/refresh-token-blacklist
 import { RoleService } from './services/role.service';
 
 import * as dotenv from 'dotenv';
+import { TokenEntity } from './entities/token.entity';
 
 console.log('NODE_ENV: ', process.env.NODE_ENV);
 
@@ -83,6 +84,19 @@ dotenv.config({
           },
         },
       },
+      {
+        name: 'PKG_MGMT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'pkg-mgmt',
+            brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
+          },
+          consumer: {
+            groupId: 'pkg-mgmt-consumer' + randomUUID(), // FIXME,
+          },
+        },
+      },
     ]),
     DataBaseModule,
     JwtModule,
@@ -91,6 +105,7 @@ dotenv.config({
       SocialAccountEntity,
       RoleEntity,
       RefreshTokenBlacklistEntity,
+      TokenEntity,
     ]),
     DbModule,
   ],
