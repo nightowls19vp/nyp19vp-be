@@ -271,7 +271,7 @@ export class GrCrudService {
     console.log(`pkg-mgmt-svc#add-new-member #${user_id} to-group #${id}`);
     const { _id } = updateGrMbReqDto;
     return await this.grModel
-      .findById({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
+      .findOne({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
       .then(async (checkMemb) => {
         if (checkMemb) {
           if (!checkMemb.members.length) {
@@ -326,7 +326,7 @@ export class GrCrudService {
     console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
     const { _id } = updateGrMbReqDto;
     return await this.grModel
-      .findById({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
+      .findOne({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
       .then(async (checkExists) => {
         if (checkExists) {
           if (checkExists.members.length)
@@ -424,7 +424,7 @@ export class GrCrudService {
   ): Promise<UpdateGrPkgResDto> {
     const { _id, user } = updateGrPkgReqDto;
     console.log(`pkg-mgmt-svc#add-new-package-to-group #${_id}`);
-    const grPkgs = await this.grModel.findById(
+    const grPkgs = await this.grModel.findOne(
       {
         _id: _id,
         packages: {
@@ -526,7 +526,7 @@ export class GrCrudService {
     activateGrPkgReqDto: ActivateGrPkgReqDto,
   ): Promise<ActivateGrPkgResDto> {
     const { _id, user } = activateGrPkgReqDto;
-    const activatedPkg = await this.grModel.findById({
+    const activatedPkg = await this.grModel.findOne({
       _id: _id,
       packages: { $elemMatch: { status: 'Active' } },
     });
@@ -557,10 +557,12 @@ export class GrCrudService {
           },
         )
         .then(async (res) => {
-          const data = await this.grModel.findById(
+          const data = await this.grModel.findOne(
             {
               _id: _id,
-              package: { $elemMatch: { package: activateGrPkgReqDto.package } },
+              packages: {
+                $elemMatch: { package: activateGrPkgReqDto.package },
+              },
             },
             { packages: 1 },
           );
@@ -592,7 +594,7 @@ export class GrCrudService {
   }
   async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     const { _id, user } = checkGrSUReqDto;
-    const isSU = await this.grModel.findById({
+    const isSU = await this.grModel.findOne({
       _id: _id,
       members: { $elemMatch: { user: user, role: 'Super User' } },
     });
