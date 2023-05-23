@@ -8,7 +8,6 @@ import {
   ItemDto,
   Items,
   PackageDto,
-  UpdateCartReqDto,
   kafkaTopic,
   ZPCreateOrderReqDto,
   ZPCreateOrderResDto,
@@ -22,19 +21,23 @@ import {
   ZPCheckoutResDto,
   CreateGrReqDto,
   UpdateGrPkgReqDto,
+  CheckoutReqDto,
+  VNPCreateOrderReqDto,
+  VNPIpnUrlReqDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { createHmac } from 'crypto';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
-import { zpconfig } from '../../core/config/zalopay.config';
 import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 import { Transaction, TransactionDocument } from '../../schemas/txn.schema';
 import mongoose from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import * as MOP from '../../core/constants/payment_method.constants';
 import { SoftDeleteModel } from 'mongoose-delete';
+import moment from 'moment-timezone';
+import queryString from 'query-string';
 
 @Injectable()
 export class TxnCrudService {
@@ -44,14 +47,13 @@ export class TxnCrudService {
     private transModel: SoftDeleteModel<TransactionDocument>,
     @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
+    @Inject('ZALOPAY_CONFIG') private readonly zpconfig,
+    @Inject('VNPAY_CONFIG') private readonly vnpconfig,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
-  async zpCheckout(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
-    const { _id, cart, group } = updateCartReqDto;
+  async zpCheckout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+    const { _id, cart, group } = checkoutReqDto;
     console.log(`Checkout #${_id}`, cart);
     const list_id = cart.map((x) => x.package);
     try {
@@ -65,7 +67,7 @@ export class TxnCrudService {
           _id,
           mapPkgDtoToItemDto(res, cart),
           group,
-          this.config,
+          this.zpconfig,
         );
         console.log(zaloPayReq);
         const order = await this.zpCreateOrder(zaloPayReq);
@@ -110,7 +112,7 @@ export class TxnCrudService {
     const { _id, user } = createTransReqDto;
     const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto = mapZPGetStatusReqDto(
       _id,
-      this.config,
+      this.zpconfig,
     );
     await delay(4 * 1000 * 60);
     const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
@@ -349,7 +351,7 @@ export class TxnCrudService {
   ): Promise<ZPCreateOrderResDto> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post(this.config.create_order_endpoint, null, {
+        .post(this.zpconfig.create_order_endpoint, null, {
           params: zalopayReqDto,
         })
         .pipe(
@@ -366,7 +368,7 @@ export class TxnCrudService {
   ): Promise<ZPGetOrderStatusResDto> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post(this.config.get_status_endpoint, null, {
+        .post(this.zpconfig.get_status_endpoint, null, {
           params: zpGetOrderStatusReqDto,
         })
         .pipe(
@@ -376,6 +378,171 @@ export class TxnCrudService {
         ),
     );
     return data;
+  }
+  async vnpCreateOrder(checkoutReqDto: CheckoutReqDto): Promise<any> {
+    const { _id, cart, ipAddr, group } = checkoutReqDto;
+    console.log(`VnPay Checkout #${_id}`, cart);
+    const list_id = cart.map((x) => x.package);
+    const res = await firstValueFrom(
+      this.pkgMgmtClient
+        .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+        .pipe(timeout(5000)),
+    );
+    if (res.length) {
+      const vnPayReq = mapVNPCreateOrderReqDto(
+        ipAddr,
+        _id,
+        mapPkgDtoToItemDto(res, cart),
+        group,
+        this.vnpconfig,
+      );
+      console.log(vnPayReq);
+      return vnPayReq;
+    }
+  }
+  async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
+    let result: CreateTransResDto;
+    console.log('VnPay Callback:', vnpIpnUrlReqDto);
+    const secureHash = vnpIpnUrlReqDto.vnp_SecureHash;
+    const resCode = vnpIpnUrlReqDto.vnp_ResponseCode;
+    const info = vnpIpnUrlReqDto.vnp_OrderInfo;
+    delete vnpIpnUrlReqDto.vnp_SecureHash;
+    delete vnpIpnUrlReqDto.vnp_SecureHashType;
+    const infos = info.split('#');
+    const users = infos[2].split(':');
+    const items = JSON.parse(infos[3]);
+    const group = infos.length == 4 ? infos[4] : null;
+    const trans_id = vnpIpnUrlReqDto.vnp_TxnRef;
+
+    const vnpParams = sortObject(vnpIpnUrlReqDto);
+    const hmacinput = queryString.stringify(vnpParams, { encode: false });
+    const mac: string = createHmac('sha512', this.vnpconfig.key)
+      .update(new Buffer(hmacinput, 'utf-8'))
+      .digest('hex');
+    if (secureHash === mac) {
+      if (resCode == 0) {
+        const newTrans = new this.transModel({
+          _id: trans_id,
+          user: users[0],
+          item: items,
+          amount: vnpIpnUrlReqDto.vnp_Amount / 100,
+          method: {
+            type: MOP.PAYMENT_METHOD.EWALLET,
+            name: MOP.EWALLET.VNPAY,
+            trans_id: trans_id,
+            detail_info: {
+              bankCode: vnpIpnUrlReqDto.vnp_BankCode,
+              bankTransNo: vnpIpnUrlReqDto.vnp_BankTranNo,
+              cardType: vnpIpnUrlReqDto.vnp_CardType,
+            },
+          },
+        });
+        const session = await this.connection.startSession();
+        session.startTransaction();
+        try {
+          const trans = (await newTrans.save()).$session(session);
+          if (!trans) {
+            throw new NotFoundException();
+          }
+          const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
+            items,
+            users[0],
+          );
+          if (!group) {
+            const createGr = await firstValueFrom(
+              this.pkgMgmtClient
+                .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
+                .pipe(timeout(5000)),
+            );
+            if (createGr.statusCode == HttpStatus.CREATED) {
+              await session.commitTransaction();
+              result = {
+                statusCode: HttpStatus.CREATED,
+                message: `Create groups successfully`,
+              };
+            } else {
+              await session.abortTransaction();
+              result = {
+                statusCode: createGr.statusCode,
+                message: createGr.message,
+              };
+            }
+          } else {
+            const updateGrPkgReqDto: UpdateGrPkgReqDto = {
+              _id: group,
+              package: {
+                _id: items[0].id,
+                duration: items[0].duration,
+                noOfMember: items[0].noOfMember,
+              },
+              user: users[0],
+            };
+            const renewGrPkg = await firstValueFrom(
+              this.pkgMgmtClient
+                .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
+                .pipe(timeout(5000)),
+            );
+            if (renewGrPkg.statusCode == HttpStatus.OK) {
+              await session.commitTransaction();
+              result = {
+                statusCode: HttpStatus.OK,
+                message: renewGrPkg.message,
+              };
+            } else {
+              await session.abortTransaction();
+              result = {
+                statusCode: renewGrPkg.statusCode,
+                message: renewGrPkg.message,
+              };
+            }
+          }
+
+          const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
+            users[0],
+            trans_id,
+            items,
+          );
+          const res = await firstValueFrom(
+            this.usersClient
+              .send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
+              .pipe(timeout(5000)),
+          );
+          if (res.statusCode == HttpStatus.OK) {
+            await session.commitTransaction();
+            result = {
+              statusCode: HttpStatus.OK,
+              message: `Create Transaction #${trans_id} successfully`,
+            };
+          } else {
+            await session.abortTransaction();
+            result = {
+              statusCode: res.statusCode,
+              message: res.message,
+            };
+          }
+        } catch (error) {
+          await session.abortTransaction();
+          result = {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: error.message,
+          };
+        } finally {
+          session.endSession();
+          // eslint-disable-next-line no-unsafe-finally
+          return Promise.resolve(result);
+        }
+      } else {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Transaction #${trans_id} failed',
+        });
+      }
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.BAD_GATEWAY,
+        message: `Transaction #${trans_id} callback failed`,
+      });
+    }
   }
 }
 function padTo2Digits(num: number) {
@@ -545,4 +712,63 @@ const mapCreateGrReqDto = (item: ItemDto[], user: string): CreateGrReqDto => {
 };
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+const mapVNPCreateOrderReqDto = (
+  ip: string,
+  user_id: string,
+  items: ItemDto[],
+  group_id: string,
+  config: any,
+): string => {
+  const amount = totalPrice(items);
+  const trans_id = getTransId();
+
+  const date = new Date();
+  const createDate: number = +moment(date)
+    .tz('Asia/Ho_Chi_Minh')
+    .format('YYYYMMDDHHmmss');
+  let orderInfo = `Megoo - Paymemt for the order #${trans_id} by user #${user_id}: #${JSON.stringify(
+    items,
+  )}`;
+  if (group_id) {
+    orderInfo += `#${group_id}`;
+  }
+  const vnpCreateOrderReqDto: VNPCreateOrderReqDto = {
+    vnp_Version: '2.1.0',
+    vnp_Command: 'pay',
+    vnp_TmnCode: config.app_id,
+    vnp_Amount: amount * 100,
+    vnp_CreateDate: createDate,
+    vnp_CurrCode: 'VND',
+    vnp_IpAddr: ip,
+    vnp_Locale: 'vn',
+    vnp_OrderType: 'other',
+    vnp_OrderInfo: orderInfo,
+    vnp_ReturnUrl: config.callback_url,
+    vnp_TxnRef: trans_id,
+  };
+  let vnpParams = sortObject(vnpCreateOrderReqDto);
+  const hmacinput = queryString.stringify(vnpParams, { encode: false });
+  const mac: string = createHmac('sha512', config.key)
+    .update(new Buffer(hmacinput, 'utf-8'))
+    .digest('hex');
+  vnpParams['vnp_SecureHash'] = mac;
+  vnpParams = queryString.stringify(vnpParams, { encode: false });
+  return `${config.create_order_endpoint}?${vnpParams}`;
+};
+function sortObject(obj) {
+  const sorted = {};
+  const str = [];
+  let key;
+  for (key in obj) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (obj.hasOwnProperty(key)) {
+      str.push(encodeURIComponent(key));
+    }
+  }
+  str.sort();
+  for (key = 0; key < str.length; key++) {
+    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, '+');
+  }
+  return sorted;
 }

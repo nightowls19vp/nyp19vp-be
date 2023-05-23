@@ -245,16 +245,50 @@ export class GetCartResDto extends IntersectionType(BaseResDto) {
   @ApiProperty() cart: CartPackage[];
 }
 
-export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {
-  @IsOptional()
-  group?: string;
-}
+export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
 
 export class UpdateCartResDto extends BaseResDto {}
 
+class PaymentMethod {
+  @ApiProperty({
+    description: 'Method of Payment',
+    enum: ['TRANSFER', 'PLAYSTORE', 'EWALLET'],
+    example: 'EWALLET',
+    required: true,
+  })
+  @Transform(({ value }) => value.toUpperCase())
+  type: string;
+
+  @ApiProperty({
+    description:
+      '\t- Bank code if type: TRANSFER;\n\n\t- Name of wallet if type: EWALLET',
+    example: 'ZALOPAY',
+    required: true,
+  })
+  @Transform(({ value }) => value.toUpperCase())
+  bank_code: string;
+}
+
+export class CheckoutReqDto extends UpdateCartReqDto {
+  @IsOptional()
+  group?: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'Method of payment. Please enter UPPERCASE',
+    example: { type: 'EWALLET', bank_code: 'ZALOPAY' },
+    required: true,
+  })
+  @Type(() => PaymentMethod)
+  @ValidateNested()
+  method: PaymentMethod;
+
+  ipAddr: string;
+}
+
 export class RenewGrPkgReqDto extends IntersectionType(
   IdDto,
-  PickType(UpdateCartReqDto, ['group']),
+  PickType(CheckoutReqDto, ['group', 'method', 'ipAddr']),
 ) {
   @ApiProperty()
   @ValidateNested()

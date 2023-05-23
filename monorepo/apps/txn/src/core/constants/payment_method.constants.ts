@@ -6,6 +6,7 @@ export const PAYMENT_METHOD = {
 
 export const EWALLET = {
   ZALOPAY: 'ZaloPay',
+  VNPAY: 'VnPay',
 };
 
 export const ZALOPAY = {
