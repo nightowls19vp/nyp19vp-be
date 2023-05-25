@@ -14,51 +14,44 @@ export class InitDbService {
 
   async initPkg() {
     console.log('Init package database');
-
-    await this.pkgModel
-      .count()
-      .then(async (res) => {
-        if (res == 0) {
-          const ExPkg = new this.pkgModel({
-            name: 'Experience Package',
-            duration: 1,
-            price: 70000,
-            noOfMember: 2,
-            description:
-              'Essentiels management\nGroup Chat\nGroup Call\nSpending management',
-            coefficient: 20000,
-          });
-          const FamiPkg = new this.pkgModel({
-            name: 'Family Package',
-            duration: 12,
-            price: 300000,
-            noOfMember: 4,
-            description:
-              'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
-          });
-          const AnPkg = new this.pkgModel({
-            name: 'Annual Package',
-            duration: 12,
-            price: 357000,
-            noOfMember: 2,
-            description:
-              'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
-            coefficient: 20000,
-          });
-          const CustomPkg = new this.pkgModel({
-            name: 'Customized Package',
-            duration: 1,
-            price: 70000,
-            noOfMember: 2,
-            description:
-              'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
-            coefficient: 20000,
-          });
-          await this.pkgModel.insertMany([ExPkg, FamiPkg, AnPkg, CustomPkg]);
-        }
-      })
-      .catch((err) => {
-        throw err;
-      });
+    const ExPkg = new this.pkgModel({
+      name: 'Experience Package',
+      duration: 1,
+      price: 70000,
+      noOfMember: 2,
+      description:
+        'Essentiels management\nGroup Chat\nGroup Call\nSpending management',
+      coefficient: 20000,
+    });
+    await ExPkg.save();
+    const FamiPkg = new this.pkgModel({
+      name: 'Family Package',
+      duration: 12,
+      price: 300000,
+      noOfMember: 4,
+      description:
+        'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+    });
+    await FamiPkg.save();
+    const AnPkg = new this.pkgModel({
+      name: 'Annual Package',
+      duration: 12,
+      price: 357000,
+      noOfMember: 2,
+      description:
+        'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+      coefficient: 20000,
+    });
+    await AnPkg.save();
+    const CustomPkg = new this.pkgModel({
+      name: 'Customized Package',
+      duration: 1,
+      price: 70000,
+      noOfMember: 2,
+      description:
+        'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+      coefficient: 20000,
+    });
+    await CustomPkg.save();
   }
 }

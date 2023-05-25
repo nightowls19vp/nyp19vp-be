@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -42,7 +43,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Patch, Query } from '@nestjs/common/decorators';
+import { Ip, Patch, Query } from '@nestjs/common/decorators';
 import {
   CollectionDto,
   CollectionResponse,
@@ -236,12 +237,15 @@ export class UsersController implements OnModuleInit {
   @Post('checkout')
   async checkout(
     @ATUser() user: unknown,
-    @Body() updateCartReqDto: UpdateCartReqDto,
+    @Body() checkoutReqDto: CheckoutReqDto,
+    @Ip() ip: string,
   ): Promise<ZPCheckoutResDto> {
     const _id = user?.['userInfo']?.['_id'];
-    console.log(`checkout #${_id}`, updateCartReqDto);
-    updateCartReqDto._id = _id;
-    return this.usersService.checkout(updateCartReqDto);
+    console.log(`checkout #${_id}`, checkoutReqDto);
+    if (ip == '::1') ip = '127.0.0.1';
+    checkoutReqDto._id = _id;
+    checkoutReqDto.ipAddr = ip;
+    return this.usersService.checkout(checkoutReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
@@ -251,11 +255,13 @@ export class UsersController implements OnModuleInit {
     @ATUser() user: unknown,
     @Param('grId') grId: string,
     @Body() renewGrPkgReqDto: RenewGrPkgReqDto,
+    @Ip() ip: string,
   ): Promise<any> {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`renew package in group #${_id}`, renewGrPkgReqDto);
+    if (ip == '::1') ip = '127.0.0.1';
     renewGrPkgReqDto._id = _id;
-    renewGrPkgReqDto.group = grId;
+    renewGrPkgReqDto.ipAddr = ip;
     return this.usersService.renewPkg(renewGrPkgReqDto);
   }
 

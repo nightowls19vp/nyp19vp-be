@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -240,12 +241,10 @@ export class UsersService {
       }
     });
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
+  async checkout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(updateCartReqDto))
+        .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(checkoutReqDto))
         .pipe(
           timeout(5000),
           catchError(() => {

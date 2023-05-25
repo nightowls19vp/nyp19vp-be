@@ -5,6 +5,7 @@ import {
 import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -133,10 +134,10 @@ export class UsersCrudController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
   checkout(
-    @Payload() updateCartReqDto: UpdateCartReqDto,
+    @Payload() checkoutReqDto: CheckoutReqDto,
   ): Promise<ZPCheckoutResDto> {
     console.log('users-svc : checkout');
-    return this.usersCrudService.checkout(updateCartReqDto);
+    return this.usersCrudService.checkout(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.SEARCH_USER)

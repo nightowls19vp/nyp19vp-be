@@ -16,6 +16,8 @@ export * from './lib/core/pipe/parseObjectId.pipe';
 // common
 export * as kafkaTopic from './lib/common/topics.kafka';
 
+export * as MOP from './lib/common/payment_method';
+
 // dto
 export * from './lib/shared';
 
@@ -32,6 +34,10 @@ export * from './lib/dto/pkg-mgmt/pkg-crud.dto';
 export * from './lib/dto/pkg-mgmt/gr-crud.dto';
 
 export * from './lib/dto/txn/txn-crud.dto';
+
+export * from './lib/dto/txn/zalopay.dto';
+
+export * from './lib/dto/txn/vnpay.dto';
 
 // properties
 export * from './lib/properties/base.properties';

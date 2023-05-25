@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   CartPackage,
   CheckGrSUReqDto,
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   Items,
+  MOP,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -478,16 +480,20 @@ export class UsersCrudService {
       });
     }
   }
-  async checkout(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
-    const { _id, cart } = updateCartReqDto;
-    console.log(`User #${_id} checkout:`, cart);
+  async checkout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+    const { _id, cart, method, ipAddr } = checkoutReqDto;
+    console.log(`User #${_id} checkout:`, cart, ipAddr);
+    const mop = MOP.KEY[method.type];
     const checkExist = await this.userModel.findById({ _id: _id });
     if (checkExist) {
       const checkItem: boolean = cart.every((elem) =>
         checkExist.cart.some((value) => {
-          if (value.package == elem.package && value.quantity == elem.quantity)
+          if (
+            value.package == elem.package &&
+            value.quantity == elem.quantity &&
+            value.duration == elem.duration &&
+            value.noOfMember == elem.noOfMember
+          )
             return true;
           else return false;
         }),
@@ -495,7 +501,7 @@ export class UsersCrudService {
       if (checkItem) {
         return await firstValueFrom(
           this.txnClient
-            .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+            .send(mop[method.bank_code], checkoutReqDto)
             .pipe(timeout(5000)),
         );
       } else {
@@ -516,8 +522,9 @@ export class UsersCrudService {
     }
   }
   async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
-    const { _id, cart, group } = renewGrPkgReqDto;
+    const { _id, cart, group, ipAddr, method } = renewGrPkgReqDto;
     const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
+    const mop = MOP.KEY[method.type];
     const isSU: boolean = await firstValueFrom(
       this.pkgClient.send(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU, checkGrSUReqDto),
     );
@@ -534,14 +541,16 @@ export class UsersCrudService {
         noOfMember: cart.noOfMember,
         duration: cart.duration,
       };
-      const updateCartReqDto: UpdateCartReqDto = {
+      const checkoutReqDto: CheckoutReqDto = {
         _id: _id,
         cart: [cartItem],
         group: group,
+        ipAddr: ipAddr,
+        method: method,
       };
       return await firstValueFrom(
         this.txnClient
-          .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+          .send(mop[method.bank_code], checkoutReqDto)
           .pipe(timeout(5000)),
       );
     }
