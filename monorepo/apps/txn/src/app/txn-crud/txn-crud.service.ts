@@ -24,6 +24,8 @@ import {
   CheckoutReqDto,
   VNPCreateOrderReqDto,
   VNPIpnUrlReqDto,
+  BaseResDto,
+  VNPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
@@ -37,7 +39,6 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import * as MOP from '../../core/constants/payment_method.constants';
 import { SoftDeleteModel } from 'mongoose-delete';
 import moment from 'moment-timezone';
-import queryString from 'query-string';
 
 @Injectable()
 export class TxnCrudService {
@@ -379,7 +380,9 @@ export class TxnCrudService {
     );
     return data;
   }
-  async vnpCreateOrder(checkoutReqDto: CheckoutReqDto): Promise<any> {
+  async vnpCreateOrder(
+    checkoutReqDto: CheckoutReqDto,
+  ): Promise<VNPCreateOrderResDto> {
     const { _id, cart, ipAddr, group } = checkoutReqDto;
     console.log(`VnPay Checkout #${_id}`, cart);
     const list_id = cart.map((x) => x.package);
@@ -397,7 +400,11 @@ export class TxnCrudService {
         this.vnpconfig,
       );
       console.log(vnPayReq);
-      return vnPayReq;
+      return Promise.resolve({
+        statusCode: HttpStatus.OK,
+        message: 'Create order successfully',
+        data: vnPayReq,
+      });
     }
   }
   async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
@@ -409,13 +416,13 @@ export class TxnCrudService {
     delete vnpIpnUrlReqDto.vnp_SecureHash;
     delete vnpIpnUrlReqDto.vnp_SecureHashType;
     const infos = info.split('#');
-    const users = infos[2].split(':');
-    const items = JSON.parse(infos[3]);
-    const group = infos.length == 4 ? infos[4] : null;
+    const users = infos[0];
+    const items = JSON.parse(infos[1]);
+    const group = infos.length > 2 ? infos[2] : null;
     const trans_id = vnpIpnUrlReqDto.vnp_TxnRef;
 
     const vnpParams = sortObject(vnpIpnUrlReqDto);
-    const hmacinput = queryString.stringify(vnpParams, { encode: false });
+    const hmacinput = new URLSearchParams(vnpParams).toString();
     const mac: string = createHmac('sha512', this.vnpconfig.key)
       .update(new Buffer(hmacinput, 'utf-8'))
       .digest('hex');
@@ -727,9 +734,7 @@ const mapVNPCreateOrderReqDto = (
   const createDate: number = +moment(date)
     .tz('Asia/Ho_Chi_Minh')
     .format('YYYYMMDDHHmmss');
-  let orderInfo = `Megoo - Paymemt for the order #${trans_id} by user #${user_id}: #${JSON.stringify(
-    items,
-  )}`;
+  let orderInfo = `${user_id}`;
   if (group_id) {
     orderInfo += `#${group_id}`;
   }
@@ -744,16 +749,16 @@ const mapVNPCreateOrderReqDto = (
     vnp_Locale: 'vn',
     vnp_OrderType: 'other',
     vnp_OrderInfo: orderInfo,
-    vnp_ReturnUrl: config.callback_url,
+    vnp_ReturnUrl: 'http://localhost:8888/order/vnpay_return',
     vnp_TxnRef: trans_id,
   };
   let vnpParams = sortObject(vnpCreateOrderReqDto);
-  const hmacinput = queryString.stringify(vnpParams, { encode: false });
+  const hmacinput = new URLSearchParams(vnpParams).toString();
   const mac: string = createHmac('sha512', config.key)
     .update(new Buffer(hmacinput, 'utf-8'))
     .digest('hex');
   vnpParams['vnp_SecureHash'] = mac;
-  vnpParams = queryString.stringify(vnpParams, { encode: false });
+  vnpParams = new URLSearchParams(vnpParams).toString();
   return `${config.create_order_endpoint}?${vnpParams}`;
 };
 function sortObject(obj) {

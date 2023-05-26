@@ -5,6 +5,7 @@ import {
   CheckoutReqDto,
   CreateTransReqDto,
   CreateTransResDto,
+  VNPCreateOrderResDto,
   VNPIpnUrlReqDto,
   ZPCheckoutResDto,
   ZPDataCallback,
@@ -58,12 +59,14 @@ export class TxnCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.TXN.VNP_CREATE_ORD)
   async vnpCreateOrder(
     @Payload() checkoutReqDto: CheckoutReqDto,
-  ): Promise<any> {
+  ): Promise<VNPCreateOrderResDto> {
     return await this.txnCrudService.vnpCreateOrder(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.VNP_CALLBACK)
-  async vnpCallback(@Payload() vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
+  async vnpCallback(
+    @Payload() vnpIpnUrlReqDto: VNPIpnUrlReqDto,
+  ): Promise<CreateTransResDto> {
     return await this.txnCrudService.vnpCallback(vnpIpnUrlReqDto);
   }
 }

@@ -29,6 +29,7 @@ import {
   UpdateUserResDto,
   UserDto,
   UsersCollectionProperties,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
@@ -239,7 +240,7 @@ export class UsersController implements OnModuleInit {
     @ATUser() user: unknown,
     @Body() checkoutReqDto: CheckoutReqDto,
     @Ip() ip: string,
-  ): Promise<ZPCheckoutResDto> {
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`checkout #${_id}`, checkoutReqDto);
     if (ip == '::1') ip = '127.0.0.1';
@@ -256,10 +257,9 @@ export class UsersController implements OnModuleInit {
     @Param('grId') grId: string,
     @Body() renewGrPkgReqDto: RenewGrPkgReqDto,
     @Ip() ip: string,
-  ): Promise<any> {
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`renew package in group #${_id}`, renewGrPkgReqDto);
-    if (ip == '::1') ip = '127.0.0.1';
     renewGrPkgReqDto._id = _id;
     renewGrPkgReqDto.ipAddr = ip;
     return this.usersService.renewPkg(renewGrPkgReqDto);

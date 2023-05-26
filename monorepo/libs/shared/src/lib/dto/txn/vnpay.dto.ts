@@ -8,6 +8,7 @@ import {
   IsUrl,
   Length,
 } from 'class-validator';
+import { BaseResDto } from '../base.dto';
 
 export class VNPCreateOrderReqDto {
   @ApiProperty({
@@ -108,6 +109,8 @@ export class VNPCreateOrderReqDto {
   @IsOptional()
   vnp_SecureHash?: string;
 }
+
+export class VNPCreateOrderResDto extends BaseResDto {}
 
 export class VNPIpnUrlReqDto extends PickType(VNPCreateOrderReqDto, [
   'vnp_TmnCode',

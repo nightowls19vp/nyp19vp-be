@@ -10,6 +10,7 @@ import {
 import { TxnService } from './txn.service';
 import {
   CreateTransReqDto,
+  CreateTransResDto,
   VNPIpnUrlReqDto,
   ZPCallbackReqDto,
   kafkaTopic,
@@ -41,7 +42,7 @@ export class TxnController implements OnModuleInit {
   }
 
   @Post('zalopay/callback')
-  zpCallback(@Body() req): Promise<any> {
+  zpCallback(@Body() req) {
     console.log(req);
     let callbackReqDto: ZPCallbackReqDto;
     if (typeof req === 'object') callbackReqDto = req;
@@ -50,7 +51,7 @@ export class TxnController implements OnModuleInit {
   }
 
   @Get('vnpay/vnpay_return')
-  vnpCallback(@Query() req): Promise<any> {
+  vnpCallback(@Query() req): Promise<CreateTransResDto> {
     console.log('Callback:', req);
     let vnpIpnUrlReqDto: VNPIpnUrlReqDto;
     if (typeof req === 'object') vnpIpnUrlReqDto = req;

@@ -23,6 +23,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -480,7 +481,9 @@ export class UsersCrudService {
       });
     }
   }
-  async checkout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+  async checkout(
+    checkoutReqDto: CheckoutReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     const { _id, cart, method, ipAddr } = checkoutReqDto;
     console.log(`User #${_id} checkout:`, cart, ipAddr);
     const mop = MOP.KEY[method.type];
@@ -521,7 +524,9 @@ export class UsersCrudService {
       });
     }
   }
-  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+  async renewPkg(
+    renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     const { _id, cart, group, ipAddr, method } = renewGrPkgReqDto;
     const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
     const mop = MOP.KEY[method.type];

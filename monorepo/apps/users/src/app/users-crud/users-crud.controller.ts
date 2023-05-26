@@ -24,6 +24,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
@@ -135,7 +136,7 @@ export class UsersCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
   checkout(
     @Payload() checkoutReqDto: CheckoutReqDto,
-  ): Promise<ZPCheckoutResDto> {
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     console.log('users-svc : checkout');
     return this.usersCrudService.checkout(checkoutReqDto);
   }
@@ -146,7 +147,9 @@ export class UsersCrudController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.USERS.RENEW_PKG)
-  renewPkg(@Payload() renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+  renewPkg(
+    @Payload() renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return this.usersCrudService.renewPkg(renewGrPkgReqDto);
   }
 }

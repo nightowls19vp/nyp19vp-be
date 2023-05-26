@@ -28,6 +28,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -241,7 +242,9 @@ export class UsersService {
       }
     });
   }
-  async checkout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
+  async checkout(
+    checkoutReqDto: CheckoutReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(checkoutReqDto))
@@ -282,7 +285,9 @@ export class UsersService {
       ),
     );
   }
-  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+  async renewPkg(
+    renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.RENEW_PKG, JSON.stringify(renewGrPkgReqDto))
