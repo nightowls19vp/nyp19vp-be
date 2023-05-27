@@ -27,7 +27,11 @@ export class DbService {
   ) {
     this.accountRepo.find().then((res) => {
       if (res.length === 0) {
+        console.log('init db');
+
         this.init();
+      } else {
+        console.log('db already init');
       }
     });
   }

@@ -3,8 +3,10 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
+  IsEmail,
   IsEnum,
   IsISO8601,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -199,4 +201,50 @@ export class UpdateGrPkgResDto extends BaseResDto {}
 
 export class CheckGrSUReqDto extends IdDto {
   user: string;
+}
+
+export class PkgGrInvReqDto {
+  @ApiProperty({
+    description: 'Group ID, mongo object id',
+    type: String,
+    required: true,
+  })
+  @IsNotEmpty()
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  grId: string;
+
+  @ApiProperty({
+    description: 'Emails of users to invite',
+    type: String,
+    isArray: true,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEmail(undefined, { each: true })
+  emails: string[];
+
+  // NOT show to swagger, retrieve by access token
+  addedBy?: string;
+
+  @ApiProperty({
+    name: 'feUrl',
+    type: String,
+    required: true,
+    description:
+      'The front end url point to FE that concat with token (e.g. `feUrl?token=xxx`)',
+    example: 'http://localhost:8080/pgk-mgmt/gr/join',
+  })
+  feUrl?: string;
+}
+
+export class PkgGrInvResDto extends BaseResDto {
+  @ApiProperty({
+    description: 'Emails of users failed to invite',
+    type: String,
+    isArray: true,
+    required: false,
+  })
+  data?: {
+    emailsFailed: string[];
+  };
 }
