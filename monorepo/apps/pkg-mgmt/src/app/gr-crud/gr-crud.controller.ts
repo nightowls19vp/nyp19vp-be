@@ -1,5 +1,5 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Inject } from '@nestjs/common';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { GrCrudService } from './gr-crud.service';
 import {
   AddGrMbReqDto,
@@ -30,7 +30,18 @@ import { Types } from 'mongoose';
 
 @Controller()
 export class GrCrudController {
-  constructor(private readonly grCrudService: GrCrudService) {}
+  constructor(
+    private readonly grCrudService: GrCrudService,
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
+    for (const key in kafkaTopic.USERS) {
+      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
+    }
+    await Promise.all([this.usersClient.connect()]);
+  }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR)
   createGr(@Payload() createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {

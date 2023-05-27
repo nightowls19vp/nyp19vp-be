@@ -1,5 +1,10 @@
 /* eslint-disable prefer-const */
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateGrReqDto,
@@ -22,6 +27,12 @@ import {
   ActivateGrPkgResDto,
   GrPkgDto,
   CheckGrSUReqDto,
+  GetGrDto,
+  GetGrDto_Pkg,
+  GetGrDto_Memb,
+  UserDto,
+  kafkaTopic,
+  IdDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -33,10 +44,14 @@ import {
 } from '@forlagshuset/nestjs-mongoose-paginate';
 import { SoftDeleteModel } from 'mongoose-delete';
 import { v4 } from 'uuid';
+import { ClientKafka } from '@nestjs/microservices';
+import { ObjectId } from 'mongodb';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class GrCrudService {
   constructor(
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
@@ -108,19 +123,61 @@ export class GrCrudService {
     console.log(`pkg-mgmt-svc#get-group #${id}`);
     return this.grModel
       .findById({ _id: id })
-      .then((res) => {
+      .then(async (res) => {
         if (res) {
+          const getGrDto_Pkgs: GetGrDto_Pkg[] = await Promise.all(
+            res.packages.map(async (elem) => {
+              const pkg: PackageDto = await this.pkgModel.findById({
+                _id: elem.package._id,
+              });
+              pkg.duration = elem.package.duration;
+              pkg.noOfMember = elem.package.noOfMember;
+              const packages: GetGrDto_Pkg = {
+                package: pkg,
+                startDate: elem.startDate
+                  ? new Date(elem.startDate)
+                  : undefined,
+                endDate: elem.endDate ? new Date(elem.endDate) : undefined,
+                status:
+                  elem.startDate && elem.endDate
+                    ? setStatus(elem.startDate, elem.endDate)
+                    : 'Not activated',
+              };
+              return packages;
+            }),
+          );
+          const getGrDto_Membs: GetGrDto_Memb[] = await Promise.all(
+            res.members.map(async (elem) => {
+              const user: UserDto = await firstValueFrom(
+                this.usersClient.send(
+                  kafkaTopic.USERS.GET_INFO_BY_ID,
+                  new ObjectId(elem.user),
+                ),
+              );
+              const users: GetGrDto_Memb = {
+                user: user,
+                role: elem.role,
+                addedBy: elem.addedBy,
+              };
+              return users;
+            }),
+          );
+          const group = mapGrSchemaToGetGrDto(
+            res,
+            getGrDto_Pkgs,
+            getGrDto_Membs,
+          );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get group #${id} successfully`,
-            group: mapGrSchemaToGrDto(res),
+            group: group,
           });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `No group #${id} found`,
             error: 'NOT FOUND',
-            group: mapGrSchemaToGrDto(res),
+            group: null,
           });
         }
       })
@@ -141,14 +198,59 @@ export class GrCrudService {
 
     return this.grModel
       .find({ members: { $elemMatch: query } })
-      .then((res) => {
+      .then(async (res) => {
         if (res) {
+          const groups: GetGrDto[] = await Promise.all(
+            res.map(async (gr) => {
+              const getGrDto_Pkgs: GetGrDto_Pkg[] = await Promise.all(
+                gr.packages.map(async (elem) => {
+                  const pkg: PackageDto = await this.pkgModel.findById({
+                    _id: elem.package._id,
+                  });
+                  pkg.duration = elem.package.duration;
+                  pkg.noOfMember = elem.package.noOfMember;
+                  const packages: GetGrDto_Pkg = {
+                    package: pkg,
+                    startDate: elem.startDate
+                      ? new Date(elem.startDate)
+                      : undefined,
+                    endDate: elem.endDate ? new Date(elem.endDate) : undefined,
+                    status:
+                      elem.startDate && elem.endDate
+                        ? setStatus(elem.startDate, elem.endDate)
+                        : 'Not activated',
+                  };
+                  return packages;
+                }),
+              );
+              const getGrDto_Membs: GetGrDto_Memb[] = await Promise.all(
+                gr.members.map(async (elem) => {
+                  const user: UserDto = await firstValueFrom(
+                    this.usersClient.send(
+                      kafkaTopic.USERS.GET_INFO_BY_ID,
+                      new ObjectId(elem.user),
+                    ),
+                  );
+                  const users: GetGrDto_Memb = {
+                    user: user,
+                    role: elem.role,
+                    addedBy: elem.addedBy,
+                  };
+                  return users;
+                }),
+              );
+              const group = mapGrSchemaToGetGrDto(
+                res,
+                getGrDto_Pkgs,
+                getGrDto_Membs,
+              );
+              return group;
+            }),
+          );
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get groups by userId #${user} successfully`,
-            groups: res.map((ele) => {
-              return mapGrSchemaToGrDto(ele);
-            }),
+            groups: groups,
           });
         } else {
           return Promise.resolve({
@@ -635,18 +737,18 @@ const addDays = (date: Date, days: number): Date => {
   result.setDate(result.getDate() + days);
   return result;
 };
-const mapGrSchemaToGrDto = (model: any): GroupDto => {
-  let packages = [];
-  for (const ele of model.packages) {
-    const pkg: PackageDto = ele.package;
-    packages.push(pkg);
-  }
-  let result = new GroupDto();
-  result._id = model._id;
-  result.name = model.name;
-  result.avatar = model.avatar;
-  result.packages = model.packages;
-  result.members = model.members;
+const mapGrSchemaToGetGrDto = (
+  model: any,
+  packages: GetGrDto_Pkg[],
+  members: GetGrDto_Memb[],
+): GetGrDto => {
+  const result: GetGrDto = {
+    _id: model._id,
+    name: model.name,
+    avatar: model.avatar,
+    packages: packages,
+    members: members,
+  };
   return result;
 };
 const maxDate = (dates: Date[]) => new Date(Math.max(...dates.map(Number)));

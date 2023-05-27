@@ -1,4 +1,9 @@
-import { ApiProperty, PickType, IntersectionType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  PickType,
+  IntersectionType,
+  OmitType,
+} from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
@@ -14,7 +19,8 @@ import {
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
-import { Items } from '../users/users-crud.dto';
+import { Items, UserDto } from '../users/users-crud.dto';
+import { PackageDto } from './pkg-crud.dto';
 
 export class MemberDto {
   @ApiProperty({
@@ -153,18 +159,31 @@ export class CreateGrReqDto {
 
 export class CreateGrResDto extends BaseResDto {}
 
+export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
+  package: PackageDto;
+}
+
+export class GetGrDto_Memb extends OmitType(MemberDto, ['user']) {
+  user: UserDto;
+}
+
+export class GetGrDto extends OmitType(GroupDto, ['packages', 'members']) {
+  packages: GetGrDto_Pkg[];
+  members: GetGrDto_Memb[];
+}
+
 export class GetGrResDto extends BaseResDto {
   @ApiProperty()
   @ValidateNested()
-  @Type(() => GroupDto)
-  group: GroupDto;
+  @Type(() => GetGrDto)
+  group: GetGrDto;
 }
 
 export class GetGrsByUserResDto extends BaseResDto {
   @ApiProperty()
   @ValidateNested({ each: true })
-  @Type(() => GroupDto)
-  groups: GroupDto[];
+  @Type(() => GetGrDto)
+  groups: GetGrDto[];
 }
 
 export class UpdateGrReqDto extends IntersectionType(
