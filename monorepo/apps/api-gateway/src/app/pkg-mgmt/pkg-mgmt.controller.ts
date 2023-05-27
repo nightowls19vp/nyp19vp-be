@@ -11,6 +11,7 @@ import {
   Query,
   UseGuards,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -51,6 +52,7 @@ import {
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
+  PkgGrInvReqDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -205,25 +207,33 @@ export class PkgMgmtController implements OnModuleInit {
     description: 'Join group by magic link',
     type: BaseResDto,
   })
-  @ApiQuery({ name: 'grId', type: String })
   @UseGuards(AccessJwtAuthGuard)
-  @Get('gr/inv')
+  @Post('gr/inv')
   invToJoinGr(
-    @Query('grId') grId: string,
+    @Body() reqDto: PkgGrInvReqDto,
     @ATUser() user: unknown,
   ): Promise<BaseResDto> {
-    console.log(`invite to join group #${grId}`);
+    console.log(
+      `invite ${JSON.stringify(reqDto.emails)} to join group #${
+        reqDto.grId
+      } by user #${user['userInfo']['_id']}`,
+    );
 
     if (isEmpty(user?.['userInfo']?.['_id'])) {
       throw new UnauthorizedException();
     }
 
-    // log
-    console.log(
-      `invite to join group #${grId} by user #${user['userInfo']['_id']}`,
-    );
+    reqDto.addedBy = user['userInfo']['_id'];
 
-    return this.pkgMgmtService.invToJoinGr(user['userInfo']['_id'], grId);
+    if (isEmpty(reqDto.emails)) {
+      throw new BadRequestException('No email to invite');
+    }
+
+    if (!reqDto.addedBy) {
+      throw new UnauthorizedException("Can't get user's id");
+    }
+
+    return this.pkgMgmtService.invToJoinGr(reqDto);
   }
 
   // join group by magic link

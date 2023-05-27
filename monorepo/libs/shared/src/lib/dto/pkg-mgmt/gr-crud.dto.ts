@@ -1,10 +1,17 @@
-import { ApiProperty, PickType, IntersectionType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  PickType,
+  IntersectionType,
+  OmitType,
+} from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
   IsArray,
   IsAscii,
+  IsEmail,
   IsEnum,
   IsISO8601,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -12,7 +19,8 @@ import {
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
-import { Items } from '../users/users-crud.dto';
+import { Items, UserDto } from '../users/users-crud.dto';
+import { PackageDto } from './pkg-crud.dto';
 
 export class MemberDto {
   @ApiProperty({
@@ -151,18 +159,31 @@ export class CreateGrReqDto {
 
 export class CreateGrResDto extends BaseResDto {}
 
+export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
+  package: PackageDto;
+}
+
+export class GetGrDto_Memb extends OmitType(MemberDto, ['user']) {
+  user: UserDto;
+}
+
+export class GetGrDto extends OmitType(GroupDto, ['packages', 'members']) {
+  packages: GetGrDto_Pkg[];
+  members: GetGrDto_Memb[];
+}
+
 export class GetGrResDto extends BaseResDto {
   @ApiProperty()
   @ValidateNested()
-  @Type(() => GroupDto)
-  group: GroupDto;
+  @Type(() => GetGrDto)
+  group: GetGrDto;
 }
 
 export class GetGrsByUserResDto extends BaseResDto {
   @ApiProperty()
   @ValidateNested({ each: true })
-  @Type(() => GroupDto)
-  groups: GroupDto[];
+  @Type(() => GetGrDto)
+  groups: GetGrDto[];
 }
 
 export class UpdateGrReqDto extends IntersectionType(
@@ -199,4 +220,50 @@ export class UpdateGrPkgResDto extends BaseResDto {}
 
 export class CheckGrSUReqDto extends IdDto {
   user: string;
+}
+
+export class PkgGrInvReqDto {
+  @ApiProperty({
+    description: 'Group ID, mongo object id',
+    type: String,
+    required: true,
+  })
+  @IsNotEmpty()
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  grId: string;
+
+  @ApiProperty({
+    description: 'Emails of users to invite',
+    type: String,
+    isArray: true,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEmail(undefined, { each: true })
+  emails: string[];
+
+  // NOT show to swagger, retrieve by access token
+  addedBy?: string;
+
+  @ApiProperty({
+    name: 'feUrl',
+    type: String,
+    required: true,
+    description:
+      'The front end url point to FE that concat with token (e.g. `feUrl?token=xxx`)',
+    example: 'http://localhost:8080/pgk-mgmt/gr/join',
+  })
+  feUrl?: string;
+}
+
+export class PkgGrInvResDto extends BaseResDto {
+  @ApiProperty({
+    description: 'Emails of users failed to invite',
+    type: String,
+    isArray: true,
+    required: false,
+  })
+  data?: {
+    emailsFailed: string[];
+  };
 }

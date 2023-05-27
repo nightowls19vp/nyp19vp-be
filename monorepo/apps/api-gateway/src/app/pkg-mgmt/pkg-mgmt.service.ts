@@ -37,6 +37,7 @@ import {
   UpdateAvatarResDto,
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
+  PkgGrInvReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -266,19 +267,8 @@ export class PkgMgmtService {
     });
   }
 
-  async invToJoinGr(
-    addedByUserInfoId: string,
-    grId: string,
-  ): Promise<BaseResDto> {
-    // log all params
-    console.log('addedByUserInfoId', addedByUserInfoId);
-    console.log('grId', grId);
-
-    const reqDto: AddGrMbReqDto = {
-      _id: grId,
-      addedBy: addedByUserInfoId,
-      user: null,
-    };
+  async invToJoinGr(reqDto: PkgGrInvReqDto): Promise<BaseResDto> {
+    console.log('reqDto', reqDto);
 
     const resDto = await firstValueFrom(
       this.authClient.send(
@@ -287,11 +277,7 @@ export class PkgMgmtService {
       ),
     );
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Invitation sent',
-      data: '/pkg-mgmt/gr/join?token=' + resDto,
-    };
+    return resDto;
   }
 
   async joinGr(userInfoId: string, token: string): Promise<BaseResDto> {
@@ -305,10 +291,16 @@ export class PkgMgmtService {
     console.log('decodeRes', decodeRes);
     decodeRes.user = userInfoId;
 
+    const payload: AddGrMbReqDto = {
+      _id: decodeRes['grId'] || null,
+      user: userInfoId || null,
+      addedBy: decodeRes['addedBy'] || null,
+    };
+
     return firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
-        JSON.stringify(decodeRes),
+        JSON.stringify(payload),
       ),
     );
   }

@@ -383,17 +383,18 @@ export class UsersCrudService {
                 _id: item.package,
                 name: pack.name,
                 duration: item.duration,
-                price:
+                price: Math.round(
                   item.duration >= 12
                     ? (pack.price +
                         (pack.coefficient ?? 0) *
                           (item.noOfMember - 2) *
                           item.duration) *
-                      0.7
+                        0.7
                     : pack.price +
-                      (pack.coefficient ?? 0) *
-                        (item.noOfMember - 2) *
-                        item.duration,
+                        (pack.coefficient ?? 0) *
+                          (item.noOfMember - 2) *
+                          item.duration,
+                ),
                 noOfMember: item.noOfMember,
                 coefficient: pack.coefficient,
                 description: pack.description,

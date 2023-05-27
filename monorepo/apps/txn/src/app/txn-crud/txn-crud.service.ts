@@ -405,6 +405,11 @@ export class TxnCrudService {
         message: 'Create order successfully',
         data: vnPayReq,
       });
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Package have been removed',
+      });
     }
   }
   async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
@@ -564,13 +569,14 @@ const mapPkgDtoToItemDto = (
     const item: ItemDto = {
       id: i.package,
       name: pack.name,
-      price:
+      price: Math.round(
         pack.duration >= 12
           ? (pack.price +
               (pack.coefficient ?? 0) * (i.noOfMember - 2) * i.duration) *
-            0.7
+              0.7
           : pack.price +
-            (pack.coefficient ?? 0) * (i.noOfMember - 2) * i.duration,
+              (pack.coefficient ?? 0) * (i.noOfMember - 2) * i.duration,
+      ),
       quantity: i.quantity,
       duration: i.duration ? i.duration : pack.duration,
       noOfMember: i.noOfMember ? i.noOfMember : pack.noOfMember,
@@ -734,7 +740,7 @@ const mapVNPCreateOrderReqDto = (
   const createDate: number = +moment(date)
     .tz('Asia/Ho_Chi_Minh')
     .format('YYYYMMDDHHmmss');
-  let orderInfo = `${user_id}`;
+  let orderInfo = `${user_id}#${JSON.stringify(items)}`;
   if (group_id) {
     orderInfo += `#${group_id}`;
   }
@@ -755,7 +761,7 @@ const mapVNPCreateOrderReqDto = (
   let vnpParams = sortObject(vnpCreateOrderReqDto);
   const hmacinput = new URLSearchParams(vnpParams).toString();
   const mac: string = createHmac('sha512', config.key)
-    .update(new Buffer(hmacinput, 'utf-8'))
+    .update(hmacinput)
     .digest('hex');
   vnpParams['vnp_SecureHash'] = mac;
   vnpParams = new URLSearchParams(vnpParams).toString();
