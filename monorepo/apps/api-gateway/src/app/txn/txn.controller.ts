@@ -1,10 +1,18 @@
-import { Controller, Post, Body, OnModuleInit, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  OnModuleInit,
+  Inject,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { TxnService } from './txn.service';
 import {
   CreateTransReqDto,
-  UpdateCartReqDto,
+  CreateTransResDto,
+  VNPIpnUrlReqDto,
   ZPCallbackReqDto,
-  ZPGetOrderStatusReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
@@ -34,11 +42,20 @@ export class TxnController implements OnModuleInit {
   }
 
   @Post('zalopay/callback')
-  zpCallback(@Body() req): any {
+  zpCallback(@Body() req) {
     console.log(req);
     let callbackReqDto: ZPCallbackReqDto;
     if (typeof req === 'object') callbackReqDto = req;
     else if (typeof req === 'string') callbackReqDto = JSON.parse(req);
     return this.txnService.zpCallback(callbackReqDto);
+  }
+
+  @Get('vnpay/vnpay_return')
+  vnpCallback(@Query() req): Promise<CreateTransResDto> {
+    console.log('Callback:', req);
+    let vnpIpnUrlReqDto: VNPIpnUrlReqDto;
+    if (typeof req === 'object') vnpIpnUrlReqDto = req;
+    else if (typeof req === 'string') vnpIpnUrlReqDto = JSON.parse(req);
+    return this.txnService.vnpCallback(vnpIpnUrlReqDto);
   }
 }

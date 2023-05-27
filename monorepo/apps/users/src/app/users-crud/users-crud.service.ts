@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   CartPackage,
   CheckGrSUReqDto,
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   Items,
+  MOP,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateAvatarResDto,
@@ -21,6 +23,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -437,40 +440,63 @@ export class UsersCrudService {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
     console.log(cart);
-    return await this.userModel
-      .findByIdAndUpdate(
-        { _id: _id },
-        { $addToSet: { trxHist: trx }, $pull: { cart: { $in: cart } } },
-      )
-      .then((res) => {
-        if (!res)
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user #${_id} found`,
-          });
-        else
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `updated user #${_id}'s cart successfully`,
-          });
-      })
-      .catch((error) => {
+    try {
+      const user = await this.userModel.findById({ _id: _id });
+
+      if (!user) {
         return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `No user #${_id} found`,
         });
+      } else {
+        user.trxHist.push(trx);
+        user.cart = user.cart.filter((elem) => {
+          if (
+            cart.some(
+              (item) =>
+                item.package == elem.package &&
+                item.quantity == elem.quantity &&
+                item.duration == elem.duration &&
+                item.noOfMember == elem.noOfMember,
+            )
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+
+        await user.save();
+
+        return {
+          statusCode: HttpStatus.OK,
+          message: `updated user #${_id}'s cart successfully`,
+          data: user,
+        };
+      }
+    } catch (error) {
+      return Promise.resolve({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
       });
+    }
   }
   async checkout(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
-    const { _id, cart } = updateCartReqDto;
-    console.log(`User #${_id} checkout:`, cart);
+    checkoutReqDto: CheckoutReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+    const { _id, cart, method, ipAddr } = checkoutReqDto;
+    console.log(`User #${_id} checkout:`, cart, ipAddr);
+    const mop = MOP.KEY[method.type];
     const checkExist = await this.userModel.findById({ _id: _id });
     if (checkExist) {
       const checkItem: boolean = cart.every((elem) =>
         checkExist.cart.some((value) => {
-          if (value.package == elem.package && value.quantity == elem.quantity)
+          if (
+            value.package == elem.package &&
+            value.quantity == elem.quantity &&
+            value.duration == elem.duration &&
+            value.noOfMember == elem.noOfMember
+          )
             return true;
           else return false;
         }),
@@ -478,7 +504,7 @@ export class UsersCrudService {
       if (checkItem) {
         return await firstValueFrom(
           this.txnClient
-            .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+            .send(mop[method.bank_code], checkoutReqDto)
             .pipe(timeout(5000)),
         );
       } else {
@@ -498,9 +524,12 @@ export class UsersCrudService {
       });
     }
   }
-  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
-    const { _id, cart, group } = renewGrPkgReqDto;
+  async renewPkg(
+    renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+    const { _id, cart, group, ipAddr, method } = renewGrPkgReqDto;
     const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
+    const mop = MOP.KEY[method.type];
     const isSU: boolean = await firstValueFrom(
       this.pkgClient.send(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU, checkGrSUReqDto),
     );
@@ -517,10 +546,16 @@ export class UsersCrudService {
         noOfMember: cart.noOfMember,
         duration: cart.duration,
       };
-      const updateCartReqDto: UpdateCartReqDto = { _id: _id, cart: [cartItem] };
+      const checkoutReqDto: CheckoutReqDto = {
+        _id: _id,
+        cart: [cartItem],
+        group: group,
+        ipAddr: ipAddr,
+        method: method,
+      };
       return await firstValueFrom(
         this.txnClient
-          .send(kafkaTopic.TXN.ZP_CREATE_ORD, updateCartReqDto)
+          .send(mop[method.bank_code], checkoutReqDto)
           .pipe(timeout(5000)),
       );
     }

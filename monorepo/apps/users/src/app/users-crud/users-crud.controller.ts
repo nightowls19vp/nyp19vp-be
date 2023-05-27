@@ -5,6 +5,7 @@ import {
 import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -23,6 +24,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
@@ -133,10 +135,10 @@ export class UsersCrudController implements OnModuleInit {
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
   checkout(
-    @Payload() updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
+    @Payload() checkoutReqDto: CheckoutReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     console.log('users-svc : checkout');
-    return this.usersCrudService.checkout(updateCartReqDto);
+    return this.usersCrudService.checkout(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.SEARCH_USER)
@@ -145,7 +147,9 @@ export class UsersCrudController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.USERS.RENEW_PKG)
-  renewPkg(@Payload() renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+  renewPkg(
+    @Payload() renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return this.usersCrudService.renewPkg(renewGrPkgReqDto);
   }
 }

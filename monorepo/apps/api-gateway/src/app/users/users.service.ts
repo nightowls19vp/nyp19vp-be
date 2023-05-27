@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  CheckoutReqDto,
   CreateUserReqDto,
   CreateUserResDto,
   GetCartResDto,
@@ -27,6 +28,7 @@ import {
   UpdateUserReqDto,
   UpdateUserResDto,
   UserDto,
+  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -241,11 +243,11 @@ export class UsersService {
     });
   }
   async checkout(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<ZPCheckoutResDto> {
+    checkoutReqDto: CheckoutReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(updateCartReqDto))
+        .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(checkoutReqDto))
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -283,7 +285,9 @@ export class UsersService {
       ),
     );
   }
-  async renewPkg(renewGrPkgReqDto: RenewGrPkgReqDto): Promise<any> {
+  async renewPkg(
+    renewGrPkgReqDto: RenewGrPkgReqDto,
+  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.RENEW_PKG, JSON.stringify(renewGrPkgReqDto))

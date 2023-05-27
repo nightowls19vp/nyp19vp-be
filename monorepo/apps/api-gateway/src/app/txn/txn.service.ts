@@ -1,6 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, RequestTimeoutException } from '@nestjs/common';
 import {
   CreateTransReqDto,
+  VNPIpnUrlReqDto,
   ZPCallbackReqDto,
   ZPDataCallback,
   kafkaTopic,
@@ -8,15 +9,15 @@ import {
 import { createHmac } from 'crypto';
 import { zpconfig } from '../core/config/zalopay.config';
 import { ClientKafka } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class TxnService {
   constructor(
     @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka
+    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
   ) {}
-  async zpCallback(callbackReqDto: ZPCallbackReqDto): Promise<any> {
+  async zpCallback(callbackReqDto: ZPCallbackReqDto) {
     try {
       const dataStr = callbackReqDto.data;
       const reqMac = callbackReqDto.mac;
@@ -36,11 +37,11 @@ export class TxnService {
         } else if (typeof dataStr === 'string') {
           zpDataCallback = JSON.parse(dataStr);
         }
-        const res = await firstValueFrom(
+        await firstValueFrom(
           this.txnClient.send(
             kafkaTopic.TXN.ZP_CREATE_TRANS,
-            JSON.stringify(zpDataCallback)
-          )
+            JSON.stringify(zpDataCallback),
+          ),
         );
         return JSON.stringify({
           return_code: 1,
@@ -56,10 +57,26 @@ export class TxnService {
   }
   async zpGetStatus(createTransReqDto: CreateTransReqDto): Promise<any> {
     return await firstValueFrom(
-      this.txnClient.send(
-        kafkaTopic.TXN.ZP_GET_STT,
-        JSON.stringify(createTransReqDto)
-      )
+      this.txnClient
+        .send(kafkaTopic.TXN.ZP_GET_STT, JSON.stringify(createTransReqDto))
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    );
+  }
+  async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
+    return await firstValueFrom(
+      this.txnClient
+        .send(kafkaTopic.TXN.VNP_CALLBACK, JSON.stringify(vnpIpnUrlReqDto))
+        .pipe(
+          timeout(3000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
     );
   }
 }

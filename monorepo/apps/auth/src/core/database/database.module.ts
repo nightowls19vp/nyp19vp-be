@@ -30,4 +30,4 @@ console.log({
     }),
   ],
 })
-export class DataBaseModule {}
+export class DataBaseModule { }
