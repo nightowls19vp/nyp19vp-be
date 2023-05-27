@@ -37,6 +37,7 @@ import { RoleEntity } from '../entities/role.entity';
 import { TokenEntity } from '../entities/token.entity';
 import { sendMailWithRetries } from '../utils/mail';
 import { AccountService } from './account.service';
+import ms from 'ms';
 
 @Injectable()
 export class AuthService {
@@ -320,7 +321,6 @@ export class AuthService {
       const payload: PkgGrInvReqDto = {
         ...reqDto,
         emails: [email],
-        feUrl: undefined,
       };
 
       return this.jwtService.sign(payload, {
@@ -329,12 +329,15 @@ export class AuthService {
       });
     });
 
+    console.log('tokenList', tokenList);
+
     const hashTokenList = tokenList.map((token) => {
       return crypto.createHash('sha256').update(token, 'utf-8').digest('hex');
     });
 
     let tokenInsList = hashTokenList.map((hashToken) => {
       return this.tokenRepo.create({
+        leftTime: 1,
         hashToken: hashToken,
         expiredAt: moment()
           .add(
@@ -348,6 +351,8 @@ export class AuthService {
     try {
       tokenInsList = await this.tokenRepo.save(tokenInsList);
     } catch (error) {
+      console.error('error', error);
+
       throw new RpcException(error);
     }
 
@@ -361,6 +366,8 @@ export class AuthService {
       );
     } catch (error) {
       console.error('error', error);
+
+      throw new RpcException(error);
     }
 
     // retrieve group info
@@ -373,13 +380,15 @@ export class AuthService {
       );
     } catch (error) {
       console.error('error', error);
+
+      throw new RpcException(error);
     }
 
     // for each email, send email with token
-    const res: unknown[] = await Promise.all([
+    const res: (false | unknown)[] = await Promise.all([
       reqDto.emails.map(async (email, index) => {
         const tokenIns = tokenInsList[index];
-        const url = `${reqDto.feUrl}?token=${tokenIns.hashToken}`;
+        const url = `${reqDto.feUrl}?token=${tokenList[index]}`;
 
         await sendMailWithRetries(this.mailerService, {
           to: email,
@@ -390,6 +399,12 @@ export class AuthService {
             groupName: grResDto.group.name,
             url: url,
             code: tokenIns.id,
+            expiredTime: ms(
+              ms(config.auth.strategies.strategyConfig.joinGroupJwtTtl),
+              {
+                long: true,
+              },
+            ),
           },
         });
       }),
@@ -403,7 +418,7 @@ export class AuthService {
       statusCode: HttpStatus.OK,
       message: 'Generate join group token successfully',
       data: {
-        emailsFailed: emailsFailed,
+        emailsFailed: emailsFailed.filter((item) => item !== null),
       },
     };
   }
@@ -416,6 +431,37 @@ export class AuthService {
     });
 
     console.log('verify result', result);
+
+    const tokenIns = await this.tokenRepo.findOne({
+      where: {
+        hashToken: crypto
+          .createHash('sha256')
+          .update(reqDto.token)
+          .digest('hex'),
+      },
+    });
+
+    if (!tokenIns) {
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Token not found',
+      });
+    } else {
+      if (tokenIns.leftTime <= 0) {
+        throw new RpcException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Token expired',
+        });
+      }
+      // delete token if 1 time left
+      else if (tokenIns.leftTime === 1) {
+        await this.tokenRepo.delete(tokenIns.id);
+      } else {
+        // update token
+        tokenIns.leftTime -= 1;
+        await this.tokenRepo.save(tokenIns);
+      }
+    }
 
     return result;
   }

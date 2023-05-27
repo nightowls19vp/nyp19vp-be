@@ -11,6 +11,7 @@ import {
   Query,
   UseGuards,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -206,19 +207,10 @@ export class PkgMgmtController implements OnModuleInit {
     description: 'Join group by magic link',
     type: BaseResDto,
   })
-  @ApiQuery({
-    name: 'feUrl',
-    type: String,
-    required: true,
-    description:
-      'The front end url point to FE that concat with token (e.g. `feUrl?token=xxx`)',
-    example: 'http://localhost:8080/pgk-mgmt/gr/join',
-  })
   @UseGuards(AccessJwtAuthGuard)
   @Post('gr/inv')
   invToJoinGr(
     @Body() reqDto: PkgGrInvReqDto,
-    @Query('feUrl') feUrl: string,
     @ATUser() user: unknown,
   ): Promise<BaseResDto> {
     console.log(
@@ -231,7 +223,17 @@ export class PkgMgmtController implements OnModuleInit {
       throw new UnauthorizedException();
     }
 
-    return this.pkgMgmtService.invToJoinGr();
+    reqDto.addedBy = user['userInfo']['_id'];
+
+    if (isEmpty(reqDto.emails)) {
+      throw new BadRequestException('No email to invite');
+    }
+
+    if (!reqDto.addedBy) {
+      throw new UnauthorizedException("Can't get user's id");
+    }
+
+    return this.pkgMgmtService.invToJoinGr(reqDto);
   }
 
   // join group by magic link

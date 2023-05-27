@@ -5,18 +5,18 @@ export const sendMailWithRetries = async (
   opt: ISendMailOptions,
   retries = 10,
 ): Promise<boolean | unknown> => {
-  console.log('sendMail ' + retries, JSON.stringify(opt));
-
   if (retries <= 0) {
     console.error('sendMail  FAILED');
 
     return false;
   }
   try {
+    console.log(
+      `sendMailWithRetries, ${retries} times left, from ${opt.from} to ${opt.to}`,
+    );
+
     return mailService.sendMail(opt);
   } catch (error) {
-    console.error('sendMail error', error);
-
     retries--;
     return sendMailWithRetries(mailService, opt, retries);
   }

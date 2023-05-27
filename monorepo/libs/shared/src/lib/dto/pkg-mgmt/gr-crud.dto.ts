@@ -203,7 +203,7 @@ export class CheckGrSUReqDto extends IdDto {
   user: string;
 }
 
-export class PkgGrInvReqDto extends PickType(MemberDto, ['addedBy']) {
+export class PkgGrInvReqDto {
   @ApiProperty({
     description: 'Group ID, mongo object id',
     type: String,
@@ -226,6 +226,25 @@ export class PkgGrInvReqDto extends PickType(MemberDto, ['addedBy']) {
   // NOT show to swagger, retrieve by access token
   addedBy?: string;
 
-  // NOT show to swagger, pass by query string
+  @ApiProperty({
+    name: 'feUrl',
+    type: String,
+    required: true,
+    description:
+      'The front end url point to FE that concat with token (e.g. `feUrl?token=xxx`)',
+    example: 'http://localhost:8080/pgk-mgmt/gr/join',
+  })
   feUrl?: string;
+}
+
+export class PkgGrInvResDto extends BaseResDto {
+  @ApiProperty({
+    description: 'Emails of users failed to invite',
+    type: String,
+    isArray: true,
+    required: false,
+  })
+  data?: {
+    emailsFailed: string[];
+  };
 }

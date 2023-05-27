@@ -4,6 +4,7 @@ import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import {
   AddGrMbReqDto,
+  BaseResDto,
   CreateAccountReqDto,
   CreateAccountResDto,
   kafkaTopic,
@@ -41,6 +42,7 @@ export class AuthController implements OnModuleInit {
     private readonly actionService: ActionService,
     private readonly refreshTokenBlacklistService: RefreshTokenBlacklistService,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -49,6 +51,10 @@ export class AuthController implements OnModuleInit {
       this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
     }
     await Promise.all([this.usersClient.connect()]);
+
+    this.pkgMgmtClient.subscribeToResponseOf(
+      kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID,
+    );
   }
 
   @Get()
@@ -112,7 +118,12 @@ export class AuthController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN)
-  async genJoinGrToken(@Payload() reqDto: PkgGrInvReqDto): Promise<string> {
+  async genJoinGrToken(@Payload() reqDto: PkgGrInvReqDto): Promise<BaseResDto> {
+    console.log(
+      'MessagePattern(kafkaTopic.AUTH.GENERATE_JOIN_GR_TOKEN) ',
+      reqDto,
+    );
+
     return this.authService.genJoinGrToken(reqDto);
   }
 
