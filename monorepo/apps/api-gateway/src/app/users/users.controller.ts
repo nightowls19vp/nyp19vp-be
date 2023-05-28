@@ -261,6 +261,7 @@ export class UsersController implements OnModuleInit {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`renew package in group #${_id}`, renewGrPkgReqDto);
     renewGrPkgReqDto._id = _id;
+    renewGrPkgReqDto.group = grId;
     renewGrPkgReqDto.ipAddr = ip;
     return this.usersService.renewPkg(renewGrPkgReqDto);
   }

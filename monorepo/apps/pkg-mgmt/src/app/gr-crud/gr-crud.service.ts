@@ -700,40 +700,6 @@ export class GrCrudService {
       });
     }
   }
-  // async renewPkg(
-  //   renewGrPkgReqDto: RenewGrPkgReqDto,
-  // ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
-  //   const { _id, cart, user, ipAddr, method } = renewGrPkgReqDto;
-  //   const checkGrSUReqDto: CheckGrSUReqDto = { _id: _id, user: user };
-  //   const mop = MOP.KEY[method.type];
-  //   const isSU = this.checkGrSU(checkGrSUReqDto);
-  //   if (!isSU) {
-  //     return Promise.resolve({
-  //       statusCode: HttpStatus.UNAUTHORIZED,
-  //       message: `User #${_id} is not Super User. Only Super User can renew or upgrade package`,
-  //       error: 'UNAUTHORIZED',
-  //     });
-  //   } else {
-  //     const cartItem: Items = {
-  //       package: cart.package,
-  //       quantity: 1,
-  //       noOfMember: cart.noOfMember,
-  //       duration: cart.duration,
-  //     };
-  //     const checkoutReqDto: CheckoutReqDto = {
-  //       _id: user,
-  //       cart: [cartItem],
-  //       group: _id,
-  //       ipAddr: ipAddr,
-  //       method: method,
-  //     };
-  //     return await firstValueFrom(
-  //       this.txnClient
-  //         .send(mop[method.bank_code], checkoutReqDto)
-  //         .pipe(timeout(5000)),
-  //     );
-  //   }
-  // }
   async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     const { _id, user } = checkGrSUReqDto;
     const isSU = await this.grModel.findOne({
