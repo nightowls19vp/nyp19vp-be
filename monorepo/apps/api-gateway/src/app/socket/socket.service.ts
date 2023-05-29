@@ -30,6 +30,6 @@ export class SocketService {
   }
 
   checkout_callback(client, data): any {
-    this.server.emit('checkout_callback', data);
+    client.emit('checkout_callback', data);
   }
 }
