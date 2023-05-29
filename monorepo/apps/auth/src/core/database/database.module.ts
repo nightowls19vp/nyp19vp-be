@@ -2,17 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dbCfg } from './database.config';
 
-console.log({
-  type: 'mysql',
-  host: dbCfg.host,
-  port: parseInt(dbCfg.port),
-  username: dbCfg.username,
-  password: dbCfg.password,
-  database: dbCfg.database,
-  entities: [],
-  autoLoadEntities: true,
-  synchronize: true,
-});
+console.log('dbCfg', dbCfg);
 
 @Module({
   imports: [
@@ -25,9 +15,9 @@ console.log({
       database: dbCfg.database,
       entities: [],
       autoLoadEntities: true,
-      synchronize: true,
-      logging: false,
+      synchronize: dbCfg.synchronize,
+      logging: dbCfg.logging,
     }),
   ],
 })
-export class DataBaseModule { }
+export class DataBaseModule {}

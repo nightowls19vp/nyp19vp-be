@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 
 import { AppModule } from './app/app.module';
 
@@ -20,7 +19,7 @@ async function bootstrap() {
           brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
         },
         consumer: {
-          groupId: 'prog-mgmt-consumer' + randomUUID(),
+          groupId: 'prog-mgmt-consumer',
         },
       },
     },

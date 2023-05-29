@@ -75,3 +75,38 @@ export const TXN = {
   VNP_CALLBACK: 'vnpayReturnUrl',
   VNP_IPN: 'vnpayIpnUrl',
 };
+
+export const PROD_MGMT = {
+  init: 'prod_mgmt_init', // create group with group id and package id
+
+  create_product: 'prod_mgmt_create_product',
+  update_product: 'prod_mgmt_update_product',
+  delete_product: 'prod_mgmt_delete_product',
+  restore_product: 'prod_mgmt_restore_product',
+  get_paginated_products: 'prod_mgmt_get_paginated_products',
+
+  create_group_product: 'prod_mgmt_create_group_product',
+  update_group_product: 'prod_mgmt_update_group_product',
+  delete_group_product: 'prod_mgmt_delete_group_product',
+  restore_group_product: 'prod_mgmt_restore_group_product',
+  get_paginated_group_products: 'prod_mgmt_get_paginated_group_products',
+
+  create_storage_location: 'prod_mgmt_create_storage_location',
+  update_storage_location: 'prod_mgmt_update_storage_location',
+  delete_storage_location: 'prod_mgmt_delete_storage_location',
+  restore_storage_location: 'prod_mgmt_restore_storage_location',
+  get_paginated_storage_locations: 'prod_mgmt_get_paginated_storage_locations',
+
+  create_purchase_location: 'prod_mgmt_create_purchase_location',
+  update_purchase_location: 'prod_mgmt_update_purchase_location',
+  delete_purchase_location: 'prod_mgmt_delete_purchase_location',
+  restore_purchase_location: 'prod_mgmt_restore_purchase_location',
+  get_paginated_purchase_locations:
+    'prod_mgmt_get_paginated_purchase_locations',
+
+  create_item: 'prod_mgmt_create_item',
+  update_item: 'prod_mgmt_update_item',
+  delete_item: 'prod_mgmt_delete_item',
+  restore_item: 'prod_mgmt_restore_item',
+  get_paginated_items: 'prod_mgmt_get_paginated_items',
+};
