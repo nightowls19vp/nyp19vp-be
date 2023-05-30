@@ -18,71 +18,41 @@ export class ProductEntity {
 
   @Column({
     name: 'name',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    default: '',
   })
   name: string;
 
   @Column({
     name: 'image',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   image: string;
 
   @Column({
     name: 'barcode',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    unique: true,
-    nullable: true,
-    default: null,
   })
   barcode: string;
 
   @Column({
     name: 'price',
-    nullable: true,
-    default: null,
   })
   price: number;
 
   @Column({
     name: 'region',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   region: string;
 
   @Column({
     name: 'brand',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   brand: string;
 
   @Column({
     name: 'category',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   category: string;
 
   @Column({
     name: 'description',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   description: string;
 

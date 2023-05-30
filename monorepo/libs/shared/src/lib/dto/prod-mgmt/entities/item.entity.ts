@@ -78,8 +78,6 @@ export class ItemEntity {
     name: 'unit',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   unit: string;
 
@@ -87,8 +85,6 @@ export class ItemEntity {
     name: 'image',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   image: string;
 

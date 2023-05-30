@@ -84,6 +84,7 @@ export const PROD_MGMT = {
   delete_product: 'prod_mgmt_delete_product',
   restore_product: 'prod_mgmt_restore_product',
   get_paginated_products: 'prod_mgmt_get_paginated_products',
+  get_product_by_barcode: 'prod_mgmt_get_product_by_barcode',
 
   create_group_product: 'prod_mgmt_create_group_product',
   update_group_product: 'prod_mgmt_update_group_product',

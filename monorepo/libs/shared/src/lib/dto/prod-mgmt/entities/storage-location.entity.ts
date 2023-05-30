@@ -1,13 +1,12 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { GroupEntity } from './group.entity';
-import { AddressEmbeddedEntity } from './address.embedded.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 import { ItemEntity } from './item.entity';
 
 @Entity({
-  name: 'purchase_locations',
+  name: 'storage_locations',
 })
-export class PurchaseLocationEntity {
+export class StorageLocationEntity {
   @PrimaryColumn({
     name: 'id',
     type: 'uuid',
@@ -17,10 +16,13 @@ export class PurchaseLocationEntity {
   })
   id: string;
 
-  @ManyToOne(() => GroupEntity, (group) => group.purchaseLocations, {
+  @ManyToOne(() => GroupEntity, (group) => group.storageLocations, {
     nullable: false,
     onDelete: 'CASCADE',
     eager: true,
+  })
+  @JoinColumn({
+    name: 'group_id',
   })
   group: GroupEntity;
 
@@ -28,8 +30,6 @@ export class PurchaseLocationEntity {
     name: 'name',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,   
   })
   name: string;
 
@@ -38,23 +38,30 @@ export class PurchaseLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     comment: 'user info id - mongo id',
-    nullable: true,
-    default: null,   
   })
   addedBy: string;
 
-  @OneToMany(() => ItemEntity, (item) => item.purchaseLocation, {
+  @Column({
+    name: 'image',
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+  })
+  image: string;
+
+  @Column({
+    name: 'description',
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+  })
+  description: string;
+
+  @ManyToOne(() => ItemEntity, (item) => item.storageLocation, {
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     lazy: true,
   })
   items: Promise<ItemEntity[]>;
-
-  @Column(() => AddressEmbeddedEntity, {
-    prefix: false,
-  })
-  address: AddressEmbeddedEntity;
 
   @Column(() => TimestampEmbeddedEntity, {
     prefix: false,

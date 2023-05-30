@@ -29,8 +29,6 @@ export class GroupEntity {
     name: 'package_mongo_id',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
   })
   packageMongoId: string;
 

@@ -30,6 +30,8 @@ export class StorageLocationEntity {
     name: 'name',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
+    nullable: true,
+    default: null,   
   })
   name: string;
 
@@ -38,6 +40,8 @@ export class StorageLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     comment: 'user info id - mongo id',
+    nullable: true,
+    default: null,   
   })
   addedBy: string;
 
@@ -45,6 +49,8 @@ export class StorageLocationEntity {
     name: 'image',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
+    nullable: true,
+    default: null,   
   })
   image: string;
 
@@ -52,6 +58,8 @@ export class StorageLocationEntity {
     name: 'description',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
+    nullable: true,
+    default: null,   
   })
   description: string;
 

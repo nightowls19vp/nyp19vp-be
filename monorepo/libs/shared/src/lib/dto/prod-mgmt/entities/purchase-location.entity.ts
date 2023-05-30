@@ -28,8 +28,6 @@ export class PurchaseLocationEntity {
     name: 'name',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,   
   })
   name: string;
 
@@ -38,8 +36,6 @@ export class PurchaseLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     comment: 'user info id - mongo id',
-    nullable: true,
-    default: null,   
   })
   addedBy: string;
 
