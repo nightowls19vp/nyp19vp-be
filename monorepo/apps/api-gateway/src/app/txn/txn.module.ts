@@ -7,12 +7,17 @@ import { randomUUID } from 'crypto';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+import { SocketModule } from '../socket/socket.module';
+import { CommModule } from '../comm/comm.module';
+import { SocketService } from '../socket/socket.service';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
 
 @Module({
   imports: [
+    SocketModule,
+    CommModule,
     ClientsModule.register([
       {
         name: 'TXN_SERVICE',
@@ -30,6 +35,10 @@ dotenv.config({
     ]),
   ],
   controllers: [TxnController],
-  providers: [TxnService, { provide: 'ZALOPAY_CONFIG', useValue: zpconfig }],
+  providers: [
+    TxnService,
+    { provide: 'ZALOPAY_CONFIG', useValue: zpconfig },
+    SocketService,
+  ],
 })
 export class TxnModule {}
