@@ -1,59 +1,28 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
-import { GroupEntity } from './group.entity';
-import { AddressEmbeddedEntity } from './address.embedded.entity';
+import { GroupDto_prod } from './group.entity';
+import { AddressEmbeddedDto } from './address.embedded.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
-import { ItemEntity } from './item.entity';
+import { ItemDto } from './item.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
-@Entity({
-  name: 'purchase_locations',
-})
-export class PurchaseLocationEntity {
-  @PrimaryColumn({
-    name: 'id',
-    type: 'uuid',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    generated: 'uuid',
-  })
+export class PurchaseLocationDto {
+  @ApiProperty()
   id: string;
 
-  @ManyToOne(() => GroupEntity, (group) => group.purchaseLocations, {
-    nullable: false,
-    onDelete: 'CASCADE',
-    eager: true,
-  })
-  group: GroupEntity;
+  @ApiProperty()
+  group: GroupDto_prod;
 
-  @Column({
-    name: 'name',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
+  @ApiProperty()
   name: string;
 
-  @Column({
-    name: 'added_by',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    comment: 'user info id - mongo id',
-  })
+  @ApiProperty()
   addedBy: string;
 
-  @OneToMany(() => ItemEntity, (item) => item.purchaseLocation, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    lazy: true,
-  })
-  items: Promise<ItemEntity[]>;
+  @ApiProperty()
+  items: Promise<ItemDto[]>;
 
-  @Column(() => AddressEmbeddedEntity, {
-    prefix: false,
-  })
-  address: AddressEmbeddedEntity;
+  @ApiProperty()
+  address: AddressEmbeddedDto;
 
-  @Column(() => TimestampEmbeddedEntity, {
-    prefix: false,
-  })
+  @ApiProperty()
   timestamp: TimestampEmbeddedEntity;
 }

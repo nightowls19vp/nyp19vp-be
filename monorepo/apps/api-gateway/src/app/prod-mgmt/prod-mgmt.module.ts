@@ -3,6 +3,7 @@ import { ProdMgmtService } from './services/prod-mgmt.service';
 import { ProdMgmtController } from './prod-mgmt.controller';
 import { ProductService } from './services/products.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { LocationService } from './services/location.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   controllers: [ProdMgmtController],
-  providers: [ProdMgmtService, ProductService],
+  providers: [ProdMgmtService, ProductService, LocationService],
 })
 export class ProdMgmtModule {}

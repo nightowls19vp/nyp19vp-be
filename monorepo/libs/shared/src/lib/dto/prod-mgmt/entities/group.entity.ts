@@ -1,71 +1,30 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
+import { GroupProductDto } from './group-product.entity';
+import { PurchaseLocationDto } from './purchase-location.entity';
+import { StorageLocationDto } from './storage-location.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
-import { GroupProductEntity } from './group-product.entity';
-import { PurchaseLocationEntity } from './purchase-location.entity';
-import { StorageLocationEntity } from './storage-location.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({
   name: 'groups',
 })
-export class GroupEntity {
-  @PrimaryColumn({
-    name: 'id',
-    type: 'uuid',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    generated: 'uuid',
-  })
+export class GroupDto_prod {
+  @ApiProperty()
   id: string;
 
-  @Column({
-    name: 'group_mongo_id',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
+  @ApiProperty()
   groupMongoId: string;
 
-  @Column({
-    name: 'package_mongo_id',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
-  packageMongoId: string;
+  @ApiProperty()
+  groupProducts: Promise<GroupProductDto[]>;
 
-  @OneToMany(() => GroupProductEntity, (groupProduct) => groupProduct.group, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    lazy: true,
-  })
-  groupProducts: Promise<GroupProductEntity[]>;
+  @ApiProperty()
+  purchaseLocations: Promise<PurchaseLocationDto[]>;
 
-  @OneToMany(
-    () => PurchaseLocationEntity,
-    (purchaseLocation) => purchaseLocation.group,
-    {
-      cascade: true,
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
-      lazy: true,
-    },
-  )
-  purchaseLocations: Promise<PurchaseLocationEntity[]>;
+  @ApiProperty()
+  storageLocations: Promise<StorageLocationDto[]>;
 
-  @OneToMany(
-    () => StorageLocationEntity,
-    (storageLocation) => storageLocation.group,
-    {
-      cascade: true,
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
-      lazy: true,
-    },
-  )
-  storageLocations: Promise<StorageLocationEntity[]>;
-
-  @Column(() => TimestampEmbeddedEntity, {
-    prefix: false,
-  })
+  @ApiProperty()
   timestamp: TimestampEmbeddedEntity;
 }

@@ -10,7 +10,7 @@ import {
   GetProductByBarcodeResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import ms from 'ms';
-import { ProductEntity } from 'libs/shared/src/lib/dto/prod-mgmt/entities/product.entity';
+import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/entities/product.entity';
 
 @Injectable()
 export class ProductService implements OnModuleInit {
@@ -88,7 +88,7 @@ export class ProductService implements OnModuleInit {
         .text()
         .trim();
 
-      const productInfo: ProductEntity = {
+      const productInfo: ProductDto = {
         id: undefined,
         barcode: ean,
         name: productName,
@@ -174,10 +174,10 @@ export class ProductService implements OnModuleInit {
     }
   }
 
-  private async createProduct(product: ProductEntity): Promise<ProductEntity> {
+  private async createProduct(product: ProductDto): Promise<ProductDto> {
     console.log('createProduct', product);
 
-    const payload: ProductEntity = {
+    const payload: ProductDto = {
       ...product,
     };
 

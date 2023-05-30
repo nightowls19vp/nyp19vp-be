@@ -25,15 +25,6 @@ export class GroupEntity {
   })
   groupMongoId: string;
 
-  @Column({
-    name: 'package_mongo_id',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
-  })
-  packageMongoId: string;
-
   @OneToMany(() => GroupProductEntity, (groupProduct) => groupProduct.group, {
     cascade: true,
     onDelete: 'CASCADE',

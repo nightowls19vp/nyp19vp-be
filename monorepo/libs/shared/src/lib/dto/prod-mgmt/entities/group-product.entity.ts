@@ -1,86 +1,24 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
-
-import { GroupEntity } from './group.entity';
-import { ProductEntity } from './product.entity';
+import { GroupDto_prod } from './group.entity';
+import { ProductDto } from './product.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
-import { ItemEntity } from './item.entity';
+import { ItemDto } from './item.entity';
 
-@Entity({
-  name: 'group_products',
-})
-export class GroupProductEntity {
-  @PrimaryColumn({
-    name: 'id',
-    type: 'uuid',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    generated: 'uuid',
-  })
+export class GroupProductDto {
   id: string;
 
-  @ManyToOne(() => GroupEntity, (group) => group.groupProducts, {
-    nullable: false,
-    onDelete: 'CASCADE',
-    eager: true,
-  })
-  @JoinColumn({
-    name: 'group_id',
-  })
-  group: GroupEntity;
+  group: GroupDto_prod;
 
-  @ManyToOne(() => ProductEntity, (product) => product.groupProducts, {
-    nullable: false,
-    onDelete: 'CASCADE',
-    eager: true,
-  })
-  @JoinColumn({
-    name: 'product_id',
-  })
-  product: ProductEntity;
+  product: ProductDto;
 
-  @Column({
-    name: 'custom_name',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
   customName: string;
 
-  @Column({
-    name: 'custom_image',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
   customImage: string;
 
-  @Column({
-    name: 'custom_price',
-  })
   customPrice: number;
 
-  @Column({
-    name: 'custom_description',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
   customDescription: string;
 
-  @Column(() => TimestampEmbeddedEntity, {
-    prefix: false,
-  })
   timestamp: TimestampEmbeddedEntity;
 
-  @OneToMany(() => ItemEntity, (item) => item.groupProduct, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    lazy: true,
-  })
-  items: Promise<ItemEntity[]>;
+  items: Promise<ItemDto[]>;
 }

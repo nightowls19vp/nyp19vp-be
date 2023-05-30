@@ -24,7 +24,6 @@ export class GroupsService {
     if (!group) {
       const newGroup = this.groupRepo.create({
         groupMongoId: data.groupMongoId,
-        packageMongoId: data.packageMongoId,
       });
 
       await this.groupRepo.save(newGroup);
@@ -33,15 +32,6 @@ export class GroupsService {
         statusCode: HttpStatus.CREATED,
         message: 'Create new group successfully',
         data: newGroup,
-      };
-    } else {
-      group.packageMongoId = data.packageMongoId;
-      await this.groupRepo.save(group);
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Update group successfully',
-        data: group,
       };
     }
   }
