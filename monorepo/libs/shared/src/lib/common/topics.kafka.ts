@@ -3,6 +3,7 @@ export const HEALT_CHECK = {
   USERS: 'HC_USER',
   PACKAGE_MGMT: 'HC_PACKAGE_MGMT',
   TXN: 'HC_TXN',
+  COMM: 'HC_COMM',
 };
 
 export const AUTH = {
@@ -74,4 +75,10 @@ export const TXN = {
   VNP_CREATE_ORD: 'vnpayCreateOrder',
   VNP_CALLBACK: 'vnpayReturnUrl',
   VNP_IPN: 'vnpayIpnUrl',
+};
+
+export const COMM = {
+  CREATE_CLIENT: 'createClientSocket',
+  GET_CLIENT: 'getClientSocket',
+  RM_CLIENT: 'removeClientSocket',
 };

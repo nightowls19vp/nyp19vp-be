@@ -27,12 +27,12 @@ db.createUser({
 });
 db.createCollection('init-db');
 
-// DB_PROD_MGMT_DATABASE
-db = db.getSiblingDB(process.env.DB_PROD_MGMT_DATABASE);
+// DB_COMM_DATABASE
+db = db.getSiblingDB(process.env.DB_COMM_DATABASE);
 db.createUser({
-  user: process.env.MONGO_USER,
-  pwd: process.env.MONGO_PASSWORD,
-  roles: [{ role: 'readWrite', db: process.env.DB_PROD_MGMT_DATABASE }],
+  user: process.env.DB_COMM_USER,
+  pwd: process.env.DB_COMM_PASSWORD,
+  roles: [{ role: 'readWrite', db: process.env.DB_COMM_DATABASE }],
 });
 db.createCollection('init-db');
 
@@ -44,3 +44,5 @@ db.createUser({
   roles: [{ role: 'readWrite', db: process.env.DB_TXN_DATABASE }],
 });
 db.createCollection('init-db');
+
+

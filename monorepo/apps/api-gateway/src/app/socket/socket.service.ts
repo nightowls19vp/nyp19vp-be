@@ -1,35 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSocketDto } from './dto/create-socket.dto';
-import { UpdateSocketDto } from './dto/update-socket.dto';
-import { Socket } from 'socket.io';
-import { emit } from 'process';
-import { Server } from '@nestjs/microservices';
+import { Server } from 'socket.io';
 import { WebSocketServer } from '@nestjs/websockets';
+import { CommService } from '../comm/comm.service';
 
 @Injectable()
 export class SocketService {
-  @WebSocketServer() server;
-  create(createSocketDto: CreateSocketDto) {
-    return 'This action adds a new socket';
+  constructor(private readonly commService: CommService) {}
+  @WebSocketServer() server: Server;
+
+  async checkout_callback(client, data): Promise<any> {
+    const clients = await this.commService.getClientSocket(data);
+    console.log('haha', clients.socket.client_id);
+    client.emit('send-message', data);
   }
 
-  findAll() {
-    return `This action returns all socket`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} socket`;
-  }
-
-  update(id: number, updateSocketDto: UpdateSocketDto) {
-    return `This action updates a #${id} socket`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} socket`;
-  }
-
-  checkout_callback(client, data): any {
-    client.emit('checkout_callback', data);
+  async zalopay_callback(user_id: string, req: string) {
+    const client = await this.commService.getClientSocket(user_id);
+    console.log(client.socket.client_id);
+    this.server.to(client.data?.['client_id']).emit('zpCallback', req);
   }
 }

@@ -32,13 +32,6 @@ import {
   GetGrDto_Memb,
   UserDto,
   kafkaTopic,
-  IdDto,
-  RenewGrPkgReqDto,
-  ZPCheckoutResDto,
-  VNPCreateOrderResDto,
-  Items,
-  CheckoutReqDto,
-  MOP,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
