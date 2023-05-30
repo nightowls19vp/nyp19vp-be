@@ -13,6 +13,7 @@ import { TxnModule } from './txn/txn.module';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+import { ProdMgmtModule } from './prod-mgmt/prod-mgmt.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -52,6 +53,7 @@ dotenv.config({
     PkgMgmtModule,
     FileModule,
     TxnModule,
+    ProdMgmtModule,
   ],
   controllers: [AppController],
   providers: [AppService],
