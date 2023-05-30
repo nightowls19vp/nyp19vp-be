@@ -1,6 +1,7 @@
 version: '2'
 services:
   kafdrop:
+    container_name: kafdrop
     image: obsidiandynamics/kafdrop
     restart: 'no'
     ports:
@@ -12,6 +13,7 @@ services:
       - 'kafka'
 
   kafka:
+    container_name: kafka
     image: obsidiandynamics/kafka
     restart: 'no'
     ports:
@@ -28,12 +30,14 @@ services:
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: '0'
 
   mongo-keys:
+    container_name: mongo-keys
     image: depop/openssl-bats
     volumes:
       - mongo-keys:/mongo-conf
     command: 'bash -c "openssl rand -base64 741 > /mongo-conf/mongodb-keyfile; chmod 600 /mongo-conf/mongodb-keyfile; chown 999 /mongo-conf/mongodb-keyfile"'
 
   mongodb:
+    container_name: mongodb
     env_file:
       - ./.env
     image: mongo
@@ -60,7 +64,8 @@ services:
         '/opt/keyfile/mongodb-keyfile',
       ]
 
-  mysql:
+  mysql-auth:
+    container_name: mysql-auth
     image: mysql
     cap_add:
       - SYS_NICE
@@ -74,12 +79,31 @@ services:
     ports:
       - '${DB_AUTH_PORT}:3306'
     volumes:
-      - mysql_db:/var/lib/mysql
+      - mysql_db_auth:/var/lib/mysql
       - ./docker-entrypoint-initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  mysql-prod-mgmt:
+    container_name: mysql-prod-mgmt
+    image: mysql
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      MYSQL_DATABASE: '${DB_PROD_MGMT_DATABASE}'
+      MYSQL_USER: '${DB_PROD_MGMT_USER}'
+      MYSQL_PASSWORD: '${DB_PROD_MGMT_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - '${DB_PROD_MGMT_PORT}:3306'
+    volumes:
+      - mysql_db_prod_mgmt:/var/lib/mysql
+      - ./docker-entrypoint-initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
   db_data:
     driver: local
-  mysql_db:
+  mysql_db_auth:
+    driver: local
+  mysql_db_prod_mgmt:
     driver: local
   mongo-keys:
