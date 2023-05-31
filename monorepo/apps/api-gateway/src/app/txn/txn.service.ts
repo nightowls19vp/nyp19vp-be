@@ -9,14 +9,14 @@ import {
 import { createHmac } from 'crypto';
 import { ClientKafka } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
-import { SocketService } from '../socket/socket.service';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @Injectable()
 export class TxnService {
   constructor(
     @Inject('ZALOPAY_CONFIG') private readonly zpconfig,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
-    private readonly socketService: SocketService,
+    private readonly socketGateway: SocketGateway,
   ) {}
   async zpCallback(callbackReqDto: ZPCallbackReqDto) {
     try {
@@ -44,7 +44,8 @@ export class TxnService {
             JSON.stringify(zpDataCallback),
           ),
         );
-        await this.socketService.zalopay_callback(
+        await this.socketGateway.handleEvent(
+          'zpCallback',
           zpDataCallback.app_user,
           dataStr,
         );

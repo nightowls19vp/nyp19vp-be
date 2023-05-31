@@ -48,13 +48,17 @@ export class SocketGateway
   afterInit(server: any) {
     console.log(server, 'init.');
   }
+  async handleEvent(event: string, user_id: string, data: any) {
+    const client = await this.commService.getClientSocket(user_id);
+    this.server.to(client.socket.client_id).emit(event, data);
+  }
 
-  @SubscribeMessage('checkout_callback')
+  @SubscribeMessage('receive-message')
   async checkout_callback(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: string,
   ) {
-    return this.socketService.checkout_callback(client, data);
+    return;
   }
 }
 const mapToClientSocketReqDto = (user, client: Socket): ClientSocketReqDto => {
