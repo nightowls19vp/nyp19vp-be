@@ -1,6 +1,7 @@
 import {
   CreatePurchaseLocationReqDto,
   CreatePurchaseLocationResDto,
+  CreateStorageLocationResDto,
   GetPurchaseLocationResDto,
   GetStorageLocationResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/locations';
@@ -29,7 +30,14 @@ export class LocationsService {
       createPurchaseLocation,
     );
 
-    return { ...purchaseLocation };
+    return {
+      id: purchaseLocation.id,
+      name: purchaseLocation.name,
+      address: purchaseLocation.address,
+      addedBy: purchaseLocation.addedBy,
+      group: purchaseLocation.group,
+      timestamp: purchaseLocation.timestamp,
+    };
   }
 
   async getPurchaseLocationById(
@@ -58,7 +66,7 @@ export class LocationsService {
 
   async createStorageLocation(
     createStorageLocation: CreatePurchaseLocationReqDto,
-  ): Promise<CreatePurchaseLocationResDto> {
+  ): Promise<CreateStorageLocationResDto> {
     const storageLocation = await this.storageLocationRepo.save(
       createStorageLocation,
     );
