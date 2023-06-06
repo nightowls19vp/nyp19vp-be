@@ -7,21 +7,22 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { createHmac } from 'crypto';
-import { zpconfig } from '../core/config/zalopay.config';
 import { ClientKafka } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @Injectable()
 export class TxnService {
   constructor(
-    @Inject('ZALOPAY_CONFIG') private readonly config: typeof zpconfig,
+    @Inject('ZALOPAY_CONFIG') private readonly zpconfig,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
+    private readonly socketGateway: SocketGateway,
   ) {}
   async zpCallback(callbackReqDto: ZPCallbackReqDto) {
     try {
       const dataStr = callbackReqDto.data;
       const reqMac = callbackReqDto.mac;
-      const mac: string = createHmac('sha256', this.config.key2)
+      const mac: string = createHmac('sha256', this.zpconfig.key2)
         .update(dataStr)
         .digest('hex');
       console.log('mac=', mac);
@@ -42,6 +43,11 @@ export class TxnService {
             kafkaTopic.TXN.ZP_CREATE_TRANS,
             JSON.stringify(zpDataCallback),
           ),
+        );
+        await this.socketGateway.handleEvent(
+          'zpCallback',
+          zpDataCallback.app_user,
+          dataStr,
         );
         return JSON.stringify({
           return_code: 1,

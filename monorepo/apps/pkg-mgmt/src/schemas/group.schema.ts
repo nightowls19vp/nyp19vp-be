@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { GrPkg } from './gr-pkg.schema';
 import { Member } from './member.schema';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
+import { Billing } from './billing.schema';
 
 export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
@@ -18,6 +19,12 @@ export class Group {
       'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
   })
   avatar: string;
+
+  @Prop({ type: String, unique: true, required: false })
+  channel: string;
+
+  // @Prop({ type: Types.ObjectId, ref: 'Billing' })
+  // billing: Billing;
 
   @Prop({ required: true, minlength: 1 })
   packages: GrPkg[];

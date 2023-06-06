@@ -21,6 +21,8 @@ import {
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
   CheckGrSUReqDto,
+  UpdateChannelReqDto,
+  UpdateChannelResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -111,6 +113,13 @@ export class GrCrudController {
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<UpdateAvatarResDto> {
     return this.grCrudService.updateAvatar(updateAvatarReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_CHANNEL)
+  updateChannel(
+    @Payload() updateChannelReqDto: UpdateChannelReqDto,
+  ): Promise<UpdateChannelResDto> {
+    return this.grCrudService.updateChannel(updateChannelReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG)

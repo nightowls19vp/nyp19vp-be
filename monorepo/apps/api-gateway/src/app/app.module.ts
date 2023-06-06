@@ -13,6 +13,8 @@ import { TxnModule } from './txn/txn.module';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+import { SocketModule } from './socket/socket.module';
+import { CommModule } from './comm/comm.module';
 import { ProdMgmtModule } from './prod-mgmt/prod-mgmt.module';
 import { DivisionsModule } from './divisions/divisions.module';
 dotenv.config({
@@ -54,6 +56,8 @@ dotenv.config({
     PkgMgmtModule,
     FileModule,
     TxnModule,
+    SocketModule,
+    CommModule,
     ProdMgmtModule,
     DivisionsModule,
   ],

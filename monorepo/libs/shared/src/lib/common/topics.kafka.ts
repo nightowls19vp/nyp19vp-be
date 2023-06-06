@@ -3,6 +3,7 @@ export const HEALT_CHECK = {
   USERS: 'HC_USER',
   PACKAGE_MGMT: 'HC_PACKAGE_MGMT',
   TXN: 'HC_TXN',
+  COMM: 'HC_COMM',
 };
 
 export const AUTH = {
@@ -57,6 +58,7 @@ export const PACKAGE_MGMT = {
   GET_GR_BY_ID: 'getGroupById',
   UPDATE_GR: 'updateGroupName',
   UPDATE_GR_AVATAR: 'updateGroupAvatar',
+  UPDATE_GR_CHANNEL: 'updateGroupChannel',
   DELETE_GR: 'deleteGroup',
   RESTORE_GR: 'restoreGroup',
   ADD_GR_MEMB: 'addMemberToGroup',
@@ -74,6 +76,12 @@ export const TXN = {
   VNP_CREATE_ORD: 'vnpayCreateOrder',
   VNP_CALLBACK: 'vnpayReturnUrl',
   VNP_IPN: 'vnpayIpnUrl',
+};
+
+export const COMM = {
+  CREATE_CLIENT: 'createClientSocket',
+  GET_CLIENT: 'getClientSocket',
+  RM_CLIENT: 'removeClientSocket',
 };
 
 export const PROD_MGMT = {

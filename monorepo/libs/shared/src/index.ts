@@ -39,6 +39,8 @@ export * from './lib/dto/txn/zalopay.dto';
 
 export * from './lib/dto/txn/vnpay.dto';
 
+export * from './lib/dto/comm/socket.dto';
+
 export * as prod from './lib/dto/prod-mgmt/index';
 
 // properties

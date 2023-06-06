@@ -38,6 +38,8 @@ import {
   ActivateGrPkgReqDto,
   ActivateGrPkgResDto,
   PkgGrInvReqDto,
+  UpdateChannelReqDto,
+  UpdateChannelResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -353,6 +355,32 @@ export class PkgMgmtService {
         .send(
           kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG,
           JSON.stringify(activateGrPkgReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async updateChannel(
+    updateChannelReqDto: UpdateChannelReqDto,
+  ): Promise<UpdateChannelResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.UPDATE_GR_CHANNEL,
+          JSON.stringify(updateChannelReqDto),
         )
         .pipe(
           timeout(5000),

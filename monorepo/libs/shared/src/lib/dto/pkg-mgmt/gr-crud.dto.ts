@@ -109,6 +109,9 @@ export class GroupDto extends IdDto {
   @IsOptional()
   avatar?: string;
 
+  @ApiProperty({ description: 'Channel url of Sendbird' })
+  channel: string;
+
   @ApiProperty()
   @ValidateNested()
   @Type(() => GrPkgDto)
@@ -185,6 +188,13 @@ export class GetGrsByUserResDto extends BaseResDto {
   @Type(() => GetGrDto)
   groups: GetGrDto[];
 }
+
+export class UpdateChannelReqDto extends IntersectionType(
+  IdDto,
+  PickType(GroupDto, ['channel']),
+) {}
+
+export class UpdateChannelResDto extends BaseResDto {}
 
 export class UpdateGrReqDto extends IntersectionType(
   IdDto,
