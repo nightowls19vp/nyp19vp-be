@@ -1,6 +1,7 @@
 import {
   CreatePurchaseLocationReqDto,
   CreatePurchaseLocationResDto,
+  CreateStorageLocationReqDto,
   CreateStorageLocationResDto,
   GetPurchaseLocationResDto,
   GetStorageLocationResDto,
@@ -26,16 +27,27 @@ export class LocationsService {
   async createPurchaseLocation(
     createPurchaseLocation: CreatePurchaseLocationReqDto,
   ): Promise<CreatePurchaseLocationResDto> {
-    const purchaseLocation = await this.purchaseLocationRepo.save(
-      createPurchaseLocation,
-    );
+    const purchaseLocation = this.purchaseLocationRepo.create({
+      id: createPurchaseLocation.id,
+      name: createPurchaseLocation.name,
+      address: createPurchaseLocation.address,
+      addedBy: createPurchaseLocation.addedBy,
+      group: {
+        id: createPurchaseLocation.group.id,
+        groupMongoId: createPurchaseLocation.group.groupMongoId,
+      },
+    });
 
     return {
       id: purchaseLocation.id,
       name: purchaseLocation.name,
       address: purchaseLocation.address,
       addedBy: purchaseLocation.addedBy,
-      group: purchaseLocation.group,
+      group: {
+        id: purchaseLocation.group.id,
+        groupMongoId: purchaseLocation.group.groupMongoId,
+        timestamp: purchaseLocation.group.timestamp,
+      },
       timestamp: purchaseLocation.timestamp,
     };
   }
@@ -59,19 +71,48 @@ export class LocationsService {
       statusCode: HttpStatus.OK,
       message: 'Purchase location found',
       data: {
-        ...purchaseLocation,
+        id: purchaseLocation.id,
+        name: purchaseLocation.name,
+        addedBy: purchaseLocation.addedBy,
+        address: purchaseLocation.address,
+        timestamp: purchaseLocation.timestamp,
+        group: {
+          id: purchaseLocation.group.id,
+          groupMongoId: purchaseLocation.group.groupMongoId,
+          timestamp: purchaseLocation.group.timestamp,
+        },
       },
     };
   }
 
   async createStorageLocation(
-    createStorageLocation: CreatePurchaseLocationReqDto,
+    createStorageLocation: CreateStorageLocationReqDto,
   ): Promise<CreateStorageLocationResDto> {
-    const storageLocation = await this.storageLocationRepo.save(
-      createStorageLocation,
-    );
+    const storageLocation = this.storageLocationRepo.create({
+      ...createStorageLocation,
+      group: {
+        id: createStorageLocation.group.id,
+        groupMongoId: createStorageLocation.group.groupMongoId,
+      },
+    });
 
-    return { ...storageLocation };
+    await this.storageLocationRepo.save(storageLocation);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Storage location found',
+      data: {
+        id: storageLocation.id,
+        name: storageLocation.name,
+        addedBy: storageLocation.addedBy,
+        description: storageLocation.description,
+        group: {
+          id: storageLocation.group.id,
+          groupMongoId: storageLocation.group.groupMongoId,
+          timestamp: storageLocation.group.timestamp,
+        },
+      },
+    };
   }
 
   async getStorageLocationById(id: string): Promise<GetStorageLocationResDto> {
@@ -91,7 +132,18 @@ export class LocationsService {
       statusCode: HttpStatus.OK,
       message: 'Storage location found',
       data: {
-        ...storageLocation,
+        id: storageLocation.id,
+        name: storageLocation.name,
+        addedBy: storageLocation.addedBy,
+        description: storageLocation.description,
+        group: {
+          id: storageLocation.group.id,
+          groupMongoId: storageLocation.group.groupMongoId,
+          groupProducts: undefined,
+          purchaseLocations: undefined,
+          storageLocations: undefined,
+          timestamp: storageLocation.group.timestamp,
+        },
       },
     };
   }

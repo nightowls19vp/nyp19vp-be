@@ -21,9 +21,9 @@ export class CreateStorageLocationReqDto extends PickType(
   ['name', 'addedBy', 'image', 'description', 'group'],
 ) {}
 
-export class CreateStorageLocationResDto extends PartialType(
-  StorageLocationDto,
-) {}
+export class CreateStorageLocationResDto extends BaseResDto {
+  data: StorageLocationDto;
+}
 
 export class GetStorageLocationResDto extends BaseResDto {
   data: StorageLocationDto;

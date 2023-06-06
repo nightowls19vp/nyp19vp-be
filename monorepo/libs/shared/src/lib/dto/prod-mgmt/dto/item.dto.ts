@@ -33,6 +33,6 @@ export class ItemDto {
   @ApiProperty({ required: false })
   image?: string;
 
-  @ApiProperty({ type: () => TimestampEmbeddedDto, required: false })
+  // @ApiProperty({ type: () => TimestampEmbeddedDto, required: false })
   timestamp?: TimestampEmbeddedDto;
 }

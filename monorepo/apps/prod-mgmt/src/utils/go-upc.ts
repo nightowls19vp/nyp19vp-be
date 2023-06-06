@@ -70,7 +70,6 @@ export const fetchProductDataFromGoUpc = async (
       description: response.data.product.description,
       price: undefined,
       region: response.data.product.region,
-      groupProducts: undefined,
       timestamp: undefined,
     };
 
@@ -83,14 +82,14 @@ export const fetchProductDataFromGoUpc = async (
       error.response?.status === HttpStatus.UNAUTHORIZED
     ) {
       // try to crawl the data from go-upc.com
-      return getProductSuggestWithRetries(barcode, retries);
+      return crawlProductInfoWithRetries(barcode, retries);
     } else {
       return null;
     }
   }
 };
 
-const getProductSuggestWithRetries = async (
+const crawlProductInfoWithRetries = async (
   barcode: string,
   retries = 2,
 ): Promise<ProductDto> => {
@@ -132,7 +131,6 @@ const getProductSuggestWithRetries = async (
       description: description,
       price: undefined,
       region: region,
-      groupProducts: undefined,
       timestamp: undefined,
     };
 
@@ -152,7 +150,7 @@ const getProductSuggestWithRetries = async (
       return null;
     }
 
-    return getProductSuggestWithRetries(barcode, retries - 1);
+    return crawlProductInfoWithRetries(barcode, retries - 1);
   }
 };
 

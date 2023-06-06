@@ -35,7 +35,7 @@ export class LocationsController {
   @MessagePattern(kafkaTopic.PROD_MGMT.create_storage_location)
   async createStorageLocation(
     @Payload() data: CreateStorageLocationReqDto,
-  ): Promise<CreatePurchaseLocationResDto> {
+  ): Promise<CreateStorageLocationResDto> {
     return this.locationsService.createStorageLocation(data);
   }
 

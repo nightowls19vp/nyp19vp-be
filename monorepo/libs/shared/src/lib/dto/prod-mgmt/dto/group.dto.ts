@@ -17,27 +17,27 @@ export class ProdMgmtGroupDto {
   @ApiProperty({ required: false })
   groupMongoId?: string;
 
-  @ApiProperty({
-    required: false,
-    type: [GroupProductDto],
-    name: '__groupProducts__',
-  })
+  // @ApiProperty({
+  //   required: false,
+  //   type: [GroupProductDto],
+  //   name: '__groupProducts__',
+  // })
   groupProducts?: GroupProductDto[];
 
-  @ApiProperty({
-    required: false,
-    type: [PurchaseLocationDto],
-    name: '__purchaseLocations__',
-  })
+  // @ApiProperty({
+  //   required: false,
+  //   type: [PurchaseLocationDto],
+  //   name: '__purchaseLocations__',
+  // })
   purchaseLocations?: PurchaseLocationDto[];
 
-  @ApiProperty({
-    required: false,
-    type: [StorageLocationDto],
-    name: '__storageLocations__',
-  })
+  // @ApiProperty({
+  //   required: false,
+  //   type: [StorageLocationDto],
+  //   name: '__storageLocations__',
+  // })
   storageLocations?: StorageLocationDto[];
 
-  @ApiProperty({ required: false })
+  // @ApiProperty({ required: false })
   timestamp?: TimestampEmbeddedDto;
 }

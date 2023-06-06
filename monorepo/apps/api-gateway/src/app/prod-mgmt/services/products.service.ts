@@ -1,4 +1,4 @@
-import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/entities/product.dto';
+import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/product.dto';
 import {
   GetProductByBarcodeReqDto,
   GetProductByBarcodeResDto,

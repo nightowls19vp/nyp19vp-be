@@ -1,35 +1,42 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ProdMgmtGroupDto } from './group.dto';
 import { ItemDto } from './item.dto';
-import { ProductDto } from './product.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
-export class GroupProductDto extends ProductDto {
+export class GroupProductDto {
   @ApiProperty({ required: false })
   id?: string;
 
-  @ApiProperty({ required: false })
-  group?: ProdMgmtGroupDto;
+  @ApiProperty()
+  name?: string;
 
-  @ApiProperty({ required: false })
-  product?: ProductDto;
+  @ApiProperty()
+  image?: string;
 
-  @ApiProperty({ required: false })
-  customName?: string;
+  @ApiProperty()
+  barcode?: string;
 
-  @ApiProperty({ required: false })
-  customImage?: string;
+  @ApiProperty()
+  price?: number;
 
-  @ApiProperty({ required: false })
-  customPrice?: number;
+  @ApiProperty()
+  region?: string;
 
-  @ApiProperty({ required: false })
-  customDescription?: string;
+  @ApiProperty()
+  brand?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty()
+  category?: string;
+
+  @ApiProperty()
+  description?: string;
+
+  // @ApiProperty({ type: () => [GroupProductDto] })
+  groupProducts?: GroupProductDto[];
+
+  // @ApiProperty({ type: () => TimestampEmbeddedDto })
   timestamp?: TimestampEmbeddedDto;
 
-  @ApiProperty({ required: false })
-  items?: Promise<ItemDto[]>;
+  // @ApiProperty({ required: false })
+  items?: ItemDto[];
 }

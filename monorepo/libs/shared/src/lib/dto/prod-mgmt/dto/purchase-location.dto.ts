@@ -20,7 +20,7 @@ export class PurchaseLocationDto {
   @ApiProperty({ required: false })
   address?: AddressEmbeddedDto;
 
-  @ApiProperty({ required: false })
+  // @ApiProperty({ required: false })
   timestamp?: TimestampEmbeddedDto;
 
   @ApiProperty({ required: false })

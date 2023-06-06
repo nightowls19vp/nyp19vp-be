@@ -69,7 +69,6 @@ export class AccountService {
         link: 'http://localhost:8080',
       },
     });
-    return null;
 
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(reqDto.password, salt);

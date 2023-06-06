@@ -23,9 +23,9 @@ export class StorageLocationDto {
   @ApiProperty({ required: false })
   description?: string;
 
-  @ApiProperty({ required: false, type: [ItemDto] })
+  // @ApiProperty({ required: false, type: [ItemDto], name: '__items__' })
   items?: ItemDto[];
 
-  @ApiProperty({ required: false })
+  // @ApiProperty({ required: false })
   timestamp?: TimestampEmbeddedDto;
 }
