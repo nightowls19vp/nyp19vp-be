@@ -1,6 +1,6 @@
-import { GroupProductDto } from '../entities/group-product.entity';
-import { ItemDto } from '../entities/item.entity';
-import { ProductDto } from '../entities/product.entity';
+import { GroupProductDto } from '../dto/group-product.dto';
+import { ItemDto } from '../dto/item.dto';
+import { ProductDto } from '../dto/product.dto';
 
 export class AddItemReqDto {
   groupMongoId: string;

@@ -8,6 +8,7 @@ import { ProductsModule } from '../products/products.module';
 import { GroupsProductsModule } from '../groups-products/groups-products.module';
 import { LocationsModule } from '../locations/locations.module';
 import { ItemsModule } from '../items/items.module';
+import { DivisionsModule } from '../divisions/divisions.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ItemsModule } from '../items/items.module';
     GroupsProductsModule,
     LocationsModule,
     ItemsModule,
+    DivisionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

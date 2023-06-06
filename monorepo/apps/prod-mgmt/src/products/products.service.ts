@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import validbarcode from 'barcode-validator';
+
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetProductByBarcodeResDto } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import { Repository } from 'typeorm';
 import { ProductEntity } from '../entities/product.entity';
+import { fetchProductDataFromGoUpc } from '../utils/go-upc';
+import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -11,28 +15,55 @@ export class ProductsService {
     private readonly productRepo: Repository<ProductEntity>,
   ) {}
 
+  /**
+   * Retrieves a product from the database by its barcode.
+   * If the product is not found in the database, it tries to fetch it from an external API and saves it to the database.
+   * @param barcode The barcode of the product to retrieve.
+   * @returns A Promise that resolves to a GetProductByBarcodeResDto object containing the retrieved product data.
+   */
   async getProductByBarcode(
     barcode: string,
   ): Promise<GetProductByBarcodeResDto> {
-    const product = await this.productRepo.findOne({
-      where: { barcode },
-    });
-
-    if (!product) {
+    // check barcode is valid
+    if (!validbarcode(barcode)) {
       return {
-        statusCode: 404,
-        message: 'Product not found',
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Invalid barcode',
         data: null,
       };
     }
 
+    // Find from db
+    let product = await this.productRepo.findOne({
+      where: { barcode },
+    });
+
+    console.log('product', product);
+
+    if (!product) {
+      // try to find from external api
+      const productData: ProductDto = await fetchProductDataFromGoUpc(barcode);
+
+      if (productData) {
+        const newProduct = this.productRepo.create(productData);
+
+        product = await this.productRepo.save(newProduct);
+      }
+    }
+
     return {
-      statusCode: 200,
-      message: 'Get product successfully',
+      statusCode: product ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+      message: product ? 'Get product successfully' : 'Product not found',
       data: product,
     };
   }
 
+  /**
+   * Creates a new product in the database.
+   * If a product with the same barcode already exists in the database, it returns the existing product.
+   * @param data The product data to create.
+   * @returns A Promise that resolves to the created product data.
+   */
   async createProduct(data: ProductEntity): Promise<ProductEntity> {
     // check if product already exists
     const product = await this.productRepo.findOne({

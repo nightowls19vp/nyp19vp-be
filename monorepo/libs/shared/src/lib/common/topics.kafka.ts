@@ -123,4 +123,19 @@ export const PROD_MGMT = {
   restore_item: 'prod_mgmt_restore_item',
   get_paginated_items: 'prod_mgmt_get_paginated_items',
   get_item_by_id: 'prod_mgmt_get_item_by_id',
+
+  provinces: {
+    findByCode: 'prod_mgmt_provinces_find_by_code',
+    search: 'prod_mgmt_provinces_search',
+  },
+
+  districts: {
+    findByCode: 'prod_mgmt_districts_find_by_code',
+    search: 'prod_mgmt_districts_search',
+  },
+
+  wards: {
+    findByCode: 'prod_mgmt_wards_find_by_code',
+    search: 'prod_mgmt_wards_search',
+  },
 };

@@ -1,13 +1,10 @@
 import { PartialType, PickType } from '@nestjs/swagger';
 
 import { BaseResDto } from '../../base.dto';
-import { PurchaseLocationDto } from '../entities/purchase-location.entity';
-import { StorageLocationDto } from '../entities/storage-location.entity';
+import { PurchaseLocationDto } from '../dto/purchase-location.dto';
+import { StorageLocationDto } from '../dto/storage-location.dto';
 
-export class CreatePurchaseLocationReqDto extends PickType(
-  PartialType(PurchaseLocationDto),
-  ['name', 'addedBy', 'address', 'group'],
-) {}
+export class CreatePurchaseLocationReqDto extends PurchaseLocationDto {}
 
 export class CreatePurchaseLocationResDto extends PartialType(
   PurchaseLocationDto,
@@ -24,9 +21,9 @@ export class CreateStorageLocationReqDto extends PickType(
   ['name', 'addedBy', 'image', 'description', 'group'],
 ) {}
 
-export class CreateStorageLocationResDto extends PartialType(
-  PurchaseLocationDto,
-) {}
+export class CreateStorageLocationResDto extends BaseResDto {
+  data: StorageLocationDto;
+}
 
 export class GetStorageLocationResDto extends BaseResDto {
   data: StorageLocationDto;

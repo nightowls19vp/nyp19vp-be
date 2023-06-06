@@ -1,21 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TimestampEmbeddedEntity {
+export class TimestampEmbeddedDto {
   @ApiProperty({
     description: 'Created at',
     type: Date,
+    required: false,
   })
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiProperty({
     description: 'Updated at',
     type: Date,
   })
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @ApiProperty({
     description: 'Deleted at',
     type: Date,
   })
-  deletedAt: Date;
+  deletedAt?: Date;
 }
