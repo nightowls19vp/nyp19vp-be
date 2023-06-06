@@ -32,6 +32,8 @@ import {
   GetGrDto_Memb,
   UserDto,
   kafkaTopic,
+  UpdateChannelReqDto,
+  UpdateChannelResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -623,6 +625,34 @@ export class GrCrudService {
         });
       });
   }
+  async updateChannel(
+    updateChannelReqDto: UpdateChannelReqDto,
+  ): Promise<UpdateChannelResDto> {
+    const { _id, channel } = updateChannelReqDto;
+    return await this.grModel
+      .findByIdAndUpdate({ _id: _id }, { channel: channel })
+      .then(async (res) => {
+        const data = await this.grModel.findById(_id, { channel: 1 });
+        console.log(data);
+        if (res)
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `update group #${_id}'s avatar successfully`,
+            data: data,
+          });
+        else
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No group #${_id} found`,
+          });
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
   async activateGrPkg(
     activateGrPkgReqDto: ActivateGrPkgReqDto,
   ): Promise<ActivateGrPkgResDto> {
@@ -745,6 +775,7 @@ const mapGrSchemaToGetGrDto = (
     _id: model._id,
     name: model.name,
     avatar: model.avatar,
+    channel: model.channel,
     packages: packages,
     members: members,
   };

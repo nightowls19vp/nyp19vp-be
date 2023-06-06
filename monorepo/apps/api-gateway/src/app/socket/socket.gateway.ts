@@ -54,11 +54,12 @@ export class SocketGateway
   }
 
   @SubscribeMessage('receive-message')
-  async checkout_callback(
+  checkout_callback(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: string,
   ) {
-    return;
+    console.log(client.id, data);
+    this.server.to(client.id).emit('send_message', data);
   }
 }
 const mapToClientSocketReqDto = (user, client: Socket): ClientSocketReqDto => {
