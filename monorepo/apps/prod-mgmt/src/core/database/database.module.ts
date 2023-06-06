@@ -7,6 +7,9 @@ import { ItemEntity } from '../../entities/item.entity';
 import { ProductEntity } from '../../entities/product.entity';
 import { PurchaseLocationEntity } from '../../entities/purchase-location.entity';
 import { StorageLocationEntity } from '../../entities/storage-location.entity';
+import { DistrictEntity } from '../../entities/district.entity';
+import { ProvinceEntity } from '../../entities/province.entity';
+import { WardEntity } from '../../entities/ward.entity';
 
 console.log('dbCfg', dbCfg);
 
@@ -26,6 +29,9 @@ console.log('dbCfg', dbCfg);
         ProductEntity,
         PurchaseLocationEntity,
         StorageLocationEntity,
+        ProvinceEntity,
+        DistrictEntity,
+        WardEntity,
       ],
       autoLoadEntities: true,
       synchronize: dbCfg.synchronize,
