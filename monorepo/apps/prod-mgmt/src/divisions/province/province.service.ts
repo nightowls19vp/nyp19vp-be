@@ -1,7 +1,7 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProvinceEntity } from '../../entities/province.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import diacritics from 'diacritics';
 
@@ -12,12 +12,14 @@ export class ProvinceService {
     private readonly provinceRepo: Repository<ProvinceEntity>,
   ) {}
 
-  findAll() {
-    return this.provinceRepo.find();
-  }
+  async findByCode(code: number) {
+    const p = await this.provinceRepo.findOneBy({ code });
 
-  findByCode(code: number) {
-    return this.provinceRepo.findOneBy({ code });
+    console.log('p = ', p);
+
+    return {
+      ...p,
+    };
   }
 
   search(q: string) {

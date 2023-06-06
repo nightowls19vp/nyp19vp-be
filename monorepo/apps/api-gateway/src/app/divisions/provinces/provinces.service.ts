@@ -14,21 +14,10 @@ export class ProvincesService implements OnModuleInit {
 
   onModuleInit() {
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.provinces.findAll,
-    );
-    this.prodMgmtClient.subscribeToResponseOf(
       kafkaTopic.PROD_MGMT.provinces.findByCode,
     );
     this.prodMgmtClient.subscribeToResponseOf(
       kafkaTopic.PROD_MGMT.provinces.search,
-    );
-  }
-
-  findAll() {
-    return firstValueFrom(
-      this.prodMgmtClient
-        .send(kafkaTopic.PROD_MGMT.provinces.findAll, {})
-        .pipe(timeout(ms('5s'))),
     );
   }
 

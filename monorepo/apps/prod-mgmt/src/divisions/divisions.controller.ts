@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';
 
 import { DivisionsService } from './divisions.service';
@@ -17,22 +17,47 @@ export class DivisionsController {
     private readonly wardService: WardService,
   ) {}
 
-  @MessagePattern(kafkaTopic.PROD_MGMT.provinces.findAll)
-  findAllProvinces() {
-    return this.provinceService.findAll();
-  }
-
   @MessagePattern(kafkaTopic.PROD_MGMT.provinces.findByCode)
-  findProvinceByCode(code: number) {
+  findProvinceByCode(@Payload() code: number) {
     console.log('findProvinceByCode', code);
 
-    return this.provinceService.findByCode(code);
+    return this.provinceService.findByCode(+code);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.provinces.search)
-  searchProvinces(q: string) {
+  searchProvinces(@Payload() q: string) {
     console.log('searchProvinces', q);
 
     return this.provinceService.search(q);
+  }
+
+  @MessagePattern(kafkaTopic.PROD_MGMT.districts.findByCode)
+  findDistrictByCode(@Payload() code: number) {
+    console.log('findDistrictByCode', code);
+
+    return this.districtService.findByCode(+code);
+  }
+
+  @MessagePattern(kafkaTopic.PROD_MGMT.districts.search)
+  searchDistricts(@Payload() qp: string) {
+    const [q, p] = qp.split(',');
+    console.log(`searchDistricts(q = ${q},p = ${p})`);
+
+    return this.districtService.search(q, +p);
+  }
+
+  @MessagePattern(kafkaTopic.PROD_MGMT.wards.findByCode)
+  findWardByCode(@Payload() code: number) {
+    console.log('findWardByCode', code);
+
+    return this.wardService.findByCode(+code);
+  }
+
+  @MessagePattern(kafkaTopic.PROD_MGMT.wards.search)
+  searchWards(@Payload() qd: string) {
+    const [q, d] = qd.split(',');
+    console.log(`searchWards(q = ${q},d = ${d})`);
+
+    return this.wardService.search(q, +d);
   }
 }

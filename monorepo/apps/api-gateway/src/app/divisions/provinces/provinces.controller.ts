@@ -6,15 +6,16 @@ import { ApiQuery, ApiTags } from '@nestjs/swagger';
 @Controller('p')
 export class ProvincesController {
   constructor(private readonly provincesService: ProvincesService) {}
-  @Get()
-  findAll() {
-    return this.provincesService.findAll();
-  }
 
-  @ApiQuery({ name: 'q', required: true })
-  @Get('search')
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Search by name of the province, pass `%` or let empty to get all provinces',
+  })
+  @Get()
   search(@Query('q') q: string) {
-    return this.provincesService.search(q);
+    return this.provincesService.search(q || '%');
   }
 
   @Get(':code')

@@ -8,6 +8,6 @@ import { WardsModule } from './wards/wards.module';
 @Module({
   controllers: [DivisionsController],
   providers: [DivisionsService],
-  imports: [ProvincesModule, DistrictsModule, WardsModule]
+  imports: [ProvincesModule, DistrictsModule, WardsModule],
 })
 export class DivisionsModule {}
