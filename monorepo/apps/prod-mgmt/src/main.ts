@@ -20,6 +20,7 @@ async function bootstrap() {
         },
         consumer: {
           groupId: 'prog-mgmt-consumer',
+          maxBytes: 1000000000, // set the maximum number of bytes to fetch to 1GB
         },
       },
     },

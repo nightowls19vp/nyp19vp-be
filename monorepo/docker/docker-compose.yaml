@@ -28,6 +28,7 @@ services:
       KAFKA_RESTART_ATTEMPTS: '10'
       KAFKA_RESTART_DELAY: '5'
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: '0'
+      MAX_MESSAGE_BYTES: '1048576'
 
   mongo-keys:
     container_name: mongo-keys

@@ -23,7 +23,7 @@ export const getMongoConnectionString = (dbCfg: IDbConfig) => {
     console.log('connection string', connectionStr);
     return connectionStr;
   } else {
-    const connectionStr = `mongodb+srv://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}/${dbCfg.database}?serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`;
+    const connectionStr = `mongodb+srv://${dbCfg.username}:${dbCfg.password}@${dbCfg.host}/${dbCfg.database}?serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0&readPreference=secondary&directConnection=true`;
     console.log('connection string', connectionStr);
 
     return connectionStr;

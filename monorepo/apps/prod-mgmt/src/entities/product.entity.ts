@@ -1,8 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
-import { GroupProductEntity } from './group-product.entity';
 
+/**
+ * This entity is used to cache the product data from `go-upc` api
+ */
 @Entity({
   name: 'products',
 })
@@ -79,20 +81,13 @@ export class ProductEntity {
 
   @Column({
     name: 'description',
+    type: 'text',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
     default: null,
   })
   description: string;
-
-  @OneToMany(() => GroupProductEntity, (groupProduct) => groupProduct.product, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    lazy: true,
-  })
-  groupProducts: Promise<GroupProductEntity[]>;
 
   @Column(() => TimestampEmbeddedEntity, {
     prefix: false,

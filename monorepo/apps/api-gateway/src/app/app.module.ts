@@ -16,6 +16,7 @@ import { ENV_FILE } from '@nyp19vp-be/shared';
 import { SocketModule } from './socket/socket.module';
 import { CommModule } from './comm/comm.module';
 import { ProdMgmtModule } from './prod-mgmt/prod-mgmt.module';
+import { DivisionsModule } from './divisions/divisions.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -58,6 +59,7 @@ dotenv.config({
     SocketModule,
     CommModule,
     ProdMgmtModule,
+    DivisionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
