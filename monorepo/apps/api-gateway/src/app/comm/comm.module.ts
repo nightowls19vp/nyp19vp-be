@@ -12,11 +12,11 @@ import { randomUUID } from 'crypto';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'comm',
+            clientId: 'comm' + 'api-gateway' + 'comm',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'comm-consumer' + randomUUID(),
+            groupId: 'comm-consumer' + 'api-gateway' + 'comm',
           },
         },
       },

@@ -75,11 +75,11 @@ dotenv.config({
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users',
+            clientId: 'users' + 'auth' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + randomUUID(),
+            groupId: 'users-consumer' + 'auth' + 'users',
           },
         },
       },
@@ -88,11 +88,11 @@ dotenv.config({
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'pkg-mgmt',
+            clientId: 'pkg-mgmt' + 'auth' + 'pkg-mgmt',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'pkg-mgmt-consumer' + randomUUID(), // FIXME,
+            groupId: 'pkg-mgmt-consumer' + 'auth' + 'pkg-mgmt',
           },
         },
       },

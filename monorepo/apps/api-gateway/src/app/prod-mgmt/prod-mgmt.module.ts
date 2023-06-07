@@ -13,11 +13,11 @@ import { LocationService } from './services/location.service';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'prod-mgmt',
+            clientId: 'prod-mgmt' + 'api-gateway' + 'prod-mgmt',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'prod-mgmt' + 'api-gateway', // FIXME,
+            groupId: 'prod-mgmt' + 'api-gateway' + 'prod-mgmt',
           },
         },
       },
