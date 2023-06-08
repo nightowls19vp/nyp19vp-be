@@ -725,7 +725,10 @@ export class GrCrudService {
   }
   async getGrChannelByUserId(id: Types.ObjectId): Promise<GetGrChannelResDto> {
     return await this.grModel
-      .find({ members: { $elemMatch: { user: id } } }, { channel: 1 })
+      .find(
+        { members: { $elemMatch: { user: id } }, channel: { $exists: true } },
+        { channel: 1 },
+      )
       .then((res) => {
         if (res) {
           console.log(res);
