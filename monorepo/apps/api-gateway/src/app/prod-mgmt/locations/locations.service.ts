@@ -7,28 +7,28 @@ import {
 import ms from 'ms';
 import { firstValueFrom, timeout } from 'rxjs';
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';
 
 @Injectable()
-export class LocationService implements OnModuleInit {
+export class LocationsService {
   constructor(
     @Inject('PROD_MGMT_SERVICE')
     private readonly prodMgmtClient: ClientKafka,
   ) {}
   onModuleInit() {
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.create_purchase_location,
+      kafkaTopic.PROD_MGMT.storageLocations.create,
     );
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.create_storage_location,
+      kafkaTopic.PROD_MGMT.purchaseLocations.create,
     );
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.get_purchase_location_by_id,
+      kafkaTopic.PROD_MGMT.purchaseLocations.getById,
     );
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.get_storage_location_by_id,
+      kafkaTopic.PROD_MGMT.purchaseLocations.getById,
     );
   }
 
@@ -39,7 +39,7 @@ export class LocationService implements OnModuleInit {
       const res = await firstValueFrom(
         this.prodMgmtClient
           .send<CreatePurchaseLocationReqDto>(
-            kafkaTopic.PROD_MGMT.create_purchase_location,
+            kafkaTopic.PROD_MGMT.purchaseLocations.create,
             JSON.stringify(createPurchaseLocationReqDto),
           )
           .pipe(timeout(ms('5s'))),
@@ -60,7 +60,7 @@ export class LocationService implements OnModuleInit {
       const res = await firstValueFrom(
         this.prodMgmtClient
           .send(
-            kafkaTopic.PROD_MGMT.create_storage_location,
+            kafkaTopic.PROD_MGMT.storageLocations.create,
             JSON.stringify(createPurchaseLocationReqDto),
           )
           .pipe(timeout(ms('5s'))),
@@ -81,7 +81,7 @@ export class LocationService implements OnModuleInit {
       const res = await firstValueFrom(
         this.prodMgmtClient
           .send<GetPurchaseLocationResDto, string>(
-            kafkaTopic.PROD_MGMT.get_purchase_location_by_id,
+            kafkaTopic.PROD_MGMT.purchaseLocations.getById,
             id,
           )
           .pipe(timeout(ms('5s'))),
@@ -99,8 +99,8 @@ export class LocationService implements OnModuleInit {
     try {
       const res = await firstValueFrom(
         this.prodMgmtClient
-          .send<GetStorageLocationResDto,   string>(
-            kafkaTopic.PROD_MGMT.get_storage_location_by_id,
+          .send<GetStorageLocationResDto, string>(
+            kafkaTopic.PROD_MGMT.storageLocations.getById,
             id,
           )
           .pipe(timeout(ms('5s'))),

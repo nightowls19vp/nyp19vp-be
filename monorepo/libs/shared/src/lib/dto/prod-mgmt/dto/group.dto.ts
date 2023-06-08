@@ -14,9 +14,6 @@ export class ProdMgmtGroupDto {
   @ApiProperty({ required: false })
   id?: string;
 
-  @ApiProperty({ required: false })
-  groupMongoId?: string;
-
   // @ApiProperty({
   //   required: false,
   //   type: [GroupProductDto],

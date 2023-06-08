@@ -12,7 +12,7 @@ import { ProductEntity } from '../entities/product.entity';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @MessagePattern(kafkaTopic.PROD_MGMT.get_product_by_barcode)
+  @MessagePattern(kafkaTopic.PROD_MGMT.products.getByBarcode)
   async getProductByBarcode(
     @Payload() data: GetProductByBarcodeReqDto,
   ): Promise<GetProductByBarcodeResDto> {
@@ -21,7 +21,7 @@ export class ProductsController {
     return await this.productsService.getProductByBarcode(data.barcode);
   }
 
-  @MessagePattern(kafkaTopic.PROD_MGMT.create_product)
+  @MessagePattern(kafkaTopic.PROD_MGMT.products.create)
   async createProduct(@Payload() data: ProductEntity) {
     console.log('createProduct', data);
 

@@ -87,42 +87,47 @@ export const COMM = {
 export const PROD_MGMT = {
   init: 'prod_mgmt_init', // create group with group id and package id
 
-  create_product: 'prod_mgmt_create_product',
-  update_product: 'prod_mgmt_update_product',
-  delete_product: 'prod_mgmt_delete_product',
-  restore_product: 'prod_mgmt_restore_product',
-  get_paginated_products: 'prod_mgmt_get_paginated_products',
-  get_product_by_barcode: 'prod_mgmt_get_product_by_barcode',
-  get_product_by_id: 'prod_mgmt_get_product_by_id',
-
-  create_group_product: 'prod_mgmt_create_group_product',
-  update_group_product: 'prod_mgmt_update_group_product',
-  delete_group_product: 'prod_mgmt_delete_group_product',
-  restore_group_product: 'prod_mgmt_restore_group_product',
-  get_paginated_group_products: 'prod_mgmt_get_paginated_group_products',
-  get_group_by_group_id: 'prod_mgmt_get_group_by_group_id',
-
-  create_storage_location: 'prod_mgmt_create_storage_location',
-  update_storage_location: 'prod_mgmt_update_storage_location',
-  delete_storage_location: 'prod_mgmt_delete_storage_location',
-  restore_storage_location: 'prod_mgmt_restore_storage_location',
-  get_paginated_storage_locations: 'prod_mgmt_get_paginated_storage_locations',
-  get_storage_location_by_id: 'prod_mgmt_get_storage_location_by_id',
-
-  create_purchase_location: 'prod_mgmt_create_purchase_location',
-  update_purchase_location: 'prod_mgmt_update_purchase_location',
-  delete_purchase_location: 'prod_mgmt_delete_purchase_location',
-  restore_purchase_location: 'prod_mgmt_restore_purchase_location',
-  get_paginated_purchase_locations:
-    'prod_mgmt_get_paginated_purchase_locations',
-  get_purchase_location_by_id: 'prod_mgmt_get_purchase_location_by_id',
-
-  create_item: 'prod_mgmt_create_item',
-  update_item: 'prod_mgmt_update_item',
-  delete_item: 'prod_mgmt_delete_item',
-  restore_item: 'prod_mgmt_restore_item',
-  get_paginated_items: 'prod_mgmt_get_paginated_items',
-  get_item_by_id: 'prod_mgmt_get_item_by_id',
+  products: {
+    create: 'prod_mgmt_create_product',
+    update: 'prod_mgmt_update_product',
+    delete: 'prod_mgmt_delete_product',
+    restore: 'prod_mgmt_restore_product',
+    getPaginated: 'prod_mgmt_get_paginated_products',
+    getByBarcode: 'prod_mgmt_get_product_by_barcode',
+    getById: 'prod_mgmt_get_product_by_id',
+  },
+  groupProducts: {
+    create: 'prod_mgmt_create_group_product',
+    update: 'prod_mgmt_update_group_product',
+    delete: 'prod_mgmt_delete_group_product',
+    restore: 'prod_mgmt_restore_group_product',
+    getPaginated: 'prod_mgmt_get_paginated_group_products',
+    getByGroupId: 'prod_mgmt_get_group_by_group_id',
+  },
+  storageLocations: {
+    create: 'prod_mgmt_create_storage_location',
+    update: 'prod_mgmt_update_storage_location',
+    delete: 'prod_mgmt_delete_storage_location',
+    restore: 'prod_mgmt_restore_storage_location',
+    getPaginated: 'prod_mgmt_get_paginated_storage_locations',
+    getById: 'prod_mgmt_get_storage_location_by_id',
+  },
+  purchaseLocations: {
+    create: 'prod_mgmt_create_purchase_location',
+    update: 'prod_mgmt_update_purchase_location',
+    delete: 'prod_mgmt_delete_purchase_location',
+    restore: 'prod_mgmt_restore_purchase_location',
+    getPaginated: 'prod_mgmt_get_paginated_purchase_locations',
+    getById: 'prod_mgmt_get_purchase_location_by_id',
+  },
+  items: {
+    create: 'prod_mgmt_create_item',
+    update: 'prod_mgmt_update_item',
+    delete: 'prod_mgmt_delete_item',
+    restore: 'prod_mgmt_restore_item',
+    getPaginated: 'prod_mgmt_get_paginated_items',
+    getById: 'prod_mgmt_get_item_by_id',
+  },
 
   provinces: {
     findByCode: 'prod_mgmt_provinces_find_by_code',

@@ -1,6 +1,7 @@
+import moment from 'moment';
 import validbarcode from 'barcode-validator';
 
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetProductByBarcodeResDto } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import { Repository } from 'typeorm';
@@ -80,6 +81,57 @@ export class ProductsService {
 
     return {
       ...newProduct,
+    };
+  }
+
+  private static getProductDataAsArray(product: ProductEntity): any[] {
+    return [
+      product.id,
+      product.barcode,
+      product.brand,
+      product.category,
+      product.description,
+      product.image,
+      product.name,
+      product.price,
+      product.region,
+      product.timestamp.createdAt,
+      product.timestamp.updatedAt,
+      product.timestamp.deletedAt,
+    ];
+  }
+
+  private static extractProductDataFromCsvRow(row: string): ProductEntity {
+    const [
+      id,
+      barcode,
+      brand,
+      category,
+      description,
+      image,
+      name,
+      price,
+      region,
+      createdAt,
+      updatedAt,
+      deletedAt,
+    ] = row.split(',');
+
+    return {
+      id: id,
+      barcode: barcode,
+      brand: brand,
+      category: category,
+      description: description,
+      image: image,
+      name: name,
+      price: +price,
+      region: region,
+      timestamp: {
+        createdAt: moment(createdAt).toDate(),
+        updatedAt: moment(updatedAt).toDate(),
+        deletedAt: moment(deletedAt).toDate(),
+      },
     };
   }
 }

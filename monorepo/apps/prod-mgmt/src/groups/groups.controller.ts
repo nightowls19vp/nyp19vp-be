@@ -9,7 +9,9 @@ export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
   @MessagePattern(kafkaTopic.PROD_MGMT.init)
-  async init(@Payload() data: PkgMgmtInitReqDto) {
-    return await this.groupsService.init(data);
+  init(@Payload() data: PkgMgmtInitReqDto) {
+    console.log('#kafkaTopic.PROD_MGMT.init', data);
+
+    return this.groupsService.init(data);
   }
 }

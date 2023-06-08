@@ -1,4 +1,3 @@
-import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/product.dto';
 import {
   GetProductByBarcodeReqDto,
   GetProductByBarcodeResDto,
@@ -6,22 +5,24 @@ import {
 import ms from 'ms';
 import { firstValueFrom, timeout } from 'rxjs';
 
-import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';
 
+import { ProductDto } from '../dto/product.dto';
+
 @Injectable()
-export class ProductService implements OnModuleInit {
+export class ProductsService {
   constructor(
     @Inject('PROD_MGMT_SERVICE')
     private readonly prodMgmtClient: ClientKafka,
   ) {}
   onModuleInit() {
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.get_product_by_barcode,
+      kafkaTopic.PROD_MGMT.products.getByBarcode,
     );
     this.prodMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PROD_MGMT.create_product,
+      kafkaTopic.PROD_MGMT.products.create,
     );
   }
 
@@ -38,7 +39,7 @@ export class ProductService implements OnModuleInit {
       const response = await firstValueFrom(
         this.prodMgmtClient
           .send(
-            kafkaTopic.PROD_MGMT.get_product_by_barcode,
+            kafkaTopic.PROD_MGMT.products.getByBarcode,
             JSON.stringify(payload),
           )
           .pipe(timeout(ms('5s'))),
@@ -66,7 +67,7 @@ export class ProductService implements OnModuleInit {
 
     const response = await firstValueFrom(
       this.prodMgmtClient
-        .send(kafkaTopic.PROD_MGMT.create_product, JSON.stringify(payload))
+        .send(kafkaTopic.PROD_MGMT.products.create, JSON.stringify(payload))
         .pipe(timeout(ms('5s'))),
     );
 

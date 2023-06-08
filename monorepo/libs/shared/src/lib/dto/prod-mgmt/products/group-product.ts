@@ -6,10 +6,31 @@ import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateGroupProductReqDto extends PartialType(ProductDto) {
   @ApiProperty()
-  groupMongoId: string;
+  groupId: string;
 
-  @ApiProperty({})
-  productId: string;
+  @ApiProperty()
+  barcode?: string;
+
+  @ApiProperty()
+  brand?: string;
+
+  @ApiProperty()
+  category?: string;
+
+  @ApiProperty()
+  description?: string;
+
+  @ApiProperty()
+  image?: string;
+
+  @ApiProperty()
+  name?: string;
+
+  @ApiProperty()
+  price?: number;
+
+  @ApiProperty()
+  region?: string;
 }
 
 export class CreateGroupProductResDto extends BaseResDto {

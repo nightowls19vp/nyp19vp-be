@@ -18,13 +18,6 @@ export class GroupEntity {
   })
   id: string;
 
-  @Column({
-    name: 'group_mongo_id',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
-  groupMongoId: string;
-
   @OneToMany(() => GroupProductEntity, (groupProduct) => groupProduct.group, {
     cascade: true,
     onDelete: 'CASCADE',

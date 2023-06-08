@@ -8,13 +8,13 @@ import {
 } from 'typeorm';
 
 import { GroupEntity } from './group.entity';
-import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 import { ItemEntity } from './item.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity({
   name: 'group_products',
 })
-export class GroupProductEntity extends GroupEntity {
+export class GroupProductEntity extends ProductEntity {
   @ManyToOne(() => GroupEntity, (group) => group.groupProducts, {
     nullable: false,
     onDelete: 'CASCADE',

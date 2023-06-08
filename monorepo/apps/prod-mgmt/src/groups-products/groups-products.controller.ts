@@ -8,8 +8,10 @@ import { CreateGroupProductReqDto } from 'libs/shared/src/lib/dto/prod-mgmt/prod
 export class GroupsProductsController {
   constructor(private readonly groupsProductsService: GroupsProductsService) {}
 
-  @MessagePattern(kafkaTopic.PROD_MGMT.create_group_product)
+  @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.create)
   createGroupProduct(@Payload() reqDto: CreateGroupProductReqDto) {
+    console.log('#kafkaTopic.PROD_MGMT.groupProducts.create', reqDto);
+
     return this.groupsProductsService.createGroupProduct(reqDto);
   }
 }

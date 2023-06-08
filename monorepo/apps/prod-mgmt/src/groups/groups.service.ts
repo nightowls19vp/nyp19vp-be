@@ -18,12 +18,12 @@ export class GroupsService {
 
   async init(data: PkgMgmtInitReqDto): Promise<PkgMgmtInitResDto> {
     const group = await this.groupRepo.findOne({
-      where: { groupMongoId: data.groupMongoId },
+      where: { id: data.id },
     });
 
     if (!group) {
       const newGroup = this.groupRepo.create({
-        groupMongoId: data.groupMongoId,
+        id: data.id,
       });
 
       await this.groupRepo.save(newGroup);
@@ -32,6 +32,12 @@ export class GroupsService {
         statusCode: HttpStatus.CREATED,
         message: 'Create new group successfully',
         data: newGroup,
+      };
+    } else {
+      return {
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Group already exists',
+        data: group,
       };
     }
   }
