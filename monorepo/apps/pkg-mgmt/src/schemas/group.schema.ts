@@ -20,7 +20,14 @@ export class Group {
   })
   avatar: string;
 
-  @Prop({ type: String, unique: true, required: false })
+  @Prop({
+    type: String,
+    trim: true,
+    index: {
+      unique: true,
+      partialFilterExpression: { phone: { $type: 'string' } },
+    },
+  })
   channel: string;
 
   // @Prop({ type: Types.ObjectId, ref: 'Billing' })
