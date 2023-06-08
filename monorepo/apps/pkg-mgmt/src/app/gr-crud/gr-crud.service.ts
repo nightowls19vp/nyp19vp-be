@@ -34,6 +34,7 @@ import {
   kafkaTopic,
   UpdateChannelReqDto,
   UpdateChannelResDto,
+  GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -195,7 +196,6 @@ export class GrCrudService {
     console.log(`pkg-mgmt-svc#get-groups-userId #${user}`);
     const query = { user: user };
     role != 'All' ? (query['role'] = role) : null;
-    console.log(query);
 
     return this.grModel
       .find({ members: { $elemMatch: query } })
@@ -722,6 +722,38 @@ export class GrCrudService {
         message: 'Already have an activated package',
       });
     }
+  }
+  async getGrChannelByUserId(id: Types.ObjectId): Promise<GetGrChannelResDto> {
+    return await this.grModel
+      .find({ members: { $elemMatch: { user: id } } }, { channel: 1 })
+      .then((res) => {
+        if (res) {
+          console.log(res);
+          const channels = res.map((group) => {
+            return group.channel;
+          });
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `get group channels by userId #${id} successfully`,
+            channels: channels,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `No group found by userId #${id}`,
+            error: 'NOT FOUND',
+            channels: null,
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          error: 'INTERNAL SERVER ERROR',
+          channels: null,
+        });
+      });
   }
   async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     const { _id, user } = checkGrSUReqDto;

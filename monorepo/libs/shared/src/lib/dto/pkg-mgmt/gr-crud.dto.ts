@@ -86,6 +86,25 @@ export class GrPkgDto {
   status: string;
 }
 
+class BillingDto {
+  @ApiProperty({ type: String, nullable: true, required: true })
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  borrower: string;
+
+  @ApiProperty({ type: String, nullable: true, required: true })
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  lender: string;
+
+  @ApiProperty({ type: Number, required: true, minimum: 10000 })
+  amount: number;
+
+  @IsOptional()
+  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
+  status?: string;
+
+  createdBy: string;
+}
+
 export class GroupDto extends IdDto {
   @ApiProperty({
     type: String,
@@ -161,6 +180,14 @@ export class CreateGrReqDto {
 }
 
 export class CreateGrResDto extends BaseResDto {}
+
+export class CreateBillReqDto extends IntersectionType(IdDto, BillingDto) {}
+
+export class CreateBillResDto extends BaseResDto {}
+
+export class GetGrChannelResDto extends BaseResDto {
+  channels: string[];
+}
 
 export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
   package: PackageDto;

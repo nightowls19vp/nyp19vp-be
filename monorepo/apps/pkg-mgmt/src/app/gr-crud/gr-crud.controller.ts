@@ -23,6 +23,7 @@ import {
   CheckGrSUReqDto,
   UpdateChannelReqDto,
   UpdateChannelResDto,
+  GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -108,6 +109,13 @@ export class GrCrudController {
     return this.grCrudService.getGrByUserId(memberDto);
   }
 
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_CHANNEL_BY_USER)
+  getGrChannelByUserId(
+    @Payload() id: Types.ObjectId,
+  ): Promise<GetGrChannelResDto> {
+    return this.grCrudService.getGrChannelByUserId(id);
+  }
+
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR)
   updateAvatar(
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
@@ -133,4 +141,11 @@ export class GrCrudController {
   checkGrSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     return this.grCrudService.checkGrSU(checkGrSUReqDto);
   }
+
+  // @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL)
+  // createBill(
+  //   @Payload() createBillReqDto: CreateBillReqDto,
+  // ): Promise<CreateBillResDto> {
+  //   return this.grCrudService.createBill(createBillReqDto);
+  // }
 }
