@@ -26,7 +26,7 @@ async function bootstrap() {
           brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
         },
         consumer: {
-          groupId: 'users-consumer' + randomUUID(),
+          groupId: 'users-consumer',
         },
       },
     },

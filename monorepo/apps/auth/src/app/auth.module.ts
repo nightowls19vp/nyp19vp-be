@@ -79,7 +79,7 @@ dotenv.config({
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'auth' + 'users',
+            groupId: 'users-consumer',
           },
         },
       },
@@ -92,7 +92,7 @@ dotenv.config({
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'pkg-mgmt-consumer' + 'auth' + 'pkg-mgmt',
+            groupId: 'pkg-mgmt-consumer',
           },
         },
       },
