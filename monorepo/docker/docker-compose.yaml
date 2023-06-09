@@ -37,6 +37,23 @@ services:
       - mongo-keys:/mongo-conf
     command: 'bash -c "openssl rand -base64 741 > /mongo-conf/mongodb-keyfile; chmod 600 /mongo-conf/mongodb-keyfile; chown 999 /mongo-conf/mongodb-keyfile"'
 
+  mongo-replica-setup:
+    container_name: mongo-setup
+    env_file:
+      - ./.env
+    image: mongo
+    restart: always
+    volumes:
+    - ./docker-entrypoint-initdb.d/mongo-setup.sh:/docker-entrypoint-initdb.d/mongo-setup.sh
+    entrypoint: ["bash", "/docker-entrypoint-initdb.d/mongo-setup.sh" ]
+    env_file:
+        - .env
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+        - mongodb
+  
   mongodb:
     container_name: mongodb
     env_file:

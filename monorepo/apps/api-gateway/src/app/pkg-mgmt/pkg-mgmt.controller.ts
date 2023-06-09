@@ -55,6 +55,9 @@ import {
   PkgGrInvReqDto,
   UpdateChannelReqDto,
   UpdateChannelResDto,
+  CreateBillReqDto,
+  CreateBillResDto,
+  GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -203,12 +206,18 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.getGrByUserId(memberDto);
   }
 
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Get('gr/user_id/channel')
+  getGrChannelByUserId(@ATUser() user: unknown): Promise<GetGrChannelResDto> {
+    console.log("Get groups by user's id", user['userInfo']['_id']);
+    const id: Types.ObjectId = new Types.ObjectId(user['userInfo']['_id']);
+    return this.pkgMgmtService.getGrChannelByUserId(id);
+  }
+
   // create a magic link to invite user to join group
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @ApiOkResponse({
-    description: 'Join group by magic link',
-    type: BaseResDto,
-  })
+  @ApiOkResponse({ description: 'Join group by magic link', type: BaseResDto })
   @UseGuards(AccessJwtAuthGuard)
   @Post('gr/inv')
   invToJoinGr(
@@ -240,10 +249,7 @@ export class PkgMgmtController implements OnModuleInit {
 
   // join group by magic link
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @ApiOkResponse({
-    description: 'Join group by magic link',
-    type: BaseResDto,
-  })
+  @ApiOkResponse({ description: 'Join group by magic link', type: BaseResDto })
   @ApiQuery({ name: 'token', type: String })
   @UseGuards(AccessJwtAuthGuard)
   @Get('gr/join')
@@ -293,10 +299,7 @@ export class PkgMgmtController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Put('gr/:id')
-  @ApiOkResponse({
-    description: `Updated Group's name`,
-    type: UpdateGrResDto,
-  })
+  @ApiOkResponse({ description: `Updated Group's name`, type: UpdateGrResDto })
   updateGr(
     @Param('id') id: string,
     @Body() updateGrReqDto: UpdateGrReqDto,
@@ -410,5 +413,19 @@ export class PkgMgmtController implements OnModuleInit {
     console.log(`Remove package from group #${id}`, updateGrPkgReqDto);
     updateGrPkgReqDto._id = id;
     return this.pkgMgmtService.rmGrPkg(updateGrPkgReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('gr/:id/bill')
+  createBilling(
+    @ATUser() user: unknown,
+    @Param('id') id: string,
+    @Body() createBillReqDto: CreateBillReqDto,
+  ): Promise<CreateBillResDto> {
+    console.log(`Create billing of group #${id}`, createBillReqDto);
+    createBillReqDto._id = id;
+    createBillReqDto.createdBy = user?.['userInfo']?.['_id'];
+    return this.pkgMgmtService.createBilling(createBillReqDto);
   }
 }

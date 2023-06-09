@@ -40,15 +40,20 @@ import {
   PkgGrInvReqDto,
   UpdateChannelReqDto,
   UpdateChannelResDto,
+  CreateBillReqDto,
+  CreateBillResDto,
+  GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @Injectable()
 export class PkgMgmtService {
   constructor(
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
@@ -299,12 +304,25 @@ export class PkgMgmtService {
       addedBy: decodeRes['addedBy'] || null,
     };
 
-    return firstValueFrom(
+    return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
         JSON.stringify(payload),
       ),
-    );
+    ).then(async (res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        await this.socketGateway.handleEvent(
+          'joinGr',
+          payload.user,
+          payload.user,
+        );
+        return res;
+      } else
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+    });
   }
   async getGrByUserId(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
     return await firstValueFrom(
@@ -381,6 +399,53 @@ export class PkgMgmtService {
         .send(
           kafkaTopic.PACKAGE_MGMT.UPDATE_GR_CHANNEL,
           JSON.stringify(updateChannelReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async getGrChannelByUserId(id: Types.ObjectId): Promise<GetGrChannelResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(kafkaTopic.PACKAGE_MGMT.GET_GR_CHANNEL_BY_USER, id)
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async createBilling(
+    createBillReqDto: CreateBillReqDto,
+  ): Promise<CreateBillResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL,
+          JSON.stringify(createBillReqDto),
         )
         .pipe(
           timeout(5000),
