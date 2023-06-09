@@ -1,4 +1,4 @@
-import { Column, VirtualColumn } from 'typeorm';
+import { Column } from 'typeorm';
 
 export class AddressEmbeddedEntity {
   @Column({
@@ -37,12 +37,4 @@ export class AddressEmbeddedEntity {
     collation: 'utf8mb4_unicode_ci',
   })
   wardName: string;
-
-  // @VirtualColumn({
-  //   query(alias) {
-  //     return `${alias}.address_line_1, ${alias}.address_line_2, ${alias}.ward_name, ${alias}.district_name, ${alias}.province_name`;
-  //   },
-  //   type: 'varchar',
-  // })
-  // full: string;
 }

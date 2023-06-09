@@ -46,6 +46,7 @@ export class DivisionsService implements OnModuleInit {
         console.log('DivisionsService is initialized: ' + new Date());
       } else {
         clearInterval(logger);
+        console.log('DivisionsService initialized successfully: ' + new Date());
       }
     }, 1e3);
 

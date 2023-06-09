@@ -10,7 +10,11 @@ import { GroupsService } from './groups.service';
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
-  @ApiOperation({ summary: 'Init', description: 'Init group in service' })
+  @ApiOperation({
+    summary: 'Init',
+    description:
+      'Init group in service, **JUST FOR TEST** the `group` will be auto created when a group created',
+  })
   @Post('init')
   async init(@Body() reqDto: PkgMgmtInitReqDto) {
     return this.groupsService.init(reqDto);
