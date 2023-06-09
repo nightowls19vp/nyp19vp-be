@@ -1,6 +1,7 @@
 import {
   CreateGroupProductReqDto,
   CreateGroupProductResDto,
+  GetGroupProductsPaginatedReqDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import { Repository } from 'typeorm';
 
@@ -11,6 +12,8 @@ import { GroupProductEntity } from '../entities/group-product.entity';
 import { GroupEntity } from '../entities/group.entity';
 import { ProductEntity } from '../entities/product.entity';
 import { RpcException } from '@nestjs/microservices';
+import { paginate } from 'nestjs-paginate';
+import { groupProductsPaginateConfig } from './paginate-config/pagination.config';
 
 @Injectable()
 export class GroupsProductsService {
@@ -73,6 +76,23 @@ export class GroupsProductsService {
         region: groupProduct.region,
         timestamp: groupProduct.timestamp,
       },
+    };
+  }
+
+  async getGroupProductsPaginated(reqDto: GetGroupProductsPaginatedReqDto) {
+    console.log('reqDto', reqDto);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Get group products paginated successfully',
+      ...(await paginate(reqDto, this.groupProductRepo, {
+        ...groupProductsPaginateConfig,
+        where: {
+          group: {
+            id: reqDto.groupId,
+          },
+        },
+      })),
     };
   }
 }

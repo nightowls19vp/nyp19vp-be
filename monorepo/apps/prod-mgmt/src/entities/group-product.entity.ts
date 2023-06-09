@@ -15,6 +15,16 @@ import { ProductEntity } from './product.entity';
   name: 'group_products',
 })
 export class GroupProductEntity extends ProductEntity {
+  @PrimaryColumn({
+    name: 'id',
+    type: 'uuid',
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+    generated: 'uuid',
+    primaryKeyConstraintName: 'PK_group_products_id',
+  })
+  id: string;
+
   @ManyToOne(() => GroupEntity, (group) => group.groupProducts, {
     nullable: false,
     onDelete: 'CASCADE',

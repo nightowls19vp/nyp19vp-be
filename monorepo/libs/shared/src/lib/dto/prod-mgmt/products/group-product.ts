@@ -1,8 +1,9 @@
+import { PaginateQuery, Paginated } from 'nestjs-paginate';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProductDto } from '../dto/product.dto';
 import { BaseResDto } from '../../base.dto';
 import { GroupProductDto } from '../dto/group-product.dto';
-import { PartialType } from '@nestjs/mapped-types';
+import { IntersectionType, PartialType } from '@nestjs/mapped-types';
 
 export class CreateGroupProductReqDto extends PartialType(ProductDto) {
   @ApiProperty()
@@ -35,4 +36,26 @@ export class CreateGroupProductReqDto extends PartialType(ProductDto) {
 
 export class CreateGroupProductResDto extends BaseResDto {
   data?: GroupProductDto;
+}
+
+export class GetGroupProductsPaginatedReqDto implements PaginateQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: [string, string][];
+  searchBy?: string[];
+  search?: string;
+  filter?: { [column: string]: string | string[] };
+  select?: string[];
+  path: string;
+
+  @ApiProperty()
+  groupId: string;
+}
+
+export class GetGroupProductsPaginatedResDto extends Paginated<GroupProductDto> {
+  @ApiProperty()
+  statusCode: number;
+
+  @ApiProperty()
+  message: string;
 }
