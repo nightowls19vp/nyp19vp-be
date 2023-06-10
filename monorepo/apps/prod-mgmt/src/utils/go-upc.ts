@@ -75,7 +75,7 @@ export const fetchProductDataFromGoUpc = async (
 
     return productInfo;
   } catch (error) {
-    console.log('Error: ', error);
+    // console.log('Error: ', error);
 
     if (
       axios.isAxiosError(error) &&

@@ -19,11 +19,11 @@ import { Billing, BillingSchema } from '../../schemas/billing.schema';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users',
+            clientId: 'users' + 'gr-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + randomUUID(), // FIXME,
+            groupId: 'users-consumer' + 'gr-crud' + 'users',
           },
         },
       },

@@ -15,6 +15,7 @@ export class ProductEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     generated: 'uuid',
+    primaryKeyConstraintName: 'PK_products_id',
   })
   id: string;
 

@@ -1,13 +1,12 @@
 import * as bcrypt from 'bcrypt';
-import { time } from 'console';
 import { randomUUID } from 'crypto';
 import { toMs } from 'libs/shared/src/lib/utils';
 import { firstValueFrom, timeout } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
-import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   CreateAccountReqDto,

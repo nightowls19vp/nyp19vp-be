@@ -9,7 +9,6 @@ import { AccountEntity } from '../entities/account.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AccountService } from '../services/account.service';
-import { userInfo } from 'os';
 
 @Injectable()
 export class DbService {

@@ -19,11 +19,11 @@ dotenv.config({
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users',
+            clientId: 'users' + 'api-gateway' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + randomUUID(),
+            groupId: 'users-consumer' + 'api-gateway' + 'users',
           },
         },
       },

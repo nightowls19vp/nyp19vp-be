@@ -8,6 +8,12 @@ import { DistrictEntity } from '../entities/district.entity';
 import { ProvinceEntity } from '../entities/province.entity';
 import { WardEntity } from '../entities/ward.entity';
 
+import * as https from 'https';
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
 @Injectable()
 export class DivisionsService implements OnModuleInit {
   private static apiHost = 'https://provinces.open-api.vn/api/';
@@ -35,13 +41,14 @@ export class DivisionsService implements OnModuleInit {
   async onModuleInit() {
     DivisionsService.isInit = true;
 
-    const logger = setTimeout(() => {
+    const logger = setInterval(() => {
       if (DivisionsService.isInit) {
-        console.log('DivisionsService is initialized');
+        console.log('DivisionsService is initialized: ' + new Date());
       } else {
         clearInterval(logger);
+        console.log('DivisionsService initialized successfully: ' + new Date());
       }
-    }, 500);
+    }, 1e3);
 
     await this.saveProvince();
     await this.saveDistrict();
@@ -57,6 +64,7 @@ export class DivisionsService implements OnModuleInit {
 
     const provinces = await axios.get(
       DivisionsService.apiHost + DivisionsService.provinceEndpoint,
+      { httpsAgent },
     );
 
     const provinceEntities = provinces.data.map((province) => {
@@ -79,6 +87,7 @@ export class DivisionsService implements OnModuleInit {
 
     const districts = await axios.get(
       DivisionsService.apiHost + DivisionsService.districtEndpoint,
+      { httpsAgent },
     );
 
     const districtEntities = districts.data.map((district) => {
@@ -101,6 +110,7 @@ export class DivisionsService implements OnModuleInit {
 
     const wards = await axios.get(
       DivisionsService.apiHost + DivisionsService.wardEndpoint,
+      { httpsAgent },
     );
 
     const wardEntities = wards.data.map((ward) => {

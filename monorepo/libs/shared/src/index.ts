@@ -18,6 +18,9 @@ export * as kafkaTopic from './lib/common/topics.kafka';
 
 export * as MOP from './lib/common/payment_method';
 
+export * from './lib/common/nest-paginate-decorators/paginate-filter.decorator';
+export * from './lib/common/nest-paginate-decorators/interfaces/filter.interface';
+
 // dto
 export * from './lib/shared';
 

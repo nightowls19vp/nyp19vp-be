@@ -34,7 +34,6 @@ export class LocationsService {
       addedBy: createPurchaseLocation.addedBy,
       group: {
         id: createPurchaseLocation.group.id,
-        groupMongoId: createPurchaseLocation.group.groupMongoId,
       },
     });
 
@@ -45,7 +44,6 @@ export class LocationsService {
       addedBy: purchaseLocation.addedBy,
       group: {
         id: purchaseLocation.group.id,
-        groupMongoId: purchaseLocation.group.groupMongoId,
         timestamp: purchaseLocation.group.timestamp,
       },
       timestamp: purchaseLocation.timestamp,
@@ -78,7 +76,6 @@ export class LocationsService {
         timestamp: purchaseLocation.timestamp,
         group: {
           id: purchaseLocation.group.id,
-          groupMongoId: purchaseLocation.group.groupMongoId,
           timestamp: purchaseLocation.group.timestamp,
         },
       },
@@ -92,7 +89,6 @@ export class LocationsService {
       ...createStorageLocation,
       group: {
         id: createStorageLocation.group.id,
-        groupMongoId: createStorageLocation.group.groupMongoId,
       },
     });
 
@@ -108,7 +104,6 @@ export class LocationsService {
         description: storageLocation.description,
         group: {
           id: storageLocation.group.id,
-          groupMongoId: storageLocation.group.groupMongoId,
           timestamp: storageLocation.group.timestamp,
         },
       },
@@ -138,7 +133,6 @@ export class LocationsService {
         description: storageLocation.description,
         group: {
           id: storageLocation.group.id,
-          groupMongoId: storageLocation.group.groupMongoId,
           groupProducts: undefined,
           purchaseLocations: undefined,
           storageLocations: undefined,

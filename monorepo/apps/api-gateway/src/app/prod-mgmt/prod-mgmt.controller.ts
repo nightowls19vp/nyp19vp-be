@@ -4,9 +4,9 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { ProductDto } from './dto/product.dto';
-import { LocationService } from './services/location.service';
-import { ProdMgmtService } from './services/prod-mgmt.service';
-import { ProductService } from './services/products.service';
+import { LocationsService } from './locations/locations.service';
+import { ProdMgmtService } from './prod-mgmt.service';
+import { ProductsService } from './products/products.service';
 
 @ApiTags('route: prod-mgmt')
 @Controller('prod-mgmt')
@@ -14,9 +14,9 @@ export class ProdMgmtController {
   constructor(
     private readonly prodMgmtService: ProdMgmtService,
 
-    private readonly productService: ProductService,
+    private readonly productService: ProductsService,
 
-    private readonly locationService: LocationService,
+    private readonly locationService: LocationsService,
   ) {}
 
   @ApiOkResponse({

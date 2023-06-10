@@ -6,7 +6,10 @@
     "declaration": true,
     "types": ["node"]
   },
-  "watchOptions": {"watchFile": "fixedPollingInterval"},
+  "watchOptions": { "watchFile": "fixedPollingInterval" },
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../../apps/prod-mgmt/src/groups-products/paginate-config/pagination.config.ts"
+  ]
 }
