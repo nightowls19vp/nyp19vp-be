@@ -24,7 +24,6 @@ import {
   CheckoutReqDto,
   VNPCreateOrderReqDto,
   VNPIpnUrlReqDto,
-  BaseResDto,
   VNPCreateOrderResDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -210,7 +209,6 @@ export class TxnCrudService {
   async zpCreateTrans(
     zpDataCallback: ZPDataCallback,
   ): Promise<CreateTransResDto> {
-    let result: CreateTransResDto;
     const item: ItemDto[] = JSON.parse(zpDataCallback.item);
     const newTrans = new this.transModel({
       _id: zpDataCallback.app_trans_id,
@@ -229,100 +227,65 @@ export class TxnCrudService {
         },
       },
     });
-    const session = await this.connection.startSession();
-    session.startTransaction();
-    try {
-      const trans = (await newTrans.save()).$session(session);
-      if (!trans) {
-        throw new NotFoundException();
-      }
-      const embedData = JSON.parse(zpDataCallback.embed_data);
-      if (embedData.columninfo) {
-        const columninfo = JSON.parse(embedData.columninfo);
-        const updateGrPkgReqDto: UpdateGrPkgReqDto = {
-          _id: columninfo.group_id,
-          package: {
-            _id: item[0].id,
-            duration: item[0].duration,
-            noOfMember: item[0].noOfMember,
-          },
-          user: zpDataCallback.app_user,
-        };
-        const renewGrPkg = await firstValueFrom(
-          this.pkgMgmtClient
-            .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
-            .pipe(timeout(5000)),
-        );
-        if (renewGrPkg.statusCode == HttpStatus.OK) {
-          await session.commitTransaction();
-          result = {
-            statusCode: HttpStatus.OK,
-            message: renewGrPkg.message,
-          };
-        } else {
-          await session.abortTransaction();
-          result = {
-            statusCode: renewGrPkg.statusCode,
-            message: renewGrPkg.message,
-          };
-        }
-      } else {
-        const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
-          item,
-          zpDataCallback.app_user,
-        );
-        const createGr = await firstValueFrom(
-          this.pkgMgmtClient
-            .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
-            .pipe(timeout(5000)),
-        );
-        if (createGr.statusCode == HttpStatus.CREATED) {
-          await session.commitTransaction();
-          result = {
-            statusCode: HttpStatus.CREATED,
-            message: `Create groups successfully`,
-          };
-        } else {
-          await session.abortTransaction();
-          result = {
-            statusCode: createGr.statusCode,
-            message: createGr.message,
-          };
-        }
-      }
+    const trans = await newTrans.save();
+    if (trans) {
       const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
         zpDataCallback.app_user,
         zpDataCallback.app_trans_id,
         item,
       );
-      const res = await firstValueFrom(
+      const updateTrxHist = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
           .pipe(timeout(5000)),
       );
-      if (res.statusCode == HttpStatus.OK) {
-        await session.commitTransaction();
-        result = {
-          statusCode: HttpStatus.OK,
-          message: `Create Transaction #${zpDataCallback.app_trans_id} successfully`,
-        };
+      if (updateTrxHist.statusCode != HttpStatus.OK) {
+        return Promise.resolve({
+          statusCode: updateTrxHist.statusCode,
+          message: updateTrxHist.message,
+        });
       } else {
-        await session.abortTransaction();
-        result = {
-          statusCode: res.statusCode,
-          message: res.message,
-        };
+        const embedData = JSON.parse(zpDataCallback.embed_data);
+        if (embedData.columninfo) {
+          const columninfo = JSON.parse(embedData.columninfo);
+          const updateGrPkgReqDto: UpdateGrPkgReqDto = {
+            _id: columninfo.group_id,
+            package: {
+              _id: item[0].id,
+              duration: item[0].duration,
+              noOfMember: item[0].noOfMember,
+            },
+            user: zpDataCallback.app_user,
+          };
+          const renewGrPkg = await firstValueFrom(
+            this.pkgMgmtClient
+              .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
+              .pipe(timeout(5000)),
+          );
+          if (renewGrPkg.statusCode != HttpStatus.OK) {
+            return Promise.resolve({
+              statusCode: renewGrPkg.statusCode,
+              message: renewGrPkg.message,
+            });
+          }
+        } else {
+          const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
+            item,
+            zpDataCallback.app_user,
+          );
+          const createGr = await firstValueFrom(
+            this.pkgMgmtClient
+              .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
+              .pipe(timeout(5000)),
+          );
+          if (createGr.statusCode != HttpStatus.CREATED) {
+            return Promise.resolve({
+              statusCode: createGr.statusCode,
+              message: createGr.message,
+            });
+          }
+        }
       }
-    } catch (error) {
-      await session.abortTransaction();
-      result = {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message,
-      };
-    } finally {
-      session.endSession();
-      // eslint-disable-next-line no-unsafe-finally
-      return Promise.resolve(result);
     }
   }
 
