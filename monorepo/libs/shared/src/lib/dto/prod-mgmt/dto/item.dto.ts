@@ -6,16 +6,24 @@ import { StorageLocationDto } from './storage-location.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
 export class ItemDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
-  @ApiProperty({ type: () => GroupProductDto, required: false })
+  @ApiProperty({ type: () => GroupProductDto, required: false, readOnly: true })
   groupProduct?: GroupProductDto;
 
-  @ApiProperty({ type: () => PurchaseLocationDto, required: false })
+  @ApiProperty({
+    type: () => PurchaseLocationDto,
+    required: false,
+    readOnly: true,
+  })
   purchaseLocation?: PurchaseLocationDto;
 
-  @ApiProperty({ type: () => StorageLocationDto, required: false })
+  @ApiProperty({
+    type: () => StorageLocationDto,
+    required: false,
+    readOnly: true,
+  })
   storageLocation?: StorageLocationDto;
 
   @ApiProperty({ required: false })
@@ -33,6 +41,6 @@ export class ItemDto {
   @ApiProperty({ required: false })
   image?: string;
 
-  // @ApiProperty({ type: () => TimestampEmbeddedDto, required: false })
+  @ApiProperty({ type: TimestampEmbeddedDto, required: false, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 }

@@ -5,10 +5,10 @@ import { ItemDto } from './item.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
 export class StorageLocationDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true, type: ProdMgmtGroupDto })
   group?: ProdMgmtGroupDto;
 
   @ApiProperty({ required: false })

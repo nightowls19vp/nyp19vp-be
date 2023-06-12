@@ -4,7 +4,7 @@ import { ItemDto } from './item.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
 export class GroupProductDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
   @ApiProperty()
@@ -31,12 +31,11 @@ export class GroupProductDto {
   @ApiProperty()
   description?: string;
 
-  // @ApiProperty({ type: () => [GroupProductDto] })
+  @ApiProperty({ type: GroupProductDto, isArray: true, readOnly: true })
   groupProducts?: GroupProductDto[];
 
-  // @ApiProperty({ type: () => TimestampEmbeddedDto })
+  @ApiProperty({ type: TimestampEmbeddedDto, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 
-  // @ApiProperty({ required: false })
   items?: ItemDto[];
 }

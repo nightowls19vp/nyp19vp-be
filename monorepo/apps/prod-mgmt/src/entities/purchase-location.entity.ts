@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { GroupEntity } from './group.entity';
 import { AddressEmbeddedEntity } from './address.embedded.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
@@ -22,6 +29,9 @@ export class PurchaseLocationEntity {
     onDelete: 'CASCADE',
     eager: true,
   })
+  @JoinColumn({
+    name: 'group_id',
+  })
   group: GroupEntity;
 
   @Column({
@@ -29,7 +39,7 @@ export class PurchaseLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
-    default: null,   
+    default: null,
   })
   name: string;
 
@@ -39,7 +49,7 @@ export class PurchaseLocationEntity {
     collation: 'utf8mb4_unicode_ci',
     comment: 'user info id - mongo id',
     nullable: true,
-    default: null,   
+    default: null,
   })
   addedBy: string;
 

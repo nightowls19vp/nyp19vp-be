@@ -38,9 +38,9 @@ export class LocationsService {
     try {
       const res = await firstValueFrom(
         this.prodMgmtClient
-          .send<CreatePurchaseLocationReqDto>(
+          .send<CreatePurchaseLocationResDto, CreatePurchaseLocationReqDto>(
             kafkaTopic.PROD_MGMT.purchaseLocations.create,
-            JSON.stringify(createPurchaseLocationReqDto),
+            { ...createPurchaseLocationReqDto },
           )
           .pipe(timeout(ms('5s'))),
       );
@@ -59,9 +59,9 @@ export class LocationsService {
     try {
       const res = await firstValueFrom(
         this.prodMgmtClient
-          .send(
+          .send<CreatePurchaseLocationResDto, CreatePurchaseLocationReqDto>(
             kafkaTopic.PROD_MGMT.storageLocations.create,
-            JSON.stringify(createPurchaseLocationReqDto),
+            { ...createPurchaseLocationReqDto },
           )
           .pipe(timeout(ms('5s'))),
       );

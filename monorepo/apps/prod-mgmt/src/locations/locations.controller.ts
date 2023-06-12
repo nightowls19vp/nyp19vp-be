@@ -21,6 +21,8 @@ export class LocationsController {
   async createPurchaseLocation(
     @Payload() data: CreatePurchaseLocationReqDto,
   ): Promise<CreatePurchaseLocationResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.purchaseLocations.create', data);
+
     return this.locationsService.createPurchaseLocation(data);
   }
 
@@ -28,6 +30,8 @@ export class LocationsController {
   async getPurchaseLocationById(
     @Payload() id: string,
   ): Promise<GetPurchaseLocationResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.purchaseLocations.getById', id);
+
     return this.locationsService.getPurchaseLocationById(id);
   }
 
@@ -36,6 +40,8 @@ export class LocationsController {
   async createStorageLocation(
     @Payload() data: CreateStorageLocationReqDto,
   ): Promise<CreateStorageLocationResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.storageLocations.create', data);
+
     return this.locationsService.createStorageLocation(data);
   }
 
@@ -43,6 +49,8 @@ export class LocationsController {
   async getStorageLocationById(
     @Payload() id: string,
   ): Promise<GetStorageLocationResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.storageLocations.getById', id);
+
     return this.locationsService.getStorageLocationById(id);
   }
 }

@@ -13,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { PurchaseLocationEntity } from '../entities/purchase-location.entity';
 import { StorageLocationEntity } from '../entities/storage-location.entity';
+import { GroupEntity } from '../entities/group.entity';
 
 @Injectable()
 export class LocationsService {
@@ -22,31 +23,49 @@ export class LocationsService {
 
     @InjectRepository(StorageLocationEntity)
     private readonly storageLocationRepo: Repository<StorageLocationEntity>,
+
+    @InjectRepository(GroupEntity)
+    private readonly groupRepo: Repository<GroupEntity>,
   ) {}
 
   async createPurchaseLocation(
     createPurchaseLocation: CreatePurchaseLocationReqDto,
   ): Promise<CreatePurchaseLocationResDto> {
+    const group = await this.groupRepo.findOneBy({
+      id: createPurchaseLocation.groupId,
+    });
+
+    if (!group) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Group not found',
+        data: undefined,
+      };
+    }
+
     const purchaseLocation = this.purchaseLocationRepo.create({
-      id: createPurchaseLocation.id,
       name: createPurchaseLocation.name,
       address: createPurchaseLocation.address,
       addedBy: createPurchaseLocation.addedBy,
-      group: {
-        id: createPurchaseLocation.group.id,
-      },
+      group: group,
     });
 
+    await this.purchaseLocationRepo.save(purchaseLocation);
+
     return {
-      id: purchaseLocation.id,
-      name: purchaseLocation.name,
-      address: purchaseLocation.address,
-      addedBy: purchaseLocation.addedBy,
-      group: {
-        id: purchaseLocation.group.id,
-        timestamp: purchaseLocation.group.timestamp,
+      statusCode: HttpStatus.CREATED,
+      message: 'Purchase location created',
+      data: {
+        id: purchaseLocation.id,
+        name: purchaseLocation.name,
+        address: purchaseLocation.address,
+        addedBy: purchaseLocation.addedBy,
+        group: {
+          id: purchaseLocation.group.id,
+          timestamp: purchaseLocation.group.timestamp,
+        },
+        timestamp: purchaseLocation.timestamp,
       },
-      timestamp: purchaseLocation.timestamp,
     };
   }
 
@@ -85,11 +104,24 @@ export class LocationsService {
   async createStorageLocation(
     createStorageLocation: CreateStorageLocationReqDto,
   ): Promise<CreateStorageLocationResDto> {
+    const group = await this.groupRepo.findOneBy({
+      id: createStorageLocation.groupId,
+    });
+
+    if (!group) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Group not found',
+        data: undefined,
+      };
+    }
+
     const storageLocation = this.storageLocationRepo.create({
-      ...createStorageLocation,
-      group: {
-        id: createStorageLocation.group.id,
-      },
+      name: createStorageLocation.name,
+      image: createStorageLocation.image,
+      addedBy: createStorageLocation.addedBy,
+      description: createStorageLocation.description,
+      group: group,
     });
 
     await this.storageLocationRepo.save(storageLocation);

@@ -5,10 +5,14 @@ import { ItemDto } from './item.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PurchaseLocationDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    required: false,
+    readOnly: true,
+    type: ProdMgmtGroupDto,
+  })
   group?: ProdMgmtGroupDto;
 
   @ApiProperty({ required: false })
@@ -20,9 +24,8 @@ export class PurchaseLocationDto {
   @ApiProperty({ required: false })
   address?: AddressEmbeddedDto;
 
-  // @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: TimestampEmbeddedDto, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 
-  @ApiProperty({ required: false })
   items?: ItemDto[];
 }

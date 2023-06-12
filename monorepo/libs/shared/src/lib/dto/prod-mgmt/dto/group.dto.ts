@@ -11,30 +11,15 @@ import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
   name: 'groups',
 })
 export class ProdMgmtGroupDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
-  // @ApiProperty({
-  //   required: false,
-  //   type: [GroupProductDto],
-  //   name: '__groupProducts__',
-  // })
   groupProducts?: GroupProductDto[];
 
-  // @ApiProperty({
-  //   required: false,
-  //   type: [PurchaseLocationDto],
-  //   name: '__purchaseLocations__',
-  // })
   purchaseLocations?: PurchaseLocationDto[];
 
-  // @ApiProperty({
-  //   required: false,
-  //   type: [StorageLocationDto],
-  //   name: '__storageLocations__',
-  // })
   storageLocations?: StorageLocationDto[];
 
-  // @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true, type: TimestampEmbeddedDto })
   timestamp?: TimestampEmbeddedDto;
 }
