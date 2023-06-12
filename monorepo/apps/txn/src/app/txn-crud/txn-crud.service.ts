@@ -594,7 +594,7 @@ const mapZaloPayReqDto = (
       'https://www.youtube.com/watch?v=q8AzTS4Yq3I&ab_channel=Quy%C3%AAnLouis',
   };
   if (group_id) {
-    embed_data['columninfo'] = `{"group_id": ${group_id}}`;
+    embed_data['columninfo'] = `{"group_id": "${group_id}"}`;
   }
 
   const hmacinput = [
