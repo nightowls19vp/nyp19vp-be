@@ -98,6 +98,10 @@ class BillingDto {
   @ApiProperty({ type: Number, required: true, minimum: 10000 })
   amount: number;
 
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+  description?: string;
+
   @IsOptional()
   @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
   status?: string;
@@ -257,6 +261,10 @@ export class UpdateGrPkgResDto extends BaseResDto {}
 
 export class CheckGrSUReqDto extends IdDto {
   user: string;
+}
+
+export class IsGrUReqDto extends IdDto {
+  users: string[];
 }
 
 export class PkgGrInvReqDto {

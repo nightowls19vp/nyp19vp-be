@@ -454,7 +454,7 @@ export class PkgMgmtService {
           }),
         ),
     ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) {
+      if (res.statusCode == HttpStatus.CREATED) {
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {

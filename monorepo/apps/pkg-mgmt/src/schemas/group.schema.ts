@@ -30,8 +30,8 @@ export class Group {
   })
   channel: string;
 
-  // @Prop({ type: Types.ObjectId, ref: 'Billing' })
-  // billing: Billing;
+  @Prop({ type: Types.ObjectId, ref: 'Billing' })
+  billing: Billing;
 
   @Prop({ required: true, minlength: 1 })
   packages: GrPkg[];

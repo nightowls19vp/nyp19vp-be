@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import {
   CreateGrReqDto,
   CreateGrResDto,
@@ -35,8 +35,11 @@ import {
   UpdateChannelReqDto,
   UpdateChannelResDto,
   GetGrChannelResDto,
+  CreateBillResDto,
+  CreateBillReqDto,
+  IsGrUReqDto,
 } from '@nyp19vp-be/shared';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Package, PackageDocument } from '../../schemas/package.schema';
 import {
@@ -49,14 +52,18 @@ import { v4 } from 'uuid';
 import { ClientKafka } from '@nestjs/microservices';
 import { ObjectId } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
+import { Billing, BillingDocument } from '../../schemas/billing.schema';
 
 @Injectable()
 export class GrCrudService {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    @InjectModel(Billing.name)
+    private billModel: SoftDeleteModel<BillingDocument>,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
   async createGr(createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
     console.log('pkg-mgmt-svc#create-group: ', createGrReqDto);
@@ -706,7 +713,7 @@ export class GrCrudService {
           } else {
             return Promise.resolve({
               statusCode: HttpStatus.NOT_FOUND,
-              message: 'Group not found',
+              message: `Group #${_id} not found`,
             });
           }
         })
@@ -758,6 +765,83 @@ export class GrCrudService {
         });
       });
   }
+  async createBill(
+    createBillReqDto: CreateBillReqDto,
+  ): Promise<CreateBillResDto> {
+    const { _id, borrower, lender, createdBy } = createBillReqDto;
+    const users = [borrower, lender];
+    const isGrUReqDto: IsGrUReqDto = { _id: _id, users: users };
+    const isU = await this.isGrU(isGrUReqDto);
+    const isAuthorReqDto: IsGrUReqDto = { _id: _id, users: [createdBy] };
+    const isAuthor = await this.isGrU(isAuthorReqDto);
+    if (!isAuthor) {
+      return Promise.resolve({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'UNAUTHORIZED',
+        message: `MUST be group's member to create bill`,
+      });
+    } else if (!isU) {
+      return Promise.resolve({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'BAD REQUEST',
+        message: `Lender and borrower MUST be group's members`,
+      });
+    } else if (borrower === lender) {
+      return Promise.resolve({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'BAD REQUEST',
+        message: `The lender MUST be different from the borrower`,
+      });
+    } else {
+      const newBilling = new this.billModel({
+        borrower: borrower,
+        lender: lender,
+        amount: createBillReqDto.amount,
+        description: createBillReqDto.description,
+        status: 'PENDING',
+        createdBy: createBillReqDto.createdBy,
+      });
+      return await newBilling
+        .save()
+        .then(async (result) => {
+          if (result) {
+            return await this.grModel
+              .findByIdAndUpdate(
+                { _id: _id },
+                { $push: { billing: result._id } },
+              )
+              .then((res) => {
+                if (res) {
+                  return Promise.resolve({
+                    statusCode: HttpStatus.CREATED,
+                    message: `Created bill of group ${_id}`,
+                  });
+                } else {
+                  return Promise.resolve({
+                    statusCode: HttpStatus.NOT_FOUND,
+                    error: 'NOT FOUND',
+                    message: `Group #${_id} not found`,
+                  });
+                }
+              })
+              .catch((error) => {
+                return Promise.resolve({
+                  statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                  message: error.message,
+                  error: 'INTERNAL SERVER ERROR',
+                });
+              });
+          }
+        })
+        .catch((error) => {
+          return Promise.resolve({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: error.message,
+            error: 'INTERNAL SERVER ERROR',
+          });
+        });
+    }
+  }
   async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     const { _id, user } = checkGrSUReqDto;
     const isSU = await this.grModel.findOne({
@@ -765,6 +849,27 @@ export class GrCrudService {
       members: { $elemMatch: { user: user, role: 'Super User' } },
     });
     if (isSU) return true;
+    return false;
+  }
+  async isGrU(isGrUReqDto: IsGrUReqDto): Promise<boolean> {
+    const { _id, users } = isGrUReqDto;
+    const regex = /[0-9A-Fa-f]{6}/g;
+    let flag = true;
+    const group = await this.grModel.findOne({ _id: _id }, { members: 1 });
+    users.map((res) => {
+      if (res.match(regex)) {
+        const isU = group.members.filter((result) => {
+          return result.user == res;
+        });
+        if (!isU.length) flag = false;
+      } else {
+        const isU = group.members.filter((result) => {
+          return result.user === String(users);
+        });
+        if (!isU) flag = false;
+      }
+    });
+    if (flag) return true;
     return false;
   }
 }

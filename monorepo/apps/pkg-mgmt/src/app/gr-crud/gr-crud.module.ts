@@ -6,11 +6,13 @@ import { Group, GroupSchema } from '../../schemas/group.schema';
 import { Package, PackageSchema } from '../../schemas/package.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
+import { Billing, BillingSchema } from '../../schemas/billing.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
     MongooseModule.forFeature([{ name: Package.name, schema: PackageSchema }]),
+    MongooseModule.forFeature([{ name: Billing.name, schema: BillingSchema }]),
     ClientsModule.register([
       {
         name: 'USERS_SERVICE',

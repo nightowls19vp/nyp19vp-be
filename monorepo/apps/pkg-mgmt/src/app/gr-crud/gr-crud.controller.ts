@@ -24,6 +24,8 @@ import {
   UpdateChannelReqDto,
   UpdateChannelResDto,
   GetGrChannelResDto,
+  CreateBillReqDto,
+  CreateBillResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -142,10 +144,10 @@ export class GrCrudController {
     return this.grCrudService.checkGrSU(checkGrSUReqDto);
   }
 
-  // @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL)
-  // createBill(
-  //   @Payload() createBillReqDto: CreateBillReqDto,
-  // ): Promise<CreateBillResDto> {
-  //   return this.grCrudService.createBill(createBillReqDto);
-  // }
+  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL)
+  createBill(
+    @Payload() createBillReqDto: CreateBillReqDto,
+  ): Promise<CreateBillResDto> {
+    return this.grCrudService.createBill(createBillReqDto);
+  }
 }
