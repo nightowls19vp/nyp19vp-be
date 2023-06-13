@@ -280,8 +280,21 @@ export class GroupsProductsService {
       reqDto.id,
     );
 
+    const groupId = reqDto.groupId;
+    const id = reqDto.id;
+
+    // remove group id and id from the request dto to prevent updating them
+    delete reqDto.groupId;
+    delete reqDto.id;
+
+    // find the group product
     const groupProduct = await this.groupProductRepo.findOne({
-      where: { id: reqDto.id },
+      where: {
+        id,
+        group: {
+          id: groupId,
+        },
+      },
     });
 
     if (!groupProduct) {

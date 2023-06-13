@@ -26,6 +26,7 @@ import {
   Put,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -51,6 +52,9 @@ export class GroupProductsController {
     description: 'Create group product',
     type: CreateGroupProductResDto,
   })
+  @ApiBadRequestResponse({
+    description: 'Bad request when create group product.',
+  })
   @ApiNotFoundResponse({
     description: 'Group not found',
   })
@@ -72,6 +76,11 @@ export class GroupProductsController {
   @ApiOkResponse({
     description: 'Get group product by id',
     type: GetGroupProductByIdResDto,
+  })
+  @ApiBadRequestResponse({
+    description: `Bad request when get group product by id. Reason: 
+    - Invalid group product id
+    - Invalid group id`,
   })
   @ApiNotFoundResponse({
     description:
@@ -126,6 +135,11 @@ export class GroupProductsController {
     description: 'Delete group product by id',
     type: DeleteGroupProductResDto,
   })
+  @ApiBadRequestResponse({
+    description: `Bad request when get group product by id. Reason: 
+    - Invalid group product id
+    - Invalid group id`,
+  })
   @ApiNotFoundResponse({
     description:
       'Group product not found. Reason: The group product id does not exist',
@@ -161,6 +175,11 @@ export class GroupProductsController {
     description: 'Restore group product by id',
     type: RestoreGroupProductResDto,
   })
+  @ApiBadRequestResponse({
+    description: `Bad request when get group product by id. Reason: 
+    - Invalid group product id
+    - Invalid group id`,
+  })
   @ApiNotFoundResponse({
     description:
       'Group product not found. Reason: The group product id does not exist',
@@ -195,6 +214,11 @@ export class GroupProductsController {
   @ApiOkResponse({
     description: 'Update group product by id',
     type: UpdateGroupProductResDto,
+  })
+  @ApiBadRequestResponse({
+    description: `Bad request when get group product by id. Reason: 
+    - Invalid group product id
+    - Invalid group id`,
   })
   @ApiNotFoundResponse({
     description:
