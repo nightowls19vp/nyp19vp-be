@@ -46,7 +46,7 @@ export class SocketGateway
   }
 
   afterInit(server: any) {
-    console.log(server, 'init.');
+    console.log('Socket Gateway Initialized');
   }
   async handleEvent(event: string, user_id: string, data: any) {
     const client = await this.commService.getClientSocket(user_id);
