@@ -10,7 +10,7 @@ import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 
 import { LocationsService } from './locations.service';
 
-@ApiTags('route: prod-mgmt')
+@ApiTags('route: prod-mgmt', 'route: prod-mgmt/locations')
 @Controller('prod-mgmt/locations')
 export class LocationsController {
   constructor(private readonly locationsService: LocationsService) {}

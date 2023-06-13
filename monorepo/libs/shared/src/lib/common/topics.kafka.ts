@@ -104,7 +104,7 @@ export const PROD_MGMT = {
     delete: 'prod_mgmt_delete_group_product',
     restore: 'prod_mgmt_restore_group_product',
     getPaginated: 'prod_mgmt_get_paginated_group_products',
-    getByGroupId: 'prod_mgmt_get_group_by_group_id',
+    getById: 'prod_mgmt_get_group_by_id',
   },
   storageLocations: {
     create: 'prod_mgmt_create_storage_location',

@@ -1,44 +1,44 @@
 import { Paginated, PaginateQuery } from 'nestjs-paginate';
 
-import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseResDto } from '../../base.dto';
 import { GroupProductDto } from '../dto/group-product.dto';
-import { ProductDto } from '../dto/product.dto';
 
-export class CreateGroupProductReqDto extends PartialType(ProductDto) {
+/** CREATE GROUP PRODUCT */
+
+export class CreateGroupProductReqDto extends GroupProductDto {
+  @ApiProperty()
+  groupId: string;
+}
+
+export class CreateGroupProductResDto extends BaseResDto {
+  @ApiProperty({
+    type: GroupProductDto,
+    description: 'The group product.',
+  })
+  data?: GroupProductDto;
+}
+
+/** GET GROUP PRODUCT BY ID */
+
+export class GetGroupProductByIdReqDto {
   @ApiProperty()
   groupId: string;
 
   @ApiProperty()
-  barcode?: string;
-
-  @ApiProperty()
-  brand?: string;
-
-  @ApiProperty()
-  category?: string;
-
-  @ApiProperty()
-  description?: string;
-
-  @ApiProperty()
-  image?: string;
-
-  @ApiProperty()
-  name?: string;
-
-  @ApiProperty()
-  price?: number;
-
-  @ApiProperty()
-  region?: string;
+  id: string;
 }
 
-export class CreateGroupProductResDto extends BaseResDto {
+export class GetGroupProductByIdResDto extends BaseResDto {
+  @ApiProperty({
+    type: GroupProductDto,
+    description: 'The group product.',
+  })
   data?: GroupProductDto;
 }
+
+/** GET GROUP PRODUCTS PAGINATED */
 
 export class GetGroupProductsPaginatedReqDto implements PaginateQuery {
   page?: number;
@@ -60,4 +60,62 @@ export class GetGroupProductsPaginatedResDto extends Paginated<GroupProductDto> 
 
   @ApiProperty()
   message: string;
+}
+
+/**  DELETE GROUP PRODUCT */
+
+/**
+ * The `DeleteGroupProductReqDto.groupId` will be filled by the `groupId` from the request `Params`.
+ * The `DeleteGroupProductReqDto.id` will be filled by the `id` from the request `Params`.
+ */
+export class DeleteGroupProductReqDto {
+  @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
+  id: string;
+}
+
+export class DeleteGroupProductResDto extends BaseResDto {}
+
+/** UPDATE GROUP PRODUCT */
+
+/**
+ * The `UpdateGroupProductReqDto.groupId` will be filled by the `groupId` from the request `Params`.
+ * The `UpdateGroupProductReqDto.id` will be filled by the `id` from the request `Params`.
+ */
+export class UpdateGroupProductReqDto extends GroupProductDto {
+  @ApiProperty()
+  groupId: string;
+}
+
+export class UpdateGroupProductResDto extends BaseResDto {
+  @ApiProperty({
+    type: GroupProductDto,
+    description: 'The updated group product (new values).',
+  })
+  data?: GroupProductDto;
+}
+
+/** RESTORE GROUP PRODUCT */
+
+/**
+ * The `RestoreGroupProductReqDto.groupId` will be filled by the `groupId` from the request `Params`.
+ * The `RestoreGroupProductReqDto.id` will be filled by the `id` from the request `Params`.
+ */
+
+export class RestoreGroupProductReqDto {
+  @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
+  id: string;
+}
+
+export class RestoreGroupProductResDto extends BaseResDto {
+  @ApiProperty({
+    type: GroupProductDto,
+    description: 'The restored group product (new values).',
+  })
+  data?: GroupProductDto;
 }

@@ -31,9 +31,6 @@ export class GroupProductDto {
   @ApiProperty()
   description?: string;
 
-  @ApiProperty({ type: GroupProductDto, isArray: true, readOnly: true })
-  groupProducts?: GroupProductDto[];
-
   @ApiProperty({ type: TimestampEmbeddedDto, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 
