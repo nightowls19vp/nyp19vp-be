@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProvincesService } from './provinces.service';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('divisions')
 @Controller('p')
@@ -18,6 +18,12 @@ export class ProvincesController {
     return this.provincesService.search(q || '%');
   }
 
+  @ApiParam({
+    name: 'code',
+    required: true,
+    type: 'number',
+    description: 'Province code',
+  })
   @Get(':code')
   findOne(@Param('code') code: string) {
     return this.provincesService.findByCode(+code);

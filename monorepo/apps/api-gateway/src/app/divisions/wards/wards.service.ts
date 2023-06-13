@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { firstValueFrom, timeout } from 'rxjs';
+import { firstValueFrom, timeout, toArray } from 'rxjs';
 
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
