@@ -545,12 +545,10 @@ export class GrCrudService {
     );
     if (grPkgs) {
       const notAcitivatedPkg = grPkgs.packages.filter(
-        (elem) => elem.status == 'Not Activated',
+        (elem) => elem.status == 'Not Activated' || elem.status == 'Active',
       );
       const endDateArray = notAcitivatedPkg.map((x) => x.endDate);
-      console.log(notAcitivatedPkg);
       const start: Date = maxDate(endDateArray);
-      console.log(start);
       const end: Date = addDays(start, updateGrPkgReqDto.package.duration);
       const pkg: GrPkgDto = {
         package: updateGrPkgReqDto.package,
