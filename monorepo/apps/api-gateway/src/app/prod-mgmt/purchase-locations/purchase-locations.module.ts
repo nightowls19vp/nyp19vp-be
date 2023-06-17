@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { ItemsController } from './items.controller';
-import { ItemsService } from './items.service';
+import { PurchaseLocationsController } from './purchase-locations.controller';
+import { PurchaseLocationsService } from './purchase-locations.service';
 
 @Module({
   imports: [
@@ -12,17 +12,17 @@ import { ItemsService } from './items.service';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'prod-mgmt' + 'api-gateway' + 'items',
+            clientId: 'prod-mgmt' + 'api-gateway' + 'purchase-locations',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'prod-mgmt' + 'api-gateway' + 'items',
+            groupId: 'prod-mgmt' + 'api-gateway' + 'purchase-locations',
           },
         },
       },
     ]),
   ],
-  controllers: [ItemsController],
-  providers: [ItemsService],
+  controllers: [PurchaseLocationsController],
+  providers: [PurchaseLocationsService],
 })
-export class ItemsModule {}
+export class PurchaseLocationsModule {}

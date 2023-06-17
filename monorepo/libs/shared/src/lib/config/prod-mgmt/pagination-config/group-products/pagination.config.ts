@@ -1,6 +1,6 @@
 import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
 
-export const filteredColumns: IPaginateFilterableColumns = {
+export const groupProductsFilteredColumns: IPaginateFilterableColumns = {
   ['id']: true,
   ['barcode']: true,
   ['name']: true,
@@ -11,9 +11,10 @@ export const filteredColumns: IPaginateFilterableColumns = {
   ['region']: true,
   ['timestamp.createdAt']: true,
   ['timestamp.updatedAt']: true,
+  ['timestamp.deletedAt']: true,
 };
 
-const columns = [
+export const groupProductColumns = [
   'id',
   'barcode',
   'name',
@@ -24,7 +25,12 @@ const columns = [
   'region',
   'timestamp.createdAt',
   'timestamp.updatedAt',
+  'timestamp.deletedAt',
 ];
-export const sortableColumns: string[] = columns.map((val) => `${val}`);
+export const groupProductsSortableColumns: string[] = groupProductColumns.map(
+  (val) => `${val}`,
+);
 
-export const searchableColumns: string[] = columns.map((val) => `${val}`);
+export const groupProductsSearchableColumns: string[] = groupProductColumns.map(
+  (val) => `${val}`,
+);

@@ -1,7 +1,7 @@
 import {
-  filteredColumns,
-  searchableColumns,
-  sortableColumns,
+  groupProductsFilteredColumns,
+  groupProductsSearchableColumns,
+  groupProductsSortableColumns,
 } from 'libs/shared/src/lib/config/prod-mgmt';
 import { GroupProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/group-product.dto';
 import {
@@ -22,6 +22,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
 } from '@nestjs/common';
@@ -110,14 +111,14 @@ export class GroupProductsController {
   }
 
   @ApiOperation({
-    summary: 'Get PAGINATED group products',
-    description: 'Get PAGINATED group products',
+    summary: 'Get **PAGINATED** group products',
+    description: 'Get **PAGINATED** group products',
   })
   @PaginateQueryOptions(
     GroupProductDto,
-    searchableColumns,
-    sortableColumns,
-    filteredColumns,
+    groupProductsSearchableColumns,
+    groupProductsSortableColumns,
+    groupProductsFilteredColumns,
   )
   @Get(':groupId')
   getGroupProducts(
@@ -199,7 +200,7 @@ export class GroupProductsController {
     description: 'The id of the group product',
     type: String,
   })
-  @Post(':groupId/:id/restore')
+  @Patch(':groupId/:id')
   restoreGroupProduct(
     @Param('groupId') groupId: string,
     @Param('id') id: string,

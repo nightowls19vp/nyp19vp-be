@@ -13,15 +13,15 @@ import {
   UpdateGroupProductResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import { paginate } from 'nestjs-paginate';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { AppService } from '../app/app.service';
 import { GroupProductEntity } from '../entities/group-product.entity';
 import { GroupEntity } from '../entities/group.entity';
-import { ProductEntity } from '../entities/product.entity';
 import { groupProductsPaginateConfig } from './paginate-config/pagination.config';
 
 @Injectable()
@@ -30,44 +30,16 @@ export class GroupsProductsService {
     @InjectRepository(GroupEntity)
     private readonly groupRepo: Repository<GroupEntity>,
 
-    @InjectRepository(ProductEntity)
-    private readonly productRepo: Repository<ProductEntity>,
-
     @InjectRepository(GroupProductEntity)
     private readonly groupProductRepo: Repository<GroupProductEntity>,
   ) {}
-
-  /**
-   * Validates the provided group ID and group product ID.
-   * @param groupId The ID of the group to validate.
-   * @param groupProductId The ID of the group product to validate.
-   * @throws RpcException with a status code of HttpStatus.BAD_REQUEST and a message indicating which parameter is missing if either parameter is falsy.
-   */
-  private static validateGroupIdAndGroupProductId(
-    groupId: string,
-    groupProductId: string,
-  ): void {
-    if (!groupId) {
-      throw new RpcException({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Group ID is required.',
-      });
-    }
-
-    if (!groupProductId) {
-      throw new RpcException({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Group product ID is required.',
-      });
-    }
-  }
 
   /**
    * Converts a GroupEntity object to a GroupProductDto object.
    * @param groupProduct The GroupEntity object to be converted.
    * @returns A GroupProductDto object containing the converted properties.
    */
-  private static toDto(groupProduct: GroupProductEntity): GroupProductDto {
+  public static toDto(groupProduct: GroupProductEntity): GroupProductDto {
     return {
       id: groupProduct.id,
       barcode: groupProduct.barcode,
@@ -83,11 +55,25 @@ export class GroupsProductsService {
   }
 
   /**
+   * Validates the given product ID.
+   * @param groupProductId The product ID to be validated.
+   * @throws RpcException with status code HttpStatus.BAD_REQUEST and message 'Product ID is required' if the product ID is falsy.
+   */
+  private static validateGroupProductId(groupProductId: string) {
+    if (!groupProductId) {
+      throw new RpcException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Product ID is required',
+      });
+    }
+  }
+
+  /**
    * Creates a new group product and adds it to the specified group.
    * @param reqDto The DTO containing the details of the new group product.
    * @returns A DTO containing the details of the newly created group product and the status code and message of the operation.
    * If the specified group does not exist, the status code will be HttpStatus.NOT_FOUND and the message will be 'Group not found'.
-   * If the creation of the new group product fails, the status code will be HttpStatus.CONFLICT and the message will be 'Create new group product failed'.
+   * If the creation of the new group product fails, the status code will be HttpStatus.INTERNAL_SERVER_ERROR and the message will be 'Create new group product failed'.
    */
   async createGroupProduct(
     reqDto: CreateGroupProductReqDto,
@@ -122,7 +108,7 @@ export class GroupsProductsService {
       await this.groupProductRepo.save(groupProduct);
     } catch (error) {
       throw new RpcException({
-        statusCode: HttpStatus.CONFLICT,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: error.message || 'Create new group product failed',
         data: error?.data || undefined,
       });
@@ -147,7 +133,10 @@ export class GroupsProductsService {
     groupId,
   }: GetGroupProductByIdReqDto): Promise<GetGroupProductByIdResDto> {
     // check if group id is provided
-    GroupsProductsService.validateGroupIdAndGroupProductId(groupId, id);
+    AppService.validateGroupId(groupId);
+
+    // check if group product id is provided
+    GroupsProductsService.validateGroupProductId(id);
 
     // find group product
     const groupProduct = await this.groupProductRepo.findOne({
@@ -179,8 +168,6 @@ export class GroupsProductsService {
    * @returns A DTO containing the paginated list of group products and the status code and message of the operation.
    */
   async getGroupProductsPaginated(reqDto: GetGroupProductsPaginatedReqDto) {
-    console.log('reqDto', reqDto);
-
     return {
       statusCode: HttpStatus.OK,
       message: 'Get group products paginated successfully',
@@ -205,7 +192,10 @@ export class GroupsProductsService {
     groupId,
   }: DeleteGroupProductReqDto): Promise<DeleteGroupProductResDto> {
     // check if group id is provided
-    GroupsProductsService.validateGroupIdAndGroupProductId(groupId, id);
+    AppService.validateGroupId(groupId);
+
+    // check if group product id is provided
+    GroupsProductsService.validateGroupProductId(id);
 
     const deleteResult = await this.groupProductRepo.softDelete({
       id,
@@ -242,12 +232,18 @@ export class GroupsProductsService {
     id,
   }: RestoreGroupProductReqDto): Promise<RestoreGroupProductResDto> {
     // check if group id is provided
-    GroupsProductsService.validateGroupIdAndGroupProductId(groupId, id);
+    AppService.validateGroupId(groupId);
+
+    // check if group product id is provided
+    GroupsProductsService.validateGroupProductId(id);
 
     const restoreResult = await this.groupProductRepo.restore({
       id,
       group: {
         id: groupId,
+      },
+      timestamp: {
+        deletedAt: Not(IsNull()),
       },
     });
 
@@ -275,10 +271,10 @@ export class GroupsProductsService {
     reqDto: UpdateGroupProductReqDto,
   ): Promise<UpdateGroupProductResDto> {
     // check if group id is provided
-    GroupsProductsService.validateGroupIdAndGroupProductId(
-      reqDto.groupId,
-      reqDto.id,
-    );
+    AppService.validateGroupId(reqDto.groupId);
+
+    // check if group product id is provided
+    GroupsProductsService.validateGroupProductId(reqDto.id);
 
     const groupId = reqDto.groupId;
     const id = reqDto.id;

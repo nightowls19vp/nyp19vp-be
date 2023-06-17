@@ -38,7 +38,7 @@ export class GetGroupProductByIdResDto extends BaseResDto {
   data?: GroupProductDto;
 }
 
-/** GET GROUP PRODUCTS PAGINATED */
+/** GET GROUP PRODUCTS **PAGINATED** */
 
 export class GetGroupProductsPaginatedReqDto implements PaginateQuery {
   page?: number;
@@ -69,10 +69,14 @@ export class GetGroupProductsPaginatedResDto extends Paginated<GroupProductDto> 
  * The `DeleteGroupProductReqDto.id` will be filled by the `id` from the request `Params`.
  */
 export class DeleteGroupProductReqDto {
-  @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   groupId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   id: string;
 }
 
@@ -85,7 +89,9 @@ export class DeleteGroupProductResDto extends BaseResDto {}
  * The `UpdateGroupProductReqDto.id` will be filled by the `id` from the request `Params`.
  */
 export class UpdateGroupProductReqDto extends GroupProductDto {
-  @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   groupId: string;
 }
 
@@ -105,10 +111,14 @@ export class UpdateGroupProductResDto extends BaseResDto {
  */
 
 export class RestoreGroupProductReqDto {
-  @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   groupId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   id: string;
 }
 

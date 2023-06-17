@@ -9,18 +9,18 @@ export class ItemDto {
   @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
-  @ApiProperty({ type: () => GroupProductDto, required: false, readOnly: true })
+  @ApiProperty({ type: GroupProductDto, required: false, readOnly: true })
   groupProduct?: GroupProductDto;
 
   @ApiProperty({
-    type: () => PurchaseLocationDto,
+    type: PurchaseLocationDto,
     required: false,
     readOnly: true,
   })
   purchaseLocation?: PurchaseLocationDto;
 
   @ApiProperty({
-    type: () => StorageLocationDto,
+    type: StorageLocationDto,
     required: false,
     readOnly: true,
   })

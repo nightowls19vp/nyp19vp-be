@@ -36,6 +36,7 @@ export class PurchaseLocationEntity {
 
   @Column({
     name: 'name',
+    unique: true,
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
@@ -65,6 +66,16 @@ export class PurchaseLocationEntity {
     prefix: false,
   })
   address: AddressEmbeddedEntity;
+
+  @Column({
+    name: 'description',
+    type: 'text',
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+    nullable: true,
+    default: null,
+  })
+  description: string;
 
   @Column(() => TimestampEmbeddedEntity, {
     prefix: false,

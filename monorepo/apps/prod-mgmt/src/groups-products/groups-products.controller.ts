@@ -1,9 +1,15 @@
 import {
   CreateGroupProductReqDto,
+  CreateGroupProductResDto,
   DeleteGroupProductReqDto,
+  DeleteGroupProductResDto,
   GetGroupProductByIdReqDto,
+  GetGroupProductByIdResDto,
   GetGroupProductsPaginatedReqDto,
   RestoreGroupProductReqDto,
+  RestoreGroupProductResDto,
+  UpdateGroupProductReqDto,
+  UpdateGroupProductResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 
 import { Controller } from '@nestjs/common';
@@ -17,42 +23,54 @@ export class GroupsProductsController {
   constructor(private readonly groupsProductsService: GroupsProductsService) {}
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.create)
-  createGroupProduct(@Payload() reqDto: CreateGroupProductReqDto) {
+  async createGroupProduct(
+    @Payload() reqDto: CreateGroupProductReqDto,
+  ): Promise<CreateGroupProductResDto> {
     console.log('#kafkaTopic.PROD_MGMT.groupProducts.create', reqDto);
 
     return this.groupsProductsService.createGroupProduct(reqDto);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.getById)
-  getGroupProductById(@Payload() data: GetGroupProductByIdReqDto) {
-    console.log('#kafkaTopic.PROD_MGMT.groupProducts.getById', data);
+  async getGroupProductById(
+    @Payload() reqDto: GetGroupProductByIdReqDto,
+  ): Promise<GetGroupProductByIdResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.groupProducts.getById', reqDto);
 
-    return this.groupsProductsService.getGroupProductById(data);
+    return this.groupsProductsService.getGroupProductById(reqDto);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.getPaginated)
-  getGroupProductsPaginated(@Payload() data: GetGroupProductsPaginatedReqDto) {
-    console.log('#kafkaTopic.PROD_MGMT.groupProducts.getPaginated', data);
+  async getGroupProductsPaginated(
+    @Payload() reqDto: GetGroupProductsPaginatedReqDto,
+  ) {
+    console.log('#kafkaTopic.PROD_MGMT.groupProducts.getPaginated', reqDto);
 
-    return this.groupsProductsService.getGroupProductsPaginated(data);
+    return this.groupsProductsService.getGroupProductsPaginated(reqDto);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.delete)
-  deleteGroupProduct(@Payload() data: DeleteGroupProductReqDto) {
-    console.log('#kafkaTopic.PROD_MGMT.groupProducts.delete', data);
+  async deleteGroupProduct(
+    @Payload() reqDto: DeleteGroupProductReqDto,
+  ): Promise<DeleteGroupProductResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.groupProducts.delete', reqDto);
 
-    return this.groupsProductsService.deleteGroupProduct(data);
+    return this.groupsProductsService.deleteGroupProduct(reqDto);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.restore)
-  restoreGroupProduct(@Payload() data: RestoreGroupProductReqDto) {
-    console.log('#kafkaTopic.PROD_MGMT.groupProducts.restore', data);
+  async restoreGroupProduct(
+    @Payload() reqDto: RestoreGroupProductReqDto,
+  ): Promise<RestoreGroupProductResDto> {
+    console.log('#kafkaTopic.PROD_MGMT.groupProducts.restore', reqDto);
 
-    return this.groupsProductsService.restoreGroupProduct(data);
+    return this.groupsProductsService.restoreGroupProduct(reqDto);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.groupProducts.update)
-  updateGroupProduct(@Payload() reqDto: CreateGroupProductReqDto) {
+  async updateGroupProduct(
+    @Payload() reqDto: UpdateGroupProductReqDto,
+  ): Promise<UpdateGroupProductResDto> {
     console.log('#kafkaTopic.PROD_MGMT.groupProducts.update', reqDto);
 
     return this.groupsProductsService.updateGroupProduct(reqDto);

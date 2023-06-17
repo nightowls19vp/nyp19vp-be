@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { BaseResDto } from '../../base.dto';
 import { ProductDto } from '../dto/product.dto';
 
@@ -6,7 +7,10 @@ export class GetProductByBarcodeReqDto {
 }
 
 export class GetProductByBarcodeResDto extends BaseResDto {
-  data: ProductDto;
+  @ApiProperty({
+    type: ProductDto,
+  })
+  data?: ProductDto;
 }
 
 export * from './group-product';

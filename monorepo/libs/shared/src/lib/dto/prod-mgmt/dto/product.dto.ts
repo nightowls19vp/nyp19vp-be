@@ -30,7 +30,7 @@ export class ProductDto {
   description?: string;
 
   @ApiProperty({
-    type: () => TimestampEmbeddedDto,
+    type: TimestampEmbeddedDto,
     required: false,
     readOnly: true,
   })
