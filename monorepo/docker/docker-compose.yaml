@@ -46,8 +46,6 @@ services:
     volumes:
     - ./docker-entrypoint-initdb.d/mongo-setup.sh:/docker-entrypoint-initdb.d/mongo-setup.sh
     entrypoint: ["bash", "/docker-entrypoint-initdb.d/mongo-setup.sh" ]
-    env_file:
-        - .env
     environment:
         MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
         MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
