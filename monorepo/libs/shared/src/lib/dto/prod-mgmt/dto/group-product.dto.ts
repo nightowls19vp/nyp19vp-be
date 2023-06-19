@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ItemDto } from './item.dto';
+import { ProdMgmtItemDto } from './item.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
 export class GroupProductDto {
@@ -34,5 +34,5 @@ export class GroupProductDto {
   @ApiProperty({ type: TimestampEmbeddedDto, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 
-  items?: ItemDto[];
+  items?: ProdMgmtItemDto[];
 }

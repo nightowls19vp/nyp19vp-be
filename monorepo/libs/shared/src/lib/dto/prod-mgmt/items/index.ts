@@ -3,11 +3,11 @@ import { Paginated, PaginateQuery } from 'nestjs-paginate';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { BaseResDto } from '../../base.dto';
-import { ItemDto } from '../dto/item.dto';
+import { ProdMgmtItemDto } from '../dto/item.dto';
 
 /** CREATE ITEM */
 
-export class CreateItemReqDto extends ItemDto {
+export class CreateItemReqDto extends ProdMgmtItemDto {
   @ApiProperty({ required: true })
   groupProductId: string;
 
@@ -20,23 +20,26 @@ export class CreateItemReqDto extends ItemDto {
 
 export class CreateItemResDto extends BaseResDto {
   @ApiProperty({
-    type: ItemDto,
+    type: ProdMgmtItemDto,
   })
-  data?: ItemDto;
+  data?: ProdMgmtItemDto;
 }
 
 /** GET ITEM BY ID */
 
 export class GetItemByIdReqDto {
   @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
   id: string;
 }
 
 export class GetItemByIdResDto extends BaseResDto {
   @ApiProperty({
-    type: ItemDto,
+    type: ProdMgmtItemDto,
   })
-  data?: ItemDto;
+  data?: ProdMgmtItemDto;
 }
 
 /** GET ITEMS **PAGINATED** */
@@ -58,7 +61,7 @@ export class GetItemsPaginatedReqDto implements PaginateQuery {
   groupProductId?: string;
 }
 
-export class GetItemsPaginatedResDto extends Paginated<ItemDto> {
+export class GetItemsPaginatedResDto extends Paginated<ProdMgmtItemDto> {
   @ApiProperty()
   statusCode: number;
 
@@ -70,14 +73,17 @@ export class GetItemsPaginatedResDto extends Paginated<ItemDto> {
 
 export class DeleteItemReqDto {
   @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
   id: string;
 }
 
 export class DeleteItemResDto extends BaseResDto {
   @ApiProperty({
-    type: ItemDto,
+    type: ProdMgmtItemDto,
   })
-  data?: ItemDto;
+  data?: ProdMgmtItemDto;
 }
 
 /** UPDATE ITEM */
@@ -85,13 +91,18 @@ export class DeleteItemResDto extends BaseResDto {
 /**
  * The `UpdateItemReqDto.id` will be filled by the `@Param('id')` decorator in the controller.
  */
-export class UpdateItemReqDto extends ItemDto {}
+export class UpdateItemReqDto extends ProdMgmtItemDto {
+  @ApiProperty({
+    readOnly: true,
+  })
+  groupId?: string;
+}
 
 export class UpdateItemResDto extends BaseResDto {
   @ApiProperty({
-    type: ItemDto,
+    type: ProdMgmtItemDto,
   })
-  data?: ItemDto;
+  data?: ProdMgmtItemDto;
 }
 
 /** RESTORE ITEM */
@@ -101,12 +112,15 @@ export class UpdateItemResDto extends BaseResDto {
  */
 export class RestoreItemReqDto {
   @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
   id: string;
 }
 
 export class RestoreItemResDto extends BaseResDto {
   @ApiProperty({
-    type: ItemDto,
+    type: ProdMgmtItemDto,
   })
-  data?: ItemDto;
+  data?: ProdMgmtItemDto;
 }

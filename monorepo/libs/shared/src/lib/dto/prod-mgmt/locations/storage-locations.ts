@@ -1,5 +1,4 @@
-import { PartialType, PickType } from '@nestjs/mapped-types';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 
 import { BaseResDto } from '../../base.dto';
 import { ProdMgmtGroupDto } from '../dto/group.dto';

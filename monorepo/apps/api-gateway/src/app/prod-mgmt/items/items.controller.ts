@@ -10,10 +10,22 @@ import {
   GetItemByIdResDto,
   GetItemsPaginatedResDto,
   RestoreItemResDto,
+  UpdateItemReqDto,
+  UpdateItemResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/items';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -22,11 +34,13 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { ItemDto, PaginateQueryOptions } from '@nyp19vp-be/shared';
+import { PaginateQueryOptions } from '@nyp19vp-be/shared';
 
 import { ItemsService } from './items.service';
+import { ProdMgmtItemDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/item.dto';
 
 @ApiTags('route: prod-mgmt', 'route: prod-mgmt/items')
 @Controller('prod-mgmt/items')
@@ -70,13 +84,20 @@ export class ItemsController {
     - Timeout when connect to kafka microservice`,
   })
   @ApiParam({
+    name: 'groupId',
+    description: 'The group id',
+    type: String,
+    required: true,
+  })
+  @ApiParam({
     name: 'id',
     description: 'The item id',
     type: String,
+    required: true,
   })
-  @Get(':id')
-  getItemById(@Param('id') id: string) {
-    return this.itemsService.getItemById(id);
+  @Get(':groupId/:id')
+  getItemById(@Param('groupId') groupId: string, @Param('id') id: string) {
+    return this.itemsService.getItemById(groupId, id);
   }
 
   @ApiOperation({
@@ -84,14 +105,31 @@ export class ItemsController {
     description: 'Get **PAGINATED** items',
   })
   @PaginateQueryOptions(
-    ItemDto,
+    ProdMgmtItemDto,
     itemsSearchableColumns,
     itemsSortableColumns,
     itemsFilterableColumns,
   )
+  @ApiQuery({
+    name: 'groupId',
+    description: 'The group id',
+    type: String,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'groupProductId',
+    description:
+      'The group product id, pass if you want list all items of a group product',
+    type: String,
+    required: false,
+  })
   @Get()
-  getItems(@Paginate() query: PaginateQuery): Promise<GetItemsPaginatedResDto> {
-    return this.itemsService.getItemsPaginated(query);
+  getItems(
+    @Query('groupId') groupId: string,
+    @Query('groupProductId') groupProductId: string,
+    @Paginate() query: PaginateQuery,
+  ): Promise<GetItemsPaginatedResDto> {
+    return this.itemsService.getItemsPaginated(groupId, groupProductId, query);
   }
 
   @ApiOperation({
@@ -115,13 +153,20 @@ export class ItemsController {
     - Timeout when connect to kafka microservice`,
   })
   @ApiParam({
+    name: 'groupId',
+    description: 'The group id',
+    type: String,
+    required: true,
+  })
+  @ApiParam({
     name: 'id',
     description: 'The item id',
     type: String,
+    required: true,
   })
-  @Delete(':id')
-  deleteItem(@Param('id') id: string) {
-    return this.itemsService.deleteItem(id);
+  @Delete(':groupId/:id')
+  deleteItem(@Param('groupId') groupId: string, @Param('id') id: string) {
+    return this.itemsService.deleteItem(groupId, id);
   }
 
   @ApiOperation({
@@ -145,12 +190,61 @@ export class ItemsController {
     - Timeout when connect to kafka microservice`,
   })
   @ApiParam({
+    name: 'groupId',
+    description: 'The group id',
+    type: String,
+    required: true,
+  })
+  @ApiParam({
     name: 'id',
     description: 'The item id',
     type: String,
+    required: true,
   })
-  @Post(':id/restore')
-  restoreItem(@Param('id') id: string) {
-    return this.itemsService.restoreItem(id);
+  @Patch(':groupId/:id')
+  restoreItem(@Param('groupId') groupId: string, @Param('id') id: string) {
+    return this.itemsService.restoreItem(groupId, id);
+  }
+
+  @ApiOperation({
+    summary: 'Update item by id',
+    description: 'Update item by id',
+  })
+  @ApiOkResponse({
+    description: 'Update item by id',
+    type: UpdateItemResDto,
+  })
+  @ApiBadRequestResponse({
+    description: `Bad request when get item by id. Reason:
+    - Invalid item id
+    - Group id does not exist`,
+  })
+  @ApiNotFoundResponse({
+    description: 'Item not found. Reason: The item id does not exist',
+  })
+  @ApiInternalServerErrorResponse({
+    description: `Internal server error when update item by id. Reason:
+    - Timeout when connect to database
+    - Timeout when connect to kafka microservice`,
+  })
+  @ApiParam({
+    name: 'groupId',
+    description: 'The group id',
+    type: String,
+    required: true,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The item id',
+    type: String,
+    required: true,
+  })
+  @Put(':groupId/:id')
+  async updateItem(
+    @Param('groupId') groupId: string,
+    @Param('id') id: string,
+    @Body() reqDto: UpdateItemReqDto,
+  ): Promise<UpdateItemResDto> {
+    return this.itemsService.updateItem(groupId, id, reqDto);
   }
 }

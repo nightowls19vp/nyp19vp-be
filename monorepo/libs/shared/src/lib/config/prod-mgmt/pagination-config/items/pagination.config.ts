@@ -8,6 +8,7 @@ export const itemsColumns = [
   'timestamp.deletedAt',
 
   // GroupProductEntity
+  'groupProduct.id',
   'groupProduct.barcode',
   'groupProduct.name',
   'groupProduct.category',
@@ -29,6 +30,11 @@ export const itemsSortableColumns: string[] = itemsColumns.map(
   (val) => `${val}`,
 );
 
-export const itemsSearchableColumns: string[] = itemsColumns.map(
-  (val) => `${val}`,
-);
+export const itemsSearchableColumns: string[] = itemsColumns
+  .filter(
+    (val) =>
+      !val.includes('timestamp.') ||
+      !val.startsWith('id') ||
+      !val.endsWith('id'),
+  )
+  .map((val) => `${val}`);

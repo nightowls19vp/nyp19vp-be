@@ -42,14 +42,14 @@ export class PurchaseLocationsService {
    */
   public static toDto(
     purchaseLocation: PurchaseLocationEntity,
-    addGroup = true,
+    addGroup = false,
   ): PurchaseLocationDto {
-    const dto = {
+    const dto: PurchaseLocationDto = {
       id: purchaseLocation.id,
       name: purchaseLocation.name,
       address: purchaseLocation.address,
       addedBy: purchaseLocation.addedBy,
-
+      description: purchaseLocation.description,
       timestamp: purchaseLocation.timestamp,
     };
 
@@ -112,17 +112,7 @@ export class PurchaseLocationsService {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Purchase location created',
-      data: {
-        id: purchaseLocation.id,
-        name: purchaseLocation.name,
-        address: purchaseLocation.address,
-        addedBy: purchaseLocation.addedBy,
-        group: {
-          id: purchaseLocation.group.id,
-          timestamp: purchaseLocation.group.timestamp,
-        },
-        timestamp: purchaseLocation.timestamp,
-      },
+      data: PurchaseLocationsService.toDto(purchaseLocation),
     };
   }
 
@@ -156,17 +146,7 @@ export class PurchaseLocationsService {
     return {
       statusCode: HttpStatus.OK,
       message: 'Purchase location found',
-      data: {
-        id: purchaseLocation.id,
-        name: purchaseLocation.name,
-        addedBy: purchaseLocation.addedBy,
-        address: purchaseLocation.address,
-        timestamp: purchaseLocation.timestamp,
-        group: {
-          id: purchaseLocation.group.id,
-          timestamp: purchaseLocation.group.timestamp,
-        },
-      },
+      data: PurchaseLocationsService.toDto(purchaseLocation),
     };
   }
 

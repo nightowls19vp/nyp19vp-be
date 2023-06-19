@@ -23,6 +23,9 @@ export class ItemEntity {
     onDelete: 'CASCADE',
     eager: true,
   })
+  @JoinColumn({
+    name: 'group_product_id',
+  })
   groupProduct: GroupProductEntity;
 
   @ManyToOne(

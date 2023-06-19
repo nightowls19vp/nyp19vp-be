@@ -36,9 +36,9 @@ export class StorageLocationsService {
 
   public static toDto(
     storageLocation: StorageLocationEntity,
-    addGroup = true,
+    addGroup = false,
   ): StorageLocationDto {
-    const dto = {
+    const dto: StorageLocationDto = {
       id: storageLocation.id,
       name: storageLocation.name,
       image: storageLocation.image,
@@ -116,16 +116,7 @@ export class StorageLocationsService {
     return {
       statusCode: HttpStatus.OK,
       message: 'Storage location found',
-      data: {
-        id: storageLocation.id,
-        name: storageLocation.name,
-        addedBy: storageLocation.addedBy,
-        description: storageLocation.description,
-        group: {
-          id: storageLocation.group.id,
-          timestamp: storageLocation.group.timestamp,
-        },
-      },
+      data: StorageLocationsService.toDto(storageLocation),
     };
   }
 
@@ -159,19 +150,7 @@ export class StorageLocationsService {
     return {
       statusCode: HttpStatus.OK,
       message: 'Storage location found',
-      data: {
-        id: storageLocation.id,
-        name: storageLocation.name,
-        addedBy: storageLocation.addedBy,
-        description: storageLocation.description,
-        group: {
-          id: storageLocation.group.id,
-          groupProducts: undefined,
-          purchaseLocations: undefined,
-          storageLocations: undefined,
-          timestamp: storageLocation.group.timestamp,
-        },
-      },
+      data: StorageLocationsService.toDto(storageLocation),
     };
   }
 

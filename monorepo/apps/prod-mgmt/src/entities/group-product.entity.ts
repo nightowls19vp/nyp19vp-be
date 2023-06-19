@@ -1,5 +1,4 @@
 import {
-  Column,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -24,13 +23,6 @@ export class GroupProductEntity extends ProductEntity {
     primaryKeyConstraintName: 'PK_group_products_id',
   })
   id: string;
-
-  @Column({
-    name: 'group_id',
-    charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-  })
-  groupId: string;
 
   @ManyToOne(() => GroupEntity, (group) => group.groupProducts, {
     nullable: false,
