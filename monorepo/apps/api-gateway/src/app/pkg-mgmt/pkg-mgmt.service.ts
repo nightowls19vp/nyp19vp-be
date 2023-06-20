@@ -43,6 +43,10 @@ import {
   CreateBillReqDto,
   CreateBillResDto,
   GetGrChannelResDto,
+  GetBillResDto,
+  UpdateBillReqDto,
+  UpdateBillResDto,
+  UpdateBillSttReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -438,7 +442,7 @@ export class PkgMgmtService {
       }
     });
   }
-  async createBilling(
+  async createBill(
     createBillReqDto: CreateBillReqDto,
   ): Promise<CreateBillResDto> {
     return await firstValueFrom(
@@ -455,6 +459,96 @@ export class PkgMgmtService {
         ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async getBill(id: Types.ObjectId): Promise<GetBillResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.GET_GR_BILL, id).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        }),
+      ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async updateBill(
+    updateBillReqDto: UpdateBillReqDto,
+  ): Promise<UpdateBillResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL,
+          JSON.stringify(updateBillReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async updateBillStt(
+    updateBillSttReqDto: UpdateBillSttReqDto,
+  ): Promise<UpdateBillResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL_STT,
+          JSON.stringify(updateBillSttReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async rmBill(id: Types.ObjectId): Promise<CreateBillResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RM_GR_BILL, id).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        }),
+      ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {

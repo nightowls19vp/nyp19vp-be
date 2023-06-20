@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Group, GroupSchema } from '../../schemas/group.schema';
 import { Package, PackageSchema } from '../../schemas/package.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 import { Billing, BillingSchema } from '../../schemas/billing.schema';
 
 @Module({

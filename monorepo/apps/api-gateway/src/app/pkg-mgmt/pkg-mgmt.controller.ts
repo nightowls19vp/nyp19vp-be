@@ -58,6 +58,10 @@ import {
   CreateBillReqDto,
   CreateBillResDto,
   GetGrChannelResDto,
+  GetBillResDto,
+  UpdateBillReqDto,
+  UpdateBillResDto,
+  UpdateBillSttReqDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -418,7 +422,7 @@ export class PkgMgmtController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Post('gr/:id/bill')
-  createBilling(
+  createBill(
     @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() createBillReqDto: CreateBillReqDto,
@@ -426,6 +430,54 @@ export class PkgMgmtController implements OnModuleInit {
     console.log(`Create billing of group #${id}`, createBillReqDto);
     createBillReqDto._id = id;
     createBillReqDto.createdBy = user?.['userInfo']?.['_id'];
-    return this.pkgMgmtService.createBilling(createBillReqDto);
+    return this.pkgMgmtService.createBill(createBillReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @ApiParam({ name: 'id', type: String })
+  @Get('gr/:id/bill')
+  getBill(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  ): Promise<GetBillResDto> {
+    console.log(`Get billing of group #${id}`);
+    return this.pkgMgmtService.getBill(id);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Put('gr/bill/:billing_id')
+  updateBill(
+    @Param('billing_id') id: string,
+    @Body() updateBillReqDto: UpdateBillReqDto,
+  ): Promise<UpdateBillResDto> {
+    console.log(`Update billing #${id}`, updateBillReqDto);
+    updateBillReqDto._id = id;
+    return this.pkgMgmtService.updateBill(updateBillReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Put('gr/bill/:billing_id/status')
+  updateBillStt(
+    @ATUser() user: unknown,
+    @Param('billing_id') id: string,
+    @Body() updateBillSttReqDto: UpdateBillSttReqDto,
+  ): Promise<UpdateBillResDto> {
+    console.log(`Update billing status of group #${id}`, updateBillSttReqDto);
+    updateBillSttReqDto._id = id;
+    updateBillSttReqDto.updatedBy = user?.['userInfo']?.['_id'];
+    return this.pkgMgmtService.updateBillStt(updateBillSttReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @ApiParam({ name: 'id', type: String })
+  @Patch('gr/bill/:billing_id')
+  rmBill(
+    @Param('billing_id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  ): Promise<CreateBillResDto> {
+    console.log(`Remove billing #${id}`);
+    return this.pkgMgmtService.rmBill(id);
   }
 }
