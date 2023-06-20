@@ -5,7 +5,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GroupsService } from './groups.service';
 
-@ApiTags('route: prod-mgmt')
+@ApiTags('route: prod-mgmt', 'route: prod-mgmt/groups')
 @Controller('prod-mgmt/groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}

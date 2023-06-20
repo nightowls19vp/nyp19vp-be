@@ -7,8 +7,8 @@ import { ItemEntity } from '../entities/item.entity';
 import { ProductEntity } from '../entities/product.entity';
 import { PurchaseLocationEntity } from '../entities/purchase-location.entity';
 import { StorageLocationEntity } from '../entities/storage-location.entity';
-import { LocationsController } from './locations.controller';
-import { LocationsService } from './locations.service';
+import { LocationsController } from './purchase-locations.controller';
+import { PurchaseLocationsService } from './purchase-locations.service';
 
 @Module({
   imports: [
@@ -22,6 +22,6 @@ import { LocationsService } from './locations.service';
     ]),
   ],
   controllers: [LocationsController],
-  providers: [LocationsService],
+  providers: [PurchaseLocationsService],
 })
-export class LocationsModule {}
+export class PurchaseLocationsModule {}

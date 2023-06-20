@@ -53,7 +53,6 @@ export class ProductsService {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         message: 'Product information fetch failed',
-        data: null,
       };
     }
   }

@@ -1,57 +1,27 @@
-import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
+import {
+  groupProductColumns,
+  groupProductsFilteredColumns,
+} from 'libs/shared/src/lib/config/prod-mgmt/pagination-config/group-products/pagination.config';
 import { PaginateConfig } from 'nestjs-paginate';
 
 import { GroupProductEntity } from '../../entities/group-product.entity';
 
-export const filteredColumns: IPaginateFilterableColumns = {
-  ['id']: true,
-  ['barcode']: true,
-  ['name']: true,
-  ['category']: true,
-  ['brand']: true,
-  ['description']: true,
-  ['price']: true,
-  ['region']: true,
-  ['timestamp.createdAt']: true,
-  ['timestamp.updatedAt']: true,
-};
-
 export const groupProductsPaginateConfig: PaginateConfig<GroupProductEntity> = {
-  sortableColumns: [
-    'id',
-    'barcode',
-    'name',
-    'category',
-    'brand',
-    'description',
-    'price',
-    'region',
-    'timestamp.createdAt',
-    'timestamp.updatedAt',
+  sortableColumns: groupProductColumns as never,
+  defaultSortBy: [
+    ['timestamp.createdAt', 'ASC'],
+    ['category', 'ASC'],
+    ['brand', 'ASC'],
+    ['region', 'ASC'],
+    ['barcode', 'ASC'],
+    ['name', 'ASC'],
+    ['price', 'ASC'],
   ],
-  defaultSortBy: [],
-  searchableColumns: [
-    'id',
-    'barcode',
-    'name',
-    'category',
-    'brand',
-    'description',
-    'price',
-    'region',
-    'timestamp.createdAt',
-    'timestamp.updatedAt',
-  ],
-  filterableColumns: filteredColumns,
+  searchableColumns: groupProductColumns as never,
+  filterableColumns: groupProductsFilteredColumns,
   maxLimit: 100,
   defaultLimit: 20,
   relations: [],
   loadEagerRelations: true,
-  withDeleted: false,
+  withDeleted: true,
 };
-
-export const sortableColumns: string[] =
-  groupProductsPaginateConfig.sortableColumns.map((val) => `${val}`);
-
-export const searchableColumns: string[] =
-  groupProductsPaginateConfig.searchableColumns.map((val) => `${val}`);

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
 
 export class ProductDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, readOnly: true })
   id?: string;
 
   @ApiProperty({ required: false })
@@ -29,6 +29,10 @@ export class ProductDto {
   @ApiProperty({ required: false })
   description?: string;
 
-  // @ApiProperty({ type: () => TimestampEmbeddedDto, required: false })
+  @ApiProperty({
+    type: TimestampEmbeddedDto,
+    required: false,
+    readOnly: true,
+  })
   timestamp?: TimestampEmbeddedDto;
 }

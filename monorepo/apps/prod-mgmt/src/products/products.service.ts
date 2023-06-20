@@ -1,7 +1,7 @@
 import moment from 'moment';
 import validbarcode from 'barcode-validator';
 
-import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetProductByBarcodeResDto } from 'libs/shared/src/lib/dto/prod-mgmt/products';
 import { Repository } from 'typeorm';
@@ -30,7 +30,6 @@ export class ProductsService {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
         message: 'Invalid barcode',
-        data: null,
       };
     }
 
@@ -82,23 +81,6 @@ export class ProductsService {
     return {
       ...newProduct,
     };
-  }
-
-  private static getProductDataAsArray(product: ProductEntity): any[] {
-    return [
-      product.id,
-      product.barcode,
-      product.brand,
-      product.category,
-      product.description,
-      product.image,
-      product.name,
-      product.price,
-      product.region,
-      product.timestamp.createdAt,
-      product.timestamp.updatedAt,
-      product.timestamp.deletedAt,
-    ];
   }
 
   private static extractProductDataFromCsvRow(row: string): ProductEntity {

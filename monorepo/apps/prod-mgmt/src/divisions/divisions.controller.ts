@@ -19,21 +19,21 @@ export class DivisionsController {
 
   @MessagePattern(kafkaTopic.PROD_MGMT.provinces.findByCode)
   findProvinceByCode(@Payload() code: number) {
-    console.log('findProvinceByCode', code);
+    console.log('#kafkaTopic.PROD_MGMT.provinces.findByCode: ', code);
 
     return this.provinceService.findByCode(+code);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.provinces.search)
   searchProvinces(@Payload() q: string) {
-    console.log('searchProvinces', q);
+    console.log('#kafkaTopic.PROD_MGMT.provinces.search: ', q);
 
     return this.provinceService.search(q);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.districts.findByCode)
   findDistrictByCode(@Payload() code: number) {
-    console.log('findDistrictByCode', code);
+    console.log('#kafkaTopic.PROD_MGMT.districts.findByCode: ', code);
 
     return this.districtService.findByCode(+code);
   }
@@ -41,14 +41,14 @@ export class DivisionsController {
   @MessagePattern(kafkaTopic.PROD_MGMT.districts.search)
   searchDistricts(@Payload() qp: string) {
     const [q, p] = qp.split(',');
-    console.log(`searchDistricts(q = ${q},p = ${p})`);
+    console.log(`#kafkaTopic.PROD_MGMT.districts.search: q = ${q},p = ${p}`);
 
     return this.districtService.search(q, +p);
   }
 
   @MessagePattern(kafkaTopic.PROD_MGMT.wards.findByCode)
   findWardByCode(@Payload() code: number) {
-    console.log('findWardByCode', code);
+    console.log('#kafkaTopic.PROD_MGMT.wards.findByCode: ', code);
 
     return this.wardService.findByCode(+code);
   }
@@ -56,7 +56,7 @@ export class DivisionsController {
   @MessagePattern(kafkaTopic.PROD_MGMT.wards.search)
   searchWards(@Payload() qd: string) {
     const [q, d] = qd.split(',');
-    console.log(`searchWards(q = ${q},d = ${d})`);
+    console.log(`#kafkaTopic.PROD_MGMT.wards.search: q = ${q},d = ${d}`);
 
     return this.wardService.search(q, +d);
   }

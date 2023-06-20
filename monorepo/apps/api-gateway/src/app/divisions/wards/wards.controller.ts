@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { WardsService } from './wards.service';
 
@@ -17,6 +17,7 @@ export class WardsController {
   @ApiQuery({
     name: 'd',
     required: true,
+    type: 'number',
     description: 'Search wards by district code',
   })
   @Get()
@@ -24,6 +25,12 @@ export class WardsController {
     return this.wardsService.search(q || '%', d);
   }
 
+  @ApiParam({
+    name: 'code',
+    required: true,
+    type: 'number',
+    description: 'Ward code',
+  })
   @Get(':code')
   findOne(@Param('code') code: string) {
     return this.wardsService.findByCode(+code);

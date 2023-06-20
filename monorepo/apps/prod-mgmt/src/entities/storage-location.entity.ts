@@ -28,10 +28,11 @@ export class StorageLocationEntity {
 
   @Column({
     name: 'name',
+    unique: true,
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
-    default: null,   
+    default: null,
   })
   name: string;
 
@@ -41,7 +42,7 @@ export class StorageLocationEntity {
     collation: 'utf8mb4_unicode_ci',
     comment: 'user info id - mongo id',
     nullable: true,
-    default: null,   
+    default: null,
   })
   addedBy: string;
 
@@ -50,7 +51,7 @@ export class StorageLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
-    default: null,   
+    default: null,
   })
   image: string;
 
@@ -60,7 +61,7 @@ export class StorageLocationEntity {
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     nullable: true,
-    default: null,   
+    default: null,
   })
   description: string;
 
