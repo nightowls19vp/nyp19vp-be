@@ -4,19 +4,12 @@ import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
 export type BillingDocument = HydratedDocument<Billing> & SoftDeleteDocument;
 
-@Schema({ timestamps: true })
-export class Billing {
+class Borrower {
   @Prop({ type: String, required: true })
   borrower: string;
 
-  @Prop({ type: String, required: true })
-  lender: string;
-
   @Prop({ type: Number, required: true, min: 10000 })
   amount: number;
-
-  @Prop({ type: String, required: false })
-  description: string;
 
   @Prop({
     type: String,
@@ -24,9 +17,30 @@ export class Billing {
     enum: ['APPROVED', 'PENDING', 'CANCELED'],
   })
   status: string;
+}
+
+@Schema({ timestamps: true })
+export class Billing {
+  @Prop({ type: String, required: true })
+  summary: string;
+
+  @Prop({ type: Date, required: false })
+  date: Date;
 
   @Prop({ type: String, required: true })
+  lender: string;
+
+  @Prop()
+  borrowers: Borrower[];
+
+  @Prop({ type: String, required: false })
+  description: string;
+
+  @Prop({ type: String, required: false })
   createdBy: string;
+
+  @Prop({ type: String, required: false })
+  updatedBy: string;
 
   @Prop({ type: Date })
   createdAt: Date;

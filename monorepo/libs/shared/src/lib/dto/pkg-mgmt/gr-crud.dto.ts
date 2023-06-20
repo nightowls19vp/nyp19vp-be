@@ -86,27 +86,52 @@ export class GrPkgDto {
   status: string;
 }
 
+class BorrowerDto {
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    required: true,
+    example: '648a7dff13638f64bbf9c156',
+  })
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  user: string;
+
+  @ApiProperty({ type: Number, required: true, minimum: 1000, example: 10000 })
+  amount: number;
+
+  @IsOptional()
+  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
+  status?: string;
+}
+
 class BillingDto {
   @ApiProperty({ type: String, nullable: true, required: true })
-  @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  borrower: string;
+  summary: string;
+
+  @ApiProperty({ type: Date, required: false })
+  @IsOptional()
+  date?: Date;
+
+  @ApiProperty({
+    example: [{ user: '648a7dff13638f64bbf9c156', amount: 10000 }],
+  })
+  @Type(() => BorrowerDto)
+  @ValidateNested({ each: true })
+  borrowers: BorrowerDto[];
 
   @ApiProperty({ type: String, nullable: true, required: true })
   @Transform((v: TransformFnParams) => new ObjectId(v.value))
   lender: string;
 
-  @ApiProperty({ type: Number, required: true, minimum: 10000 })
   amount: number;
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()
   description?: string;
 
-  @IsOptional()
-  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
-  status?: string;
-
   createdBy: string;
+
+  updatedBy: string;
 }
 
 export class GroupDto extends IdDto {
@@ -185,9 +210,38 @@ export class CreateGrReqDto {
 
 export class CreateGrResDto extends BaseResDto {}
 
-export class CreateBillReqDto extends IntersectionType(IdDto, BillingDto) {}
+export class CreateBillReqDto extends IntersectionType(
+  IdDto,
+  OmitType(BillingDto, ['updatedBy']),
+) {}
+
+export class UpdateBillReqDto extends IntersectionType(
+  IdDto,
+  OmitType(BillingDto, ['createdBy']),
+) {}
+
+export class UpdateBillResDto extends BaseResDto {}
 
 export class CreateBillResDto extends BaseResDto {}
+
+export class GetBillResDto extends BaseResDto {}
+
+class UpdateBorrowSttReqDto extends PickType(BorrowerDto, ['user']) {
+  @ApiProperty({ enum: ['APPROVED', 'PENDING', 'CANCELED'] })
+  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
+  status: string;
+}
+export class UpdateBillSttReqDto extends IntersectionType(
+  IdDto,
+  PickType(BillingDto, ['updatedBy']),
+) {
+  @ApiProperty({
+    example: [{ user: '648a7dff13638f64bbf9c156', status: 'PENDING' }],
+  })
+  @Type(() => UpdateBorrowSttReqDto)
+  @ValidateNested({ each: true })
+  borrowers: UpdateBorrowSttReqDto[];
+}
 
 export class GetGrChannelResDto extends BaseResDto {
   channels: string[];
@@ -264,7 +318,7 @@ export class CheckGrSUReqDto extends IdDto {
 }
 
 export class IsGrUReqDto extends IdDto {
-  users: string[];
+  users: IdDto[];
 }
 
 export class PkgGrInvReqDto {
