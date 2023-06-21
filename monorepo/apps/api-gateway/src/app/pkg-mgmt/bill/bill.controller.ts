@@ -24,16 +24,16 @@ import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ATUser } from '../../decorators/at-user.decorator';
 
 @ApiTags('Package Management/Bill')
-@Controller('pkg-mgmt/gr')
+@Controller('pkg-mgmt/bill')
 export class BillController {
   constructor(private readonly billService: BillService) {}
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post(':id/bill')
+  @Post(':group_id')
   create(
     @ATUser() user: unknown,
-    @Param('id') id: string,
+    @Param('group_id') id: string,
     @Body() createBillReqDto: CreateBillReqDto,
   ): Promise<BaseResDto> {
     console.log(`Create billing of group #${id}`, createBillReqDto);
@@ -44,10 +44,10 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'id', type: String })
-  @Get(':id/bill')
+  @ApiParam({ name: 'group_id', type: String })
+  @Get('group_id')
   find(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
+    @Param('group_id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<BaseResDto> {
     console.log(`Get billing of group #${id}`);
     return this.billService.find(id);
@@ -55,7 +55,7 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put('bill/:billing_id')
+  @Put(':billing_id')
   update(
     @Param('billing_id') id: string,
     @Body() updateBillReqDto: UpdateBillReqDto,
@@ -67,7 +67,7 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put('bill/:billing_id/status')
+  @Put(':billing_id/status')
   updateStt(
     @ATUser() user: unknown,
     @Param('billing_id') id: string,
@@ -82,7 +82,7 @@ export class BillController {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @ApiParam({ name: 'billing_id', type: String })
-  @Delete('bill/:billing_id')
+  @Delete(':billing_id')
   remove(
     @Param('billing_id', new ParseObjectIdPipe()) billing_id: Types.ObjectId,
   ): Promise<BaseResDto> {
@@ -93,7 +93,7 @@ export class BillController {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @ApiParam({ name: 'billing_id', type: String })
-  @Patch('bill/:billing_id')
+  @Patch(':billing_id')
   restore(
     @Param('billing_id', new ParseObjectIdPipe()) billing_id: Types.ObjectId,
   ): Promise<BaseResDto> {
