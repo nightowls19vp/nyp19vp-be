@@ -59,7 +59,7 @@ export class TxnCrudService {
     try {
       const res = await firstValueFrom(
         this.pkgMgmtClient
-          .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+          .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
           .pipe(timeout(5000)),
       );
       if (res.length) {
@@ -351,7 +351,7 @@ export class TxnCrudService {
     const list_id = cart.map((x) => x.package);
     const res = await firstValueFrom(
       this.pkgMgmtClient
-        .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+        .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
         .pipe(timeout(5000)),
     );
     if (res.length) {

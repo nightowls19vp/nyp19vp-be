@@ -45,23 +45,14 @@ export const USERS = {
 };
 
 export const PACKAGE_MGMT = {
-  CREATE_PKG: 'createPackage',
-  GET_ALL_PKGS: 'getAllPackages',
-  GET_PKG_BY_ID: 'getPackageById',
-  GET_MANY_PKG: 'getManyPackage',
-  UPDATE_PKG: 'updatePackage',
-  DELETE_PKG: 'deletePackage',
-  RESTORE_PKG: 'restorePackage',
   CREATE_GR: 'createGroup',
   GET_ALL_GRS: 'getAllGroups',
   GET_GRS_BY_USER: 'getGroupsByUserId',
   GET_GR_CHANNEL_BY_USER: 'getGroupChannelsByUserId',
   GET_GR_BY_ID: 'getGroupById',
-  CREATE_GR_BILL: 'createGroupBilling',
-  GET_GR_BILL: 'getGroupBilling',
-  UPDATE_GR_BILL: 'updateGroupBilling',
-  UPDATE_GR_BILL_STT: 'updateGroupBillingStatus',
-  RM_GR_BILL: 'removeGroupBilling',
+  CREATE_GR_TODOS: 'createGroupTodos',
+  GET_GR_TODOS: 'getGroupTodos',
+  RM_GR_TODOS: 'removeGroupTodos',
   UPDATE_GR: 'updateGroupName',
   UPDATE_GR_AVATAR: 'updateGroupAvatar',
   UPDATE_GR_CHANNEL: 'updateGroupChannel',
@@ -73,6 +64,51 @@ export const PACKAGE_MGMT = {
   ACTIVATE_GR_PKG: 'activatePackageInGroup',
   RM_GR_PKG: 'removePackageFromGroup',
   CHECK_GR_SU: 'isSuperUserOfAGroup',
+};
+
+export const PKG_MGMT = {
+  PACKAGE: {
+    CREATE: 'createPackage',
+    GET: 'getAllPackages',
+    GET_BY_ID: 'getPackageById',
+    GET_MANY: 'getManyPackage',
+    UPDATE: 'updatePackage',
+    DELETE: 'deletePackage',
+    RESTORE: 'restorePackage',
+  },
+  GROUP: {
+    CREATE: 'createGroup',
+    GET: 'getAllGroups',
+    GET_BY_USER: 'getGroupsByUserId',
+    GET_CHANNEL_BY_USER: 'getGroupChannelsByUserId',
+    GET_BY_ID: 'getGroupById',
+    UPDATE: 'updateGroupName',
+    UPDATE_AVATAR: 'updateGroupAvatar',
+    UPDATE_CHANNEL: 'updateGroupChannel',
+    DELETE: 'deleteGroup',
+    RESTORE: 'restoreGroup',
+    ADD_MEMB: 'addMemberToGroup',
+    DEL_MEMB: 'removeMemberFromGroup',
+    ADD_PKG: 'addPackageToGroup',
+    ACTIVATE_PKG: 'activatePackageInGroup',
+    DEL_PKG: 'removePackageFromGroup',
+    IS_SU: 'isSuperUserOfAGroup',
+  },
+  EXTENSION: {
+    BILL: {
+      CREATE: 'createGroupBilling',
+      GET: 'getGroupBilling',
+      UPDATE: 'updateGroupBilling',
+      UPDATE_STT: 'updateGroupBillingStatus',
+      DELETE: 'removeGroupBilling',
+      RESTORE: 'restoreGroupBilling',
+    },
+    TODOS: {
+      CREATE: 'createGroupTodos',
+      GET: 'getGroupTodos',
+      DELETE: 'removeGroupTodos',
+    },
+  },
 };
 
 export const TXN = {

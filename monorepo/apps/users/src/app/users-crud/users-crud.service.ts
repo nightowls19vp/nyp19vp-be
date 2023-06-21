@@ -372,7 +372,7 @@ export class UsersCrudService {
           const list_id = res.cart.map((x) => x.package);
           const pkgs = await firstValueFrom(
             this.pkgClient
-              .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+              .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
               .pipe(timeout(5000)),
           );
           const result = [];

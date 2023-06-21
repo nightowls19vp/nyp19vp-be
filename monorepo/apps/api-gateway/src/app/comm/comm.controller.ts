@@ -14,7 +14,9 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Communication')
 @Controller('comm')
 export class CommController {
   constructor(

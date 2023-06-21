@@ -12,6 +12,7 @@ import {
   UseGuards,
   UnauthorizedException,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -29,19 +30,13 @@ import {
   UpdateGrMbResDto,
   CreateGrReqDto,
   CreateGrResDto,
-  CreatePkgReqDto,
-  CreatePkgResDto,
   GetGrResDto,
-  GetPkgResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrResDto,
-  UpdatePkgReqDto,
   UpdatePkgResDto,
   UpdateGrPkgReqDto,
   UpdateGrPkgResDto,
-  PkgCollectionProperties,
-  PackageDto,
   GrCollectionProperties,
   GroupDto,
   ParseObjectIdPipe,
@@ -55,13 +50,7 @@ import {
   PkgGrInvReqDto,
   UpdateChannelReqDto,
   UpdateChannelResDto,
-  CreateBillReqDto,
-  CreateBillResDto,
   GetGrChannelResDto,
-  GetBillResDto,
-  UpdateBillReqDto,
-  UpdateBillResDto,
-  UpdateBillSttReqDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import {
@@ -104,74 +93,6 @@ export class PkgMgmtController implements OnModuleInit {
     );
 
     await Promise.all([this.packageMgmtClient.connect()]);
-  }
-
-  @Post('pkg')
-  @ApiCreatedResponse({ description: 'Created Package', type: CreatePkgResDto })
-  createPkg(
-    @Body() createPkgReqDto: CreatePkgReqDto,
-  ): Promise<CreatePkgResDto> {
-    console.log('createPkg', createPkgReqDto);
-    return this.pkgMgmtService.createPkg(createPkgReqDto);
-  }
-
-  @Get('pkg')
-  @ApiOkResponse({ description: 'Got All Packages', type: PackageDto })
-  @ApiOperation({
-    description:
-      'Filter MUST:\n\n\t- name(optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}\n\n\t- duration(optional):\n\n\t\t- type: integer\n\n\t\t- unit: date\n\n\t\t- example: {"duration":30}\n\n\t- noOfMember:\n\n\t\t- type: integer\n\n\t\t- description: Maximum number of members in group\n\n\t\t- example: {"noOfMember":3}\n\n\t- price(optional):\n\n\t\t- type: float \n\n\t\t- lower bound price: {price: {$gte: 25}}\n\n\t\t- upper bound price: {price: {$lte: 90}}\n\n\t\t- example: 25000 < price < 100000 => {"price": {"$gte": 25, "$lte": 100}}',
-  })
-  getAllPkg(
-    @Query(new ValidationPipe(PkgCollectionProperties))
-    collectionDto: CollectionDto,
-  ): Promise<CollectionResponse<PackageDto>> {
-    console.log('get all packages');
-    console.log(collectionDto);
-    return this.pkgMgmtService.getAllPkg(collectionDto);
-  }
-
-  @Get('pkg/:id')
-  @ApiOkResponse({ description: 'Got Package', type: GetPkgResDto })
-  @ApiParam({ name: 'id', type: String })
-  getPkgById(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<GetPkgResDto> {
-    console.log(`get package #${id}`);
-    return this.pkgMgmtService.getPkgById(id);
-  }
-
-  @Patch('pkg/:id')
-  @ApiOkResponse({ description: 'Deleted Package', type: CreatePkgResDto })
-  @ApiParam({ name: 'id', type: String })
-  deletePkg(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreatePkgResDto> {
-    console.log(`delete package #${id}`);
-    return this.pkgMgmtService.deletePkg(id);
-  }
-
-  @Patch('pkg/:id/restore')
-  @ApiOkResponse({
-    description: 'Restore deleted package',
-    type: CreatePkgResDto,
-  })
-  @ApiParam({ name: 'id', type: String })
-  restorePkg(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreatePkgResDto> {
-    console.log(`delete package #${id}`);
-    return this.pkgMgmtService.restorePkg(id);
-  }
-
-  @Put('pkg/:id')
-  @ApiOkResponse({ description: 'Updated Package', type: UpdatePkgResDto })
-  updatePkg(
-    @Param('id') id: string,
-    @Body() updatePkgReqDto: UpdatePkgReqDto,
-  ): Promise<UpdatePkgResDto> {
-    console.log(`update package #${id}`, updatePkgReqDto);
-    updatePkgReqDto._id = id;
-    return this.pkgMgmtService.updatePkg(updatePkgReqDto);
   }
 
   @Post('gr')
@@ -280,7 +201,7 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.getGrById(id);
   }
 
-  @Patch('gr/:id')
+  @Delete('gr/:id')
   @ApiOkResponse({ description: 'Deleted Group', type: CreateGrResDto })
   @ApiParam({ name: 'id', type: String })
   deleteGr(
@@ -290,7 +211,7 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.deleteGr(id);
   }
 
-  @Patch('gr/:id/restore')
+  @Patch('gr/:id')
   @ApiOkResponse({ description: 'Restore deleted group', type: CreateGrResDto })
   @ApiParam({ name: 'id', type: String })
   restoreGr(
@@ -369,7 +290,7 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.activateGrPkg(activateGrPkgReqDto);
   }
 
-  @Put('gr/:id/memb/rm')
+  @Delete('gr/:id/memb')
   @ApiOkResponse({
     description: `Removed member from group`,
     type: UpdatePkgResDto,
@@ -405,7 +326,7 @@ export class PkgMgmtController implements OnModuleInit {
     return this.pkgMgmtService.addGrPkg(updateGrPkgReqDto);
   }
 
-  @Put('gr/:id/pkg/rm')
+  @Delete('gr/:id/pkg')
   @ApiOkResponse({
     description: `Remove package from group`,
     type: UpdatePkgResDto,
@@ -417,67 +338,5 @@ export class PkgMgmtController implements OnModuleInit {
     console.log(`Remove package from group #${id}`, updateGrPkgReqDto);
     updateGrPkgReqDto._id = id;
     return this.pkgMgmtService.rmGrPkg(updateGrPkgReqDto);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @Post('gr/:id/bill')
-  createBill(
-    @ATUser() user: unknown,
-    @Param('id') id: string,
-    @Body() createBillReqDto: CreateBillReqDto,
-  ): Promise<CreateBillResDto> {
-    console.log(`Create billing of group #${id}`, createBillReqDto);
-    createBillReqDto._id = id;
-    createBillReqDto.createdBy = user?.['userInfo']?.['_id'];
-    return this.pkgMgmtService.createBill(createBillReqDto);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'id', type: String })
-  @Get('gr/:id/bill')
-  getBill(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<GetBillResDto> {
-    console.log(`Get billing of group #${id}`);
-    return this.pkgMgmtService.getBill(id);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @Put('gr/bill/:billing_id')
-  updateBill(
-    @Param('billing_id') id: string,
-    @Body() updateBillReqDto: UpdateBillReqDto,
-  ): Promise<UpdateBillResDto> {
-    console.log(`Update billing #${id}`, updateBillReqDto);
-    updateBillReqDto._id = id;
-    return this.pkgMgmtService.updateBill(updateBillReqDto);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @Put('gr/bill/:billing_id/status')
-  updateBillStt(
-    @ATUser() user: unknown,
-    @Param('billing_id') id: string,
-    @Body() updateBillSttReqDto: UpdateBillSttReqDto,
-  ): Promise<UpdateBillResDto> {
-    console.log(`Update billing status of group #${id}`, updateBillSttReqDto);
-    updateBillSttReqDto._id = id;
-    updateBillSttReqDto.updatedBy = user?.['userInfo']?.['_id'];
-    return this.pkgMgmtService.updateBillStt(updateBillSttReqDto);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'id', type: String })
-  @Patch('gr/bill/:billing_id')
-  rmBill(
-    @Param('billing_id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreateBillResDto> {
-    console.log(`Remove billing #${id}`);
-    return this.pkgMgmtService.rmBill(id);
   }
 }

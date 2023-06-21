@@ -21,43 +21,43 @@ import { Types } from 'mongoose';
 export class PkgCrudController {
   constructor(private readonly pkgCrudService: PkgCrudService) {}
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.CREATE)
   createPkg(
-    @Payload() createPkgReqDto: CreatePkgReqDto
+    @Payload() createPkgReqDto: CreatePkgReqDto,
   ): Promise<CreatePkgResDto> {
     return this.pkgCrudService.createPkg(createPkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_PKGS)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET)
   findAllPkgs(
-    @Payload() collectionDto: CollectionDto
+    @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     return this.pkgCrudService.findAllPkgs(collectionDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_PKG_BY_ID)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID)
   findPkgById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
     return this.pkgCrudService.findPkgById(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.UPDATE)
   updatePkg(
-    @Payload() updatePkgReqDto: UpdatePkgReqDto
+    @Payload() updatePkgReqDto: UpdatePkgReqDto,
   ): Promise<UpdatePkgResDto> {
     return this.pkgCrudService.updatePkg(updatePkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.DELETE)
   removePkg(@Payload() id: Types.ObjectId): Promise<CreatePkgResDto> {
     return this.pkgCrudService.removePkg(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RESTORE_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.RESTORE)
   restorePkg(@Payload() id: Types.ObjectId): Promise<CreatePkgResDto> {
     return this.pkgCrudService.restorePkg(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY)
   async findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
     return await this.pkgCrudService.findManyPkg(list_id);
   }

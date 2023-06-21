@@ -6,7 +6,11 @@ import {
   Param,
   Post,
   Put,
+  Delete,
   UseGuards,
+  Ip,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -44,7 +48,6 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Ip, Patch, Query } from '@nestjs/common/decorators';
 import {
   CollectionDto,
   CollectionResponse,
@@ -147,7 +150,7 @@ export class UsersController implements OnModuleInit {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Patch(':id')
+  @Delete(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
   async deleteUser(
@@ -159,7 +162,7 @@ export class UsersController implements OnModuleInit {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Patch(':id/restore')
+  @Patch(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({
     description: 'Restore deleted user',

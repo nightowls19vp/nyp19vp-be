@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PkgMgmtService } from './pkg-mgmt.service';
 import { PkgMgmtController } from './pkg-mgmt.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
@@ -10,6 +9,8 @@ import { SocketGateway } from '../socket/socket.gateway';
 import { SocketService } from '../socket/socket.service';
 import { SocketModule } from '../socket/socket.module';
 import { CommModule } from '../comm/comm.module';
+import { BillModule } from './bill/bill.module';
+import { PackageModule } from './package/package.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -46,6 +47,8 @@ dotenv.config({
         },
       },
     ]),
+    BillModule,
+    PackageModule,
   ],
   controllers: [PkgMgmtController],
   providers: [PkgMgmtService, SocketGateway, SocketService],

@@ -24,12 +24,6 @@ import {
   UpdateChannelReqDto,
   UpdateChannelResDto,
   GetGrChannelResDto,
-  CreateBillReqDto,
-  CreateBillResDto,
-  GetBillResDto,
-  UpdateBillReqDto,
-  UpdateBillResDto,
-  UpdateBillSttReqDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -146,36 +140,5 @@ export class GrCrudController {
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU)
   checkGrSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     return this.grCrudService.checkGrSU(checkGrSUReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL)
-  createBill(
-    @Payload() createBillReqDto: CreateBillReqDto,
-  ): Promise<CreateBillResDto> {
-    return this.grCrudService.createBill(createBillReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_BILL)
-  getBill(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
-    return this.grCrudService.getBill(id);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL)
-  updateBill(
-    @Payload() updateBillReqDto: UpdateBillReqDto,
-  ): Promise<UpdateBillResDto> {
-    return this.grCrudService.updateBill(updateBillReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL_STT)
-  updateBillStt(
-    @Payload() updateBillSttReqDto: UpdateBillSttReqDto,
-  ): Promise<UpdateBillResDto> {
-    return this.grCrudService.updateBillStt(updateBillSttReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_BILL)
-  rmBill(@Payload() id: Types.ObjectId): Promise<CreateBillResDto> {
-    return this.grCrudService.rmBill(id);
   }
 }

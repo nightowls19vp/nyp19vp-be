@@ -45,11 +45,11 @@ export class UsersCrudController implements OnModuleInit {
     }
     await Promise.all([this.txnClient.connect()]);
 
-    this.pkgClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.PACKAGE_MGMT);
-    for (const key in kafkaTopic.PACKAGE_MGMT) {
-      this.pkgClient.subscribeToResponseOf(kafkaTopic.PACKAGE_MGMT[key]);
+    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.PACKAGE);
+
+    for (const topic of pkgTopics) {
+      this.pkgClient.subscribeToResponseOf(topic);
     }
-    await Promise.all([this.pkgClient.connect()]);
   }
 
   @MessagePattern(kafkaTopic.USERS.CREATE)

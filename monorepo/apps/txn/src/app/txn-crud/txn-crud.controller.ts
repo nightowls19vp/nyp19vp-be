@@ -20,13 +20,11 @@ export class TxnCrudController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.pkgMgmtClient.subscribeToResponseOf(
-      kafkaTopic.HEALT_CHECK.PACKAGE_MGMT,
-    );
-    for (const key in kafkaTopic.PACKAGE_MGMT) {
-      this.pkgMgmtClient.subscribeToResponseOf(kafkaTopic.PACKAGE_MGMT[key]);
+    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.PACKAGE);
+
+    for (const topic of pkgTopics) {
+      this.pkgMgmtClient.subscribeToResponseOf(topic);
     }
-    await Promise.all([this.pkgMgmtClient.connect()]);
 
     this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
     for (const key in kafkaTopic.USERS) {
