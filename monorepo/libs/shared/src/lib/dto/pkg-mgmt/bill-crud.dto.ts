@@ -7,7 +7,7 @@ import {
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { IdDto } from '../base.dto';
+import { BaseResDto, IdDto } from '../base.dto';
 
 class BorrowerDto {
   @ApiProperty({
@@ -61,6 +61,13 @@ export class CreateBillReqDto extends IntersectionType(
   IdDto,
   OmitType(BillingDto, ['updatedBy']),
 ) {}
+
+export class GetBillResDto extends BaseResDto {
+  @ApiProperty()
+  @ValidateNested({ each: true })
+  @Type(() => BillingDto)
+  billing: BillingDto[];
+}
 
 export class UpdateBillReqDto extends IntersectionType(
   IdDto,

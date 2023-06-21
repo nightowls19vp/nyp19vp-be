@@ -27,16 +27,11 @@ import {
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
-  UpdateGrMbResDto,
   CreateGrReqDto,
-  CreateGrResDto,
   GetGrResDto,
   kafkaTopic,
   UpdateGrReqDto,
-  UpdateGrResDto,
-  UpdatePkgResDto,
   UpdateGrPkgReqDto,
-  UpdateGrPkgResDto,
   GrCollectionProperties,
   GroupDto,
   ParseObjectIdPipe,
@@ -44,12 +39,9 @@ import {
   MemberDto,
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   ActivateGrPkgReqDto,
-  ActivateGrPkgResDto,
   PkgGrInvReqDto,
   UpdateChannelReqDto,
-  UpdateChannelResDto,
   GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import { PkgMgmtService } from './pkg-mgmt.service';
@@ -96,8 +88,8 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Post('gr')
-  @ApiCreatedResponse({ description: 'Created Group', type: CreateGrResDto })
-  createGr(@Body() createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
+  @ApiCreatedResponse({ description: 'Created Group', type: BaseResDto })
+  createGr(@Body() createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
     console.log('create group', createGrReqDto);
     return this.pkgMgmtService.createGr(createGrReqDto);
   }
@@ -202,21 +194,21 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Delete('gr/:id')
-  @ApiOkResponse({ description: 'Deleted Group', type: CreateGrResDto })
+  @ApiOkResponse({ description: 'Deleted Group', type: BaseResDto })
   @ApiParam({ name: 'id', type: String })
   deleteGr(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreateGrResDto> {
+  ): Promise<BaseResDto> {
     console.log(`Delete group #${id}`);
     return this.pkgMgmtService.deleteGr(id);
   }
 
   @Patch('gr/:id')
-  @ApiOkResponse({ description: 'Restore deleted group', type: CreateGrResDto })
+  @ApiOkResponse({ description: 'Restore deleted group', type: BaseResDto })
   @ApiParam({ name: 'id', type: String })
   restoreGr(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreateGrResDto> {
+  ): Promise<BaseResDto> {
     console.log(`Delete group #${id}`);
     return this.pkgMgmtService.restoreGr(id);
   }
@@ -224,11 +216,11 @@ export class PkgMgmtController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Put('gr/:id')
-  @ApiOkResponse({ description: `Updated Group's name`, type: UpdateGrResDto })
+  @ApiOkResponse({ description: `Updated Group's name`, type: BaseResDto })
   updateGr(
     @Param('id') id: string,
     @Body() updateGrReqDto: UpdateGrReqDto,
-  ): Promise<UpdateGrResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update package #${id}`, updateGrReqDto);
     updateGrReqDto._id = id;
     return this.pkgMgmtService.updateGr(updateGrReqDto);
@@ -239,12 +231,12 @@ export class PkgMgmtController implements OnModuleInit {
   @Put('gr/:id/memb')
   @ApiOkResponse({
     description: `Added new member to group`,
-    type: UpdateGrMbResDto,
+    type: BaseResDto,
   })
   addGrMemb(
     @Param('id') id: string,
     @Body() updateGrMbReqDto: AddGrMbReqDto,
-  ): Promise<UpdateGrMbResDto> {
+  ): Promise<BaseResDto> {
     console.log(`add new member to group #${id}`, updateGrMbReqDto);
     updateGrMbReqDto._id = id;
     return this.pkgMgmtService.addGrMemb(updateGrMbReqDto);
@@ -256,7 +248,7 @@ export class PkgMgmtController implements OnModuleInit {
   updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
     updateAvatarReqDto._id = id;
     return this.pkgMgmtService.updateAvatar(updateAvatarReqDto);
@@ -268,7 +260,7 @@ export class PkgMgmtController implements OnModuleInit {
   updateChannel(
     @Param('id') id: string,
     @Body() updateChannelReqDto: UpdateChannelReqDto,
-  ): Promise<UpdateChannelResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update channel group #${id}`, updateChannelReqDto);
     updateChannelReqDto._id = id;
     return this.pkgMgmtService.updateChannel(updateChannelReqDto);
@@ -281,7 +273,7 @@ export class PkgMgmtController implements OnModuleInit {
     @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() activateGrPkgReqDto: ActivateGrPkgReqDto,
-  ): Promise<ActivateGrPkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(
       `activate package #${activateGrPkgReqDto.package._id} in  group #${id}`,
     );
@@ -291,14 +283,10 @@ export class PkgMgmtController implements OnModuleInit {
   }
 
   @Delete('gr/:id/memb')
-  @ApiOkResponse({
-    description: `Removed member from group`,
-    type: UpdatePkgResDto,
-  })
   rmGrMemb(
     @Param('id') id: string,
     @Body() updateGrMbReqDto: RmGrMbReqDto,
-  ): Promise<UpdateGrMbResDto> {
+  ): Promise<BaseResDto> {
     console.log(`remove member from group #${id}`, updateGrMbReqDto);
     updateGrMbReqDto._id = id;
     return this.pkgMgmtService.rmGrMemb(updateGrMbReqDto);
@@ -310,13 +298,13 @@ export class PkgMgmtController implements OnModuleInit {
   @ApiOperation({ description: 'Renewed/upgraded package' })
   @ApiOkResponse({
     description: `Renewed/upgraded package in group`,
-    type: UpdatePkgResDto,
+    type: BaseResDto,
   })
   addGrPkg(
     @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(
       `Renew/upgrade package #${updateGrPkgReqDto.package._id} in group #${id}`,
       updateGrPkgReqDto,
@@ -329,12 +317,12 @@ export class PkgMgmtController implements OnModuleInit {
   @Delete('gr/:id/pkg')
   @ApiOkResponse({
     description: `Remove package from group`,
-    type: UpdatePkgResDto,
+    type: BaseResDto,
   })
   rmGrPkg(
     @Param('id') id: string,
     @Body() updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(`Remove package from group #${id}`, updateGrPkgReqDto);
     updateGrPkgReqDto._id = id;
     return this.pkgMgmtService.rmGrPkg(updateGrPkgReqDto);

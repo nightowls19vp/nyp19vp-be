@@ -7,9 +7,10 @@ import { PkgCrudModule } from './pkg-crud/pkg-crud.module';
 import { GrCrudModule } from './gr-crud/gr-crud.module';
 import { InitDbModule } from '../core/init-db/init-db.module';
 import { BillCrudModule } from './bill-crud/bill-crud.module';
+import { TodosCrudModule } from './todos-crud/todos-crud.module';
 
 @Module({
-  imports: [PkgCrudModule, DataBaseModule, GrCrudModule, InitDbModule, BillCrudModule],
+  imports: [PkgCrudModule, DataBaseModule, GrCrudModule, InitDbModule, BillCrudModule, TodosCrudModule],
   controllers: [AppController],
   providers: [AppService],
 })

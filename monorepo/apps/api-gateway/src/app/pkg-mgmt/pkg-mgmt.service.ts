@@ -13,33 +13,20 @@ import { ClientKafka } from '@nestjs/microservices';
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
-  UpdateGrMbResDto,
   CreateGrReqDto,
-  CreateGrResDto,
-  CreatePkgReqDto,
-  CreatePkgResDto,
   GetGrResDto,
-  GetPkgResDto,
   kafkaTopic,
   UpdateGrReqDto,
-  UpdateGrResDto,
-  UpdatePkgReqDto,
-  UpdatePkgResDto,
-  UpdateGrPkgResDto,
   UpdateGrPkgReqDto,
-  PackageDto,
   GroupDto,
   BaseResDto,
   ValidateJoinGroupTokenResDto,
   MemberDto,
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   ActivateGrPkgReqDto,
-  ActivateGrPkgResDto,
   PkgGrInvReqDto,
   UpdateChannelReqDto,
-  UpdateChannelResDto,
   GetGrChannelResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -54,7 +41,7 @@ export class PkgMgmtService {
     private readonly socketGateway: SocketGateway,
   ) {}
 
-  async createGr(createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
+  async createGr(createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.CREATE_GR,
@@ -91,7 +78,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async updateGr(updatePkgReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
+  async updateGr(updatePkgReqDto: UpdateGrReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.UPDATE_GR,
@@ -106,7 +93,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async deleteGr(id: Types.ObjectId): Promise<CreateGrResDto> {
+  async deleteGr(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.DELETE_GR, id),
     ).then((res) => {
@@ -118,7 +105,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async restoreGr(id: Types.ObjectId): Promise<CreateGrResDto> {
+  async restoreGr(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PACKAGE_MGMT.RESTORE_GR, id),
     ).then((res) => {
@@ -130,7 +117,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async addGrMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async addGrMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB,
@@ -145,7 +132,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async rmGrMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async rmGrMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB,
@@ -160,9 +147,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async rmGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  async rmGrPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.RM_GR_PKG,
@@ -177,9 +162,7 @@ export class PkgMgmtService {
         });
     });
   }
-  async addGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  async addGrPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG,
@@ -262,7 +245,7 @@ export class PkgMgmtService {
   }
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
@@ -288,7 +271,7 @@ export class PkgMgmtService {
   }
   async activateGrPkg(
     activateGrPkgReqDto: ActivateGrPkgReqDto,
-  ): Promise<ActivateGrPkgResDto> {
+  ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
@@ -314,7 +297,7 @@ export class PkgMgmtService {
   }
   async updateChannel(
     updateChannelReqDto: UpdateChannelReqDto,
-  ): Promise<UpdateChannelResDto> {
+  ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(

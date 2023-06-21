@@ -9,10 +9,10 @@ import { HttpStatus } from '@nestjs/common/enums';
 import { ClientKafka } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  BaseResDto,
   CreateAccountReqDto,
   CreateAccountResDto,
   CreateUserReqDto,
-  CreateUserResDto,
   ERole,
   GetUserInfoResDto,
   IJwtPayload,
@@ -113,7 +113,7 @@ export class AccountService {
         );
       }
 
-      const createUserRes: CreateUserResDto = await firstValueFrom(
+      const createUserRes = await firstValueFrom(
         this.usersClient.send(
           kafkaTopic.USERS.CREATE,
           JSON.stringify(createUserReq),
@@ -217,7 +217,7 @@ export class AccountService {
             avatar: user.photo,
           };
 
-          const createUserRes: CreateUserResDto = await firstValueFrom(
+          const createUserRes = await firstValueFrom(
             this.usersClient.send(
               kafkaTopic.USERS.CREATE,
               JSON.stringify(createUserReq),
@@ -304,8 +304,8 @@ export class AccountService {
    * @param reqDto
    * @returns
    */
-  async createUserInfo(reqDto: CreateUserReqDto): Promise<CreateUserResDto> {
-    const createUserInfoRes: CreateUserResDto = await firstValueFrom(
+  async createUserInfo(reqDto: CreateUserReqDto): Promise<BaseResDto> {
+    const createUserInfoRes: BaseResDto = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(reqDto))
         .pipe(timeout(toMs('5s'))),

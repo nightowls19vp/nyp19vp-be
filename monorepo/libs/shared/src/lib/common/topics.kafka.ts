@@ -106,7 +106,11 @@ export const PKG_MGMT = {
     TODOS: {
       CREATE: 'createGroupTodos',
       GET: 'getGroupTodos',
+      UPDATE: 'updateGroupTodos',
+      ADD_TODO: 'addGroupTodos',
+      DEL_TODO: 'removeGroupTodos',
       DELETE: 'removeGroupTodos',
+      RESTORE: 'restoreGroupTodos',
     },
   },
 };

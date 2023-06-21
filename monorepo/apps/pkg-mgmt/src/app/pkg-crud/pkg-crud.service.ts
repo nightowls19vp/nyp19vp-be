@@ -1,13 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  BaseResDto,
   CreatePkgReqDto,
-  CreatePkgResDto,
   GetPkgResDto,
   IdDto,
   PackageDto,
   UpdatePkgReqDto,
-  UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Package, PackageDocument } from '../../schemas/package.schema';
@@ -24,7 +23,7 @@ export class PkgCrudService {
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
   ) {}
-  async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
+  async create(createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
     console.log('pkg-mgmt-svc#create-package: ', createPkgReqDto);
     const newPkg = new this.pkgModel({
       name: createPkgReqDto.name,
@@ -50,7 +49,7 @@ export class PkgCrudService {
       });
   }
 
-  async findAllPkgs(
+  async find(
     collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     console.log('pkg-mgmt-svc#get-all-packages');
@@ -68,7 +67,7 @@ export class PkgCrudService {
       });
   }
 
-  async findPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
+  async findById(id: Types.ObjectId): Promise<GetPkgResDto> {
     console.log(`pkg-mgmt-svc#get-package #${id}`);
     return await this.pkgModel
       .findById({ _id: id })
@@ -96,7 +95,7 @@ export class PkgCrudService {
       });
   }
 
-  async updatePkg(updatePkgReqDto: UpdatePkgReqDto): Promise<UpdatePkgResDto> {
+  async update(updatePkgReqDto: UpdatePkgReqDto): Promise<BaseResDto> {
     const { _id } = updatePkgReqDto;
     console.log(`pkg-mgmt-svc#update-package #${_id}`);
     return await this.pkgModel
@@ -135,7 +134,7 @@ export class PkgCrudService {
       });
   }
 
-  async removePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
+  async remove(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`pkg-mgmt-svc#delete-package #${id}`);
     return await this.pkgModel
       .deleteById(id)
@@ -163,7 +162,7 @@ export class PkgCrudService {
       });
   }
 
-  async restorePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
+  async restore(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`pkg-mgmt-svc#restore-deleted-package #${id}`);
     return await this.pkgModel
       .restore({ _id: id })
@@ -191,7 +190,7 @@ export class PkgCrudService {
       });
   }
 
-  async findManyPkg(list_id: IdDto[]): Promise<PackageDto[]> {
+  async findMany(list_id: IdDto[]): Promise<PackageDto[]> {
     const res = await this.pkgModel.find({ _id: { $in: list_id } }).exec();
     console.log(res);
     return res;

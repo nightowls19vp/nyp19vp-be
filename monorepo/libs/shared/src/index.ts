@@ -38,6 +38,8 @@ export * from './lib/dto/pkg-mgmt/gr-crud.dto';
 
 export * from './lib/dto/pkg-mgmt/bill-crud.dto';
 
+export * from './lib/dto/pkg-mgmt/todos-crud.dto';
+
 export * from './lib/dto/txn/txn-crud.dto';
 
 export * from './lib/dto/txn/zalopay.dto';

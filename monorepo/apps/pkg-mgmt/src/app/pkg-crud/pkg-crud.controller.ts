@@ -2,14 +2,13 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { PkgCrudService } from './pkg-crud.service';
 import {
+  BaseResDto,
   CreatePkgReqDto,
-  CreatePkgResDto,
   GetPkgResDto,
   IdDto,
   kafkaTopic,
   PackageDto,
   UpdatePkgReqDto,
-  UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -22,43 +21,39 @@ export class PkgCrudController {
   constructor(private readonly pkgCrudService: PkgCrudService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.CREATE)
-  createPkg(
-    @Payload() createPkgReqDto: CreatePkgReqDto,
-  ): Promise<CreatePkgResDto> {
-    return this.pkgCrudService.createPkg(createPkgReqDto);
+  create(@Payload() createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
+    return this.pkgCrudService.create(createPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET)
-  findAllPkgs(
+  find(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
-    return this.pkgCrudService.findAllPkgs(collectionDto);
+    return this.pkgCrudService.find(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID)
-  findPkgById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
-    return this.pkgCrudService.findPkgById(id);
+  findById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
+    return this.pkgCrudService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.UPDATE)
-  updatePkg(
-    @Payload() updatePkgReqDto: UpdatePkgReqDto,
-  ): Promise<UpdatePkgResDto> {
-    return this.pkgCrudService.updatePkg(updatePkgReqDto);
+  update(@Payload() updatePkgReqDto: UpdatePkgReqDto): Promise<BaseResDto> {
+    return this.pkgCrudService.update(updatePkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.DELETE)
-  removePkg(@Payload() id: Types.ObjectId): Promise<CreatePkgResDto> {
-    return this.pkgCrudService.removePkg(id);
+  remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.pkgCrudService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.RESTORE)
-  restorePkg(@Payload() id: Types.ObjectId): Promise<CreatePkgResDto> {
-    return this.pkgCrudService.restorePkg(id);
+  restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.pkgCrudService.restore(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY)
-  async findManyPkg(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
-    return await this.pkgCrudService.findManyPkg(list_id);
+  async findMany(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
+    return await this.pkgCrudService.findMany(list_id);
   }
 }

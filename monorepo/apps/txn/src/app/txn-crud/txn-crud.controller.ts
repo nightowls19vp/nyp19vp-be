@@ -2,10 +2,9 @@ import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { TxnCrudService } from './txn-crud.service';
 import {
+  BaseResDto,
   CheckoutReqDto,
   CreateTransReqDto,
-  CreateTransResDto,
-  VNPCreateOrderResDto,
   VNPIpnUrlReqDto,
   ZPCheckoutResDto,
   ZPDataCallback,
@@ -43,28 +42,28 @@ export class TxnCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.TXN.ZP_GET_STT)
   async zpGetStatus(
     @Payload() createTransReqDto: CreateTransReqDto,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.zpGetStatus(createTransReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.ZP_CREATE_TRANS)
   async zpCreateTrans(
     @Payload() zpDataCallback: ZPDataCallback,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.zpCreateTrans(zpDataCallback);
   }
 
   @MessagePattern(kafkaTopic.TXN.VNP_CREATE_ORD)
   async vnpCreateOrder(
     @Payload() checkoutReqDto: CheckoutReqDto,
-  ): Promise<VNPCreateOrderResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.vnpCreateOrder(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.VNP_CALLBACK)
   async vnpCallback(
     @Payload() vnpIpnUrlReqDto: VNPIpnUrlReqDto,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.vnpCallback(vnpIpnUrlReqDto);
   }
 }

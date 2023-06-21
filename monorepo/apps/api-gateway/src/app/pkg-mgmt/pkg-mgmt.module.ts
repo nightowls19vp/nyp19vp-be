@@ -11,6 +11,7 @@ import { SocketModule } from '../socket/socket.module';
 import { CommModule } from '../comm/comm.module';
 import { BillModule } from './bill/bill.module';
 import { PackageModule } from './package/package.module';
+import { TodosModule } from './todos/todos.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -49,6 +50,7 @@ dotenv.config({
     ]),
     BillModule,
     PackageModule,
+    TodosModule,
   ],
   controllers: [PkgMgmtController],
   providers: [PkgMgmtService, SocketGateway, SocketService],

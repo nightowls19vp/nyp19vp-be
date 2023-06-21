@@ -19,7 +19,7 @@ export class BillCrudService {
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
   ) {}
-  async createBill(createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
+  async create(createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
     const { _id, borrowers, lender, createdBy } = createBillReqDto;
     const borrow_user = borrowers.map((user) => {
       return user.user;
@@ -97,7 +97,7 @@ export class BillCrudService {
       });
     }
   }
-  async getBill(_id: Types.ObjectId): Promise<BaseResDto> {
+  async get(_id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`Get billing of group #${_id}`);
     return await this.grModel
       .findOne({ _id: _id }, { billing: 1 })
@@ -124,7 +124,7 @@ export class BillCrudService {
         });
       });
   }
-  async updateBill(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
+  async update(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
     const { _id, borrowers } = updateBillReqDto;
     console.log(`Update billing #${_id}`);
     const billing = await this.billModel.findById({ _id: _id });
@@ -199,7 +199,7 @@ export class BillCrudService {
         });
     }
   }
-  async updateBillStt(
+  async updateStt(
     updateBillSttReqDto: UpdateBillSttReqDto,
   ): Promise<BaseResDto> {
     const { _id, updatedBy, borrowers } = updateBillSttReqDto;
@@ -246,7 +246,7 @@ export class BillCrudService {
       });
     }
   }
-  async rmBill(id: Types.ObjectId): Promise<BaseResDto> {
+  async remove(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`Remove billing #${id}`);
     return await this.billModel
       .deleteById(id)
@@ -266,7 +266,7 @@ export class BillCrudService {
         });
       });
   }
-  async restoreBill(id: Types.ObjectId): Promise<BaseResDto> {
+  async restore(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`Restore billing #${id}`);
     return await this.billModel
       .restore({ _id: id })

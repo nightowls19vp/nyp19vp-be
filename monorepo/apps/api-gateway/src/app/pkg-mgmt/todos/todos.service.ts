@@ -8,35 +8,34 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  AddTodosReqDto,
   BaseResDto,
-  CreateBillReqDto,
-  UpdateBillReqDto,
-  UpdateBillSttReqDto,
+  CreateTodosReqDto,
+  GetTodosResDto,
+  UpdateTodosReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
-export class BillService implements OnModuleInit {
+export class TodosService implements OnModuleInit {
   constructor(
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
   ) {}
-
   onModuleInit() {
-    const billTopics = Object.values(kafkaTopic.PKG_MGMT.EXTENSION.BILL);
+    const todosTopics = Object.values(kafkaTopic.PKG_MGMT.EXTENSION.TODOS);
 
-    for (const topic of billTopics) {
+    for (const topic of todosTopics) {
       this.packageMgmtClient.subscribeToResponseOf(topic);
     }
   }
-
-  async create(createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
+  async create(createTodosReqDto: CreateTodosReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.CREATE,
-          JSON.stringify(createBillReqDto),
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.CREATE,
+          JSON.stringify(createTodosReqDto),
         )
         .pipe(
           timeout(5000),
@@ -55,10 +54,10 @@ export class BillService implements OnModuleInit {
       }
     });
   }
-  async find(id: Types.ObjectId): Promise<BaseResDto> {
+  async find(id: Types.ObjectId): Promise<GetTodosResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET, id)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -76,38 +75,12 @@ export class BillService implements OnModuleInit {
       }
     });
   }
-  async update(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
+  async update(updateTodosReqDto: UpdateTodosReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE,
-          JSON.stringify(updateBillReqDto),
-        )
-        .pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new RequestTimeoutException();
-          }),
-        ),
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) {
-        return res;
-      } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
-      }
-    });
-  }
-  async updateStt(
-    updateBillSttReqDto: UpdateBillSttReqDto,
-  ): Promise<BaseResDto> {
-    return await firstValueFrom(
-      this.packageMgmtClient
-        .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT,
-          JSON.stringify(updateBillSttReqDto),
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE,
+          JSON.stringify(updateTodosReqDto),
         )
         .pipe(
           timeout(5000),
@@ -129,7 +102,7 @@ export class BillService implements OnModuleInit {
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DELETE, id)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -150,7 +123,55 @@ export class BillService implements OnModuleInit {
   async restore(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.RESTORE, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.RESTORE, id)
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async addTodos(addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.ADD_TODO,
+          JSON.stringify(addTodosReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async rmTodos(addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DEL_TODO,
+          JSON.stringify(addTodosReqDto),
+        )
         .pipe(
           timeout(5000),
           catchError(() => {

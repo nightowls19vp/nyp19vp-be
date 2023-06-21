@@ -160,8 +160,6 @@ export class CreateGrReqDto {
   member: MemberDto;
 }
 
-export class CreateGrResDto extends BaseResDto {}
-
 export class GetGrChannelResDto extends BaseResDto {
   channels: string[];
 }
@@ -198,14 +196,10 @@ export class UpdateChannelReqDto extends IntersectionType(
   PickType(GroupDto, ['channel']),
 ) {}
 
-export class UpdateChannelResDto extends BaseResDto {}
-
 export class UpdateGrReqDto extends IntersectionType(
   IdDto,
   PickType(GroupDto, ['name']),
 ) {}
-
-export class UpdateGrResDto extends BaseResDto {}
 
 export class ActivateGrPkgReqDto extends IntersectionType(
   IdDto,
@@ -213,8 +207,6 @@ export class ActivateGrPkgReqDto extends IntersectionType(
 ) {
   user: string;
 }
-
-export class ActivateGrPkgResDto extends BaseResDto {}
 
 export class AddGrMbReqDto extends IntersectionType(
   IdDto,
@@ -226,11 +218,7 @@ export class RmGrMbReqDto extends IntersectionType(
   PickType(MemberDto, ['user']),
 ) {}
 
-export class UpdateGrMbResDto extends BaseResDto {}
-
 export class UpdateGrPkgReqDto extends ActivateGrPkgReqDto {}
-
-export class UpdateGrPkgResDto extends BaseResDto {}
 
 export class CheckGrSUReqDto extends IdDto {
   user: string;

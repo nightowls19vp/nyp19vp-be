@@ -15,38 +15,34 @@ export class BillCrudController {
   constructor(private readonly billCrudService: BillCrudService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.CREATE)
-  createBill(
-    @Payload() createBillReqDto: CreateBillReqDto,
-  ): Promise<BaseResDto> {
-    return this.billCrudService.createBill(createBillReqDto);
+  create(@Payload() createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
+    return this.billCrudService.create(createBillReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET)
-  getBill(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.billCrudService.getBill(id);
+  get(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.billCrudService.get(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE)
-  updateBill(
-    @Payload() updateBillReqDto: UpdateBillReqDto,
-  ): Promise<BaseResDto> {
-    return this.billCrudService.updateBill(updateBillReqDto);
+  update(@Payload() updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
+    return this.billCrudService.update(updateBillReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT)
-  updateBillStt(
+  updateStt(
     @Payload() updateBillSttReqDto: UpdateBillSttReqDto,
   ): Promise<BaseResDto> {
-    return this.billCrudService.updateBillStt(updateBillSttReqDto);
+    return this.billCrudService.updateStt(updateBillSttReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE)
-  rmBill(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.billCrudService.rmBill(id);
+  remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.billCrudService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.RESTORE)
-  restoreBill(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.billCrudService.restoreBill(id);
+  restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.billCrudService.restore(id);
   }
 }

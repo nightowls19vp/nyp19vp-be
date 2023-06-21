@@ -5,26 +5,20 @@ import {
 import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import {
+  BaseResDto,
   CheckoutReqDto,
   CreateUserReqDto,
-  CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   UpdateCartReqDto,
-  UpdateCartResDto,
   UpdateSettingReqDto,
-  UpdateSettingResDto,
   UpdateTrxHistReqDto,
-  UpdateTrxHistResDto,
   UpdateUserReqDto,
-  UpdateUserResDto,
   UserDto,
-  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
@@ -53,9 +47,7 @@ export class UsersCrudController implements OnModuleInit {
   }
 
   @MessagePattern(kafkaTopic.USERS.CREATE)
-  create(
-    @Payload() createUserReqDto: CreateUserReqDto,
-  ): Promise<CreateUserResDto> {
+  create(@Payload() createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {
     return this.usersCrudService.create(createUserReqDto);
   }
 
@@ -86,38 +78,38 @@ export class UsersCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.USERS.UPDATE_INFO)
   updateInfo(
     @Payload() updateUserReqDto: UpdateUserReqDto,
-  ): Promise<UpdateUserResDto> {
+  ): Promise<BaseResDto> {
     return this.usersCrudService.updateInfo(updateUserReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_SETTING)
   updateSetting(
     @Payload() updateSettingReqDto: UpdateSettingReqDto,
-  ): Promise<UpdateSettingResDto> {
+  ): Promise<BaseResDto> {
     return this.usersCrudService.updateSetting(updateSettingReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_AVATAR)
   updateAvatar(
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.DELETE_USER)
-  removeUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
+  removeUser(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.usersCrudService.removeUser(id);
   }
 
   @MessagePattern(kafkaTopic.USERS.RESTORE_USER)
-  restoreUser(@Payload() id: Types.ObjectId): Promise<CreateUserResDto> {
+  restoreUser(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.usersCrudService.restoreUser(id);
   }
 
   @MessagePattern(kafkaTopic.USERS.UPDATE_CART)
   updateCart(
     @Payload() updateCartReqDto: UpdateCartReqDto,
-  ): Promise<UpdateCartResDto> {
+  ): Promise<BaseResDto> {
     return this.usersCrudService.updateCart(updateCartReqDto);
   }
 
@@ -129,14 +121,14 @@ export class UsersCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.USERS.UPDATE_TRX)
   updateTrxHist(
     @Payload() updateTrxHistReqDto: UpdateTrxHistReqDto,
-  ): Promise<UpdateTrxHistResDto> {
+  ): Promise<BaseResDto> {
     return this.usersCrudService.updateTrxHist(updateTrxHistReqDto);
   }
 
   @MessagePattern(kafkaTopic.USERS.CHECKOUT)
   checkout(
     @Payload() checkoutReqDto: CheckoutReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     console.log('users-svc : checkout');
     return this.usersCrudService.checkout(checkoutReqDto);
   }
@@ -149,7 +141,7 @@ export class UsersCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.USERS.RENEW_PKG)
   renewPkg(
     @Payload() renewGrPkgReqDto: RenewGrPkgReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     return this.usersCrudService.renewPkg(renewGrPkgReqDto);
   }
 }

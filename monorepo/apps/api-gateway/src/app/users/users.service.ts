@@ -11,24 +11,19 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  BaseResDto,
   CheckoutReqDto,
   CreateUserReqDto,
-  CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
   kafkaTopic,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   UpdateCartReqDto,
-  UpdateCartResDto,
   UpdateSettingReqDto,
-  UpdateSettingResDto,
   UpdateUserReqDto,
-  UpdateUserResDto,
   UserDto,
-  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -39,9 +34,7 @@ export class UsersService {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
-  async createUser(
-    createUserReqDto: CreateUserReqDto,
-  ): Promise<CreateUserResDto> {
+  async createUser(createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {
     const res = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(createUserReqDto))
@@ -61,9 +54,7 @@ export class UsersService {
       });
     }
   }
-  async updateUser(
-    updateUserReqDto: UpdateUserReqDto,
-  ): Promise<UpdateUserResDto> {
+  async updateUser(updateUserReqDto: UpdateUserReqDto): Promise<BaseResDto> {
     const res = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.UPDATE_INFO, JSON.stringify(updateUserReqDto))
@@ -130,7 +121,7 @@ export class UsersService {
   }
   async updateSetting(
     updateSettingReqDto: UpdateSettingReqDto,
-  ): Promise<UpdateSettingResDto> {
+  ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(
@@ -156,7 +147,7 @@ export class UsersService {
   }
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(
@@ -181,7 +172,7 @@ export class UsersService {
     });
   }
 
-  async deleteUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+  async deleteUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.DELETE_USER, id).pipe(
         timeout(5000),
@@ -200,9 +191,7 @@ export class UsersService {
       }
     });
   }
-  async updateCart(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<UpdateCartResDto> {
+  async updateCart(updateCartReqDto: UpdateCartReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.UPDATE_CART, JSON.stringify(updateCartReqDto))
@@ -244,7 +233,7 @@ export class UsersService {
   }
   async checkout(
     checkoutReqDto: CheckoutReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(checkoutReqDto))
@@ -275,7 +264,7 @@ export class UsersService {
       ),
     );
   }
-  async restoreUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+  async restoreUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.RESTORE_USER, id).pipe(
         timeout(5000),
@@ -287,7 +276,7 @@ export class UsersService {
   }
   async renewPkg(
     renewGrPkgReqDto: RenewGrPkgReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.RENEW_PKG, JSON.stringify(renewGrPkgReqDto))

@@ -11,12 +11,11 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
+  BaseResDto,
   CreatePkgReqDto,
-  CreatePkgResDto,
   GetPkgResDto,
   PackageDto,
   UpdatePkgReqDto,
-  UpdatePkgResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -34,7 +33,7 @@ export class PackageService implements OnModuleInit {
       this.packageMgmtClient.subscribeToResponseOf(topic);
     }
   }
-  async createPkg(createPkgReqDto: CreatePkgReqDto): Promise<CreatePkgResDto> {
+  async create(createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PKG_MGMT.PACKAGE.CREATE,
@@ -50,7 +49,7 @@ export class PackageService implements OnModuleInit {
     });
   }
 
-  async getAllPkg(
+  async find(
     collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     return await firstValueFrom(
@@ -60,7 +59,7 @@ export class PackageService implements OnModuleInit {
       ),
     );
   }
-  async getPkgById(id: Types.ObjectId): Promise<GetPkgResDto> {
+  async findById(id: Types.ObjectId): Promise<GetPkgResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID, id),
     ).then((res) => {
@@ -72,7 +71,7 @@ export class PackageService implements OnModuleInit {
         });
     });
   }
-  async updatePkg(updatePkgReqDto: UpdatePkgReqDto): Promise<UpdatePkgResDto> {
+  async update(updatePkgReqDto: UpdatePkgReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PKG_MGMT.PACKAGE.UPDATE,
@@ -87,7 +86,7 @@ export class PackageService implements OnModuleInit {
         });
     });
   }
-  async deletePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
+  async remove(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.DELETE, id),
     ).then((res) => {
@@ -99,7 +98,7 @@ export class PackageService implements OnModuleInit {
         });
     });
   }
-  async restorePkg(id: Types.ObjectId): Promise<CreatePkgResDto> {
+  async restore(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.RESTORE, id),
     ).then((res) => {

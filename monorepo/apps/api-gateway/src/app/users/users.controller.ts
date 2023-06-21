@@ -14,9 +14,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  BaseResDto,
   CheckoutReqDto,
   CreateUserReqDto,
-  CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
@@ -24,16 +24,11 @@ import {
   ParseObjectIdPipe,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   UpdateCartReqDto,
-  UpdateCartResDto,
   UpdateSettingReqDto,
-  UpdateSettingResDto,
   UpdateUserReqDto,
-  UpdateUserResDto,
   UserDto,
   UsersCollectionProperties,
-  VNPCreateOrderResDto,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
@@ -75,11 +70,11 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'Created user', type: CreateUserResDto })
+  @ApiCreatedResponse({ description: 'Created user', type: BaseResDto })
   @ApiInternalServerErrorResponse({ description: 'Bad Request: Duplicate Key' })
   async create(
     @Body() createUserReqDto: CreateUserReqDto,
-  ): Promise<CreateUserResDto> {
+  ): Promise<BaseResDto> {
     console.log('createUser', createUserReqDto);
     return this.usersService.createUser(createUserReqDto);
   }
@@ -152,10 +147,10 @@ export class UsersController implements OnModuleInit {
   @UseGuards(AccessJwtAuthGuard)
   @Delete(':id')
   @ApiParam({ name: 'id', type: String })
-  @ApiOkResponse({ description: 'Deleted user', type: CreateUserResDto })
+  @ApiOkResponse({ description: 'Deleted user', type: BaseResDto })
   async deleteUser(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreateUserResDto> {
+  ): Promise<BaseResDto> {
     console.log(`delete user #${id}`);
     return this.usersService.deleteUser(id);
   }
@@ -166,11 +161,11 @@ export class UsersController implements OnModuleInit {
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({
     description: 'Restore deleted user',
-    type: CreateUserResDto,
+    type: BaseResDto,
   })
   async restoreUser(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreateUserResDto> {
+  ): Promise<BaseResDto> {
     console.log(`restore user #${id}`);
     return this.usersService.restoreUser(id);
   }
@@ -178,11 +173,11 @@ export class UsersController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Put(':id')
-  @ApiOkResponse({ description: 'Updated User', type: UpdateUserResDto })
+  @ApiOkResponse({ description: 'Updated User', type: BaseResDto })
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserReqDto: UpdateUserReqDto,
-  ): Promise<UpdateUserResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update user #${id}`, updateUserReqDto);
     updateUserReqDto._id = id;
     return this.usersService.updateUser(updateUserReqDto);
@@ -193,12 +188,12 @@ export class UsersController implements OnModuleInit {
   @Put(':id/setting')
   @ApiOkResponse({
     description: 'Updated User Setting',
-    type: UpdateSettingResDto,
+    type: BaseResDto,
   })
   async updateSetting(
     @Param('id') id: string,
     @Body() updateSettingReqDto: UpdateSettingReqDto,
-  ): Promise<UpdateSettingResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update user #${id}`, updateSettingReqDto);
     updateSettingReqDto._id = id;
     return this.usersService.updateSetting(updateSettingReqDto);
@@ -210,7 +205,7 @@ export class UsersController implements OnModuleInit {
   updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update user #${id}`, updateAvatarReqDto);
     updateAvatarReqDto._id = id;
     return this.usersService.updateAvatar(updateAvatarReqDto);
@@ -221,7 +216,7 @@ export class UsersController implements OnModuleInit {
   @Put(':id/cart')
   @ApiOkResponse({
     description: "Updated user's shopping cart",
-    type: UpdateCartResDto,
+    type: BaseResDto,
   })
   @ApiOperation({
     description:
@@ -230,7 +225,7 @@ export class UsersController implements OnModuleInit {
   async updateCart(
     @Param('id') id: string,
     @Body() updateCartReqDto: UpdateCartReqDto,
-  ): Promise<UpdateCartResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update items of user #${id}'s cart`, updateCartReqDto);
     updateCartReqDto._id = id;
     return this.usersService.updateCart(updateCartReqDto);
@@ -243,7 +238,7 @@ export class UsersController implements OnModuleInit {
     @ATUser() user: unknown,
     @Body() checkoutReqDto: CheckoutReqDto,
     @Ip() ip: string,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`checkout #${_id}`, checkoutReqDto);
     if (ip == '::1') ip = '127.0.0.1';
@@ -260,7 +255,7 @@ export class UsersController implements OnModuleInit {
     @Param('grId') grId: string,
     @Body() renewGrPkgReqDto: RenewGrPkgReqDto,
     @Ip() ip: string,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     const _id = user?.['userInfo']?.['_id'];
     console.log(`renew package in group #${_id}`, renewGrPkgReqDto);
     renewGrPkgReqDto._id = _id;

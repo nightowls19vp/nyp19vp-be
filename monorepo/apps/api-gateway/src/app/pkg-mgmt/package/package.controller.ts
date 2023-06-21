@@ -11,14 +11,13 @@ import {
 } from '@nestjs/common';
 import { PackageService } from './package.service';
 import {
+  BaseResDto,
   CreatePkgReqDto,
-  CreatePkgResDto,
   GetPkgResDto,
   PackageDto,
   ParseObjectIdPipe,
   PkgCollectionProperties,
   UpdatePkgReqDto,
-  UpdatePkgResDto,
 } from '@nyp19vp-be/shared';
 import {
   ApiCreatedResponse,
@@ -40,12 +39,10 @@ export class PackageController {
   constructor(private readonly packageService: PackageService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Created Package', type: CreatePkgResDto })
-  createPkg(
-    @Body() createPkgReqDto: CreatePkgReqDto,
-  ): Promise<CreatePkgResDto> {
+  @ApiCreatedResponse({ description: 'Created Package', type: BaseResDto })
+  create(@Body() createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
     console.log('createPkg', createPkgReqDto);
-    return this.packageService.createPkg(createPkgReqDto);
+    return this.packageService.create(createPkgReqDto);
   }
 
   @Get()
@@ -54,56 +51,56 @@ export class PackageController {
     description:
       'Filter MUST:\n\n\t- name(optional): {"name":{"$regex":"(?i)(<keyword>)(?-i)"}}\n\n\t- duration(optional):\n\n\t\t- type: integer\n\n\t\t- unit: date\n\n\t\t- example: {"duration":30}\n\n\t- noOfMember:\n\n\t\t- type: integer\n\n\t\t- description: Maximum number of members in group\n\n\t\t- example: {"noOfMember":3}\n\n\t- price(optional):\n\n\t\t- type: float \n\n\t\t- lower bound price: {price: {$gte: 25}}\n\n\t\t- upper bound price: {price: {$lte: 90}}\n\n\t\t- example: 25000 < price < 100000 => {"price": {"$gte": 25, "$lte": 100}}',
   })
-  getAllPkg(
+  find(
     @Query(new ValidationPipe(PkgCollectionProperties))
     collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
     console.log('get all packages');
     console.log(collectionDto);
-    return this.packageService.getAllPkg(collectionDto);
+    return this.packageService.find(collectionDto);
   }
 
   @Get(':id')
   @ApiOkResponse({ description: 'Got Package', type: GetPkgResDto })
   @ApiParam({ name: 'id', type: String })
-  getPkgById(
+  findById(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetPkgResDto> {
     console.log(`get package #${id}`);
-    return this.packageService.getPkgById(id);
+    return this.packageService.findById(id);
   }
 
   @Delete(':id')
-  @ApiOkResponse({ description: 'Deleted Package', type: CreatePkgResDto })
+  @ApiOkResponse({ description: 'Deleted Package', type: BaseResDto })
   @ApiParam({ name: 'id', type: String })
-  deletePkg(
+  remove(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreatePkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(`delete package #${id}`);
-    return this.packageService.deletePkg(id);
+    return this.packageService.remove(id);
   }
 
   @Patch(':id')
   @ApiOkResponse({
     description: 'Restore deleted package',
-    type: CreatePkgResDto,
+    type: BaseResDto,
   })
   @ApiParam({ name: 'id', type: String })
-  restorePkg(
+  restore(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<CreatePkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(`delete package #${id}`);
-    return this.packageService.restorePkg(id);
+    return this.packageService.restore(id);
   }
 
   @Put(':id')
-  @ApiOkResponse({ description: 'Updated Package', type: UpdatePkgResDto })
-  updatePkg(
+  @ApiOkResponse({ description: 'Updated Package', type: BaseResDto })
+  update(
     @Param('id') id: string,
     @Body() updatePkgReqDto: UpdatePkgReqDto,
-  ): Promise<UpdatePkgResDto> {
+  ): Promise<BaseResDto> {
     console.log(`update package #${id}`, updatePkgReqDto);
     updatePkgReqDto._id = id;
-    return this.packageService.updatePkg(updatePkgReqDto);
+    return this.packageService.update(updatePkgReqDto);
   }
 }
