@@ -49,6 +49,7 @@ export class PurchaseLocationsService {
       name: purchaseLocation.name,
       address: purchaseLocation.address,
       addedBy: purchaseLocation.addedBy,
+      image: purchaseLocation.image,
       description: purchaseLocation.description,
       timestamp: purchaseLocation.timestamp,
     };
@@ -101,6 +102,7 @@ export class PurchaseLocationsService {
     }
 
     const purchaseLocation = this.purchaseLocationRepo.create({
+      id: createPurchaseLocation.id,
       name: createPurchaseLocation.name,
       address: createPurchaseLocation.address,
       addedBy: createPurchaseLocation.addedBy,

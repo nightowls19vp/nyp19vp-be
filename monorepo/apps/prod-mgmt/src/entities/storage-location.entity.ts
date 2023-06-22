@@ -50,8 +50,9 @@ export class StorageLocationEntity {
     name: 'image',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
-    default: null,
+    nullable: false,
+    default:
+      'https://res.cloudinary.com/nightowls19vp/image/upload/v1687419179/default.png',
   })
   image: string;
 

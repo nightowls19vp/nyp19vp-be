@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { PurchaseLocationsController } from './purchase-locations.controller';
 import { PurchaseLocationsService } from './purchase-locations.service';
+import { NestCloudinaryClientModule } from '../../file/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { PurchaseLocationsService } from './purchase-locations.service';
     ]),
   ],
   controllers: [PurchaseLocationsController],
-  providers: [PurchaseLocationsService],
+  providers: [PurchaseLocationsService, NestCloudinaryClientModule],
 })
 export class PurchaseLocationsModule {}

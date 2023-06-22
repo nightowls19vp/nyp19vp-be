@@ -14,6 +14,21 @@ export class CreatePurchaseLocationReqDto extends PurchaseLocationDto {
     readOnly: true,
   })
   group?: ProdMgmtGroupDto;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class CreatePurchaseLocationResDto extends BaseResDto {
@@ -95,6 +110,21 @@ export class UpdatePurchaseLocationReqDto extends PurchaseLocationDto {
     readOnly: true,
   })
   groupId: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class UpdatePurchaseLocationResDto extends BaseResDto {

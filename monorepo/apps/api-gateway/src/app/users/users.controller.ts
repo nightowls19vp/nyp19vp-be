@@ -222,7 +222,7 @@ export class UsersController implements OnModuleInit {
   })
   @ApiOperation({
     description:
-      'Update all items in cart.\n\nMUST update the entire cart, not add or remove a few items.',
+      'Update all items in cart.\nMUST update the entire cart, not add or remove a few items.',
   })
   async updateCart(
     @Param('id') id: string,

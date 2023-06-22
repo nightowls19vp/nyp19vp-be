@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { NestCloudinaryClientModule } from '../../file/cloudinary/cloudinary.module';
 import { GroupProductsController } from './group-products.controller';
 import { GroupProductsService } from './group-products.service';
 
@@ -23,6 +24,6 @@ import { GroupProductsService } from './group-products.service';
     ]),
   ],
   controllers: [GroupProductsController],
-  providers: [GroupProductsService],
+  providers: [GroupProductsService, NestCloudinaryClientModule],
 })
 export class GroupProductsModule {}

@@ -1,3 +1,5 @@
+import { UploadApiOptions } from 'cloudinary';
+import { randomUUID } from 'crypto';
 import {
   storageLocationsFilterableColumns,
   storageLocationsSearchableColumns,
@@ -14,20 +16,27 @@ import {
   UpdateStorageLocationReqDto,
   UpdateStorageLocationResDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/locations';
+import { CloudinaryService } from 'nestjs-cloudinary';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -38,18 +47,31 @@ import {
 } from '@nestjs/swagger';
 import { PaginateQueryOptions } from '@nyp19vp-be/shared';
 
+import { uploadImage } from '../utils/cld';
 import { StorageLocationsService } from './storage-locations.service';
 
 @ApiTags('route: prod-mgmt', 'route: prod-mgmt/storage-locations')
 @Controller('prod-mgmt/storage-locations')
 export class StorageLocationsController {
+  private static uploadOptions: UploadApiOptions = {
+    folder: 'storage-locations/',
+    format: 'png',
+  };
+
   constructor(
     private readonly storageLocationsService: StorageLocationsService,
+
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   @ApiOperation({
-    summary: 'Create storage location',
-    description: 'Create storage location',
+    summary:
+      'Create storage location - [MULTIPART/FORM-DATA] and [JSON] are supported',
+    description: `Create storage location.
+    **image** has high priority than **file**. \n
+    If both of **image** and **file** was provided, **image** would be chosen.
+    If none of both was provided or invalid, default image will be chosen.
+    **IMPORTANT**: Idk why **multipart/form-data** could not send http via Swagger UI, please use Postman instead`,
   })
   @ApiCreatedResponse({
     description: 'Create storage location',
@@ -64,11 +86,44 @@ export class StorageLocationsController {
     - Timeout when connect to database
     - Timeout when connect to kafka microservice`,
   })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data', 'application/json')
   @Post()
   async createStorageLocation(
     @Body() reqDto: CreateStorageLocationReqDto,
+    @UploadedFile(
+      'file',
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: 'image/*' })],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File,
   ): Promise<CreateStorageLocationResDto> {
-    return this.storageLocationsService.createStorageLocation(reqDto);
+    const id = randomUUID();
+    let imageUrl = undefined;
+    if (reqDto.image) {
+      imageUrl = await uploadImage(
+        this.cloudinaryService,
+        StorageLocationsController.uploadOptions,
+        reqDto.image,
+        id,
+      );
+    } else if (file) {
+      imageUrl = await uploadImage(
+        this.cloudinaryService,
+        StorageLocationsController.uploadOptions,
+        file,
+        id,
+      );
+    }
+
+    return this.storageLocationsService.createStorageLocation({
+      ...reqDto,
+      id,
+      image: imageUrl,
+      file: undefined,
+    });
   }
 
   @ApiOperation({
@@ -213,8 +268,13 @@ export class StorageLocationsController {
   }
 
   @ApiOperation({
-    summary: 'Update storage location by id',
-    description: 'Update storage location by id',
+    summary:
+      'Update storage location by id - [MULTIPART/FORM-DATA] and [JSON] are supported',
+    description: `Update storage location by id.
+    **image** has high priority than **file**.
+    If both of **image** and **file** was provided, **image** would be chosen. \n
+    If none of both was provided or invalid, default image will be chosen.
+    **IMPORTANT**: Idk why **multipart/form-data** could not send http via Swagger UI, please use Postman instead`,
   })
   @ApiOkResponse({
     description: 'Update storage location by id',
@@ -244,16 +304,43 @@ export class StorageLocationsController {
     description: 'The storage location id',
     type: String,
   })
+  @ApiConsumes('multipart/form-data', 'application/json')
+  @UseInterceptors(FileInterceptor('file'))
   @Put('/:groupId/:id')
   async updateStorageLocation(
     @Param('groupId') groupId: string,
     @Param('id') id: string,
     @Body() reqDto: UpdateStorageLocationReqDto,
+    @UploadedFile(
+      'file',
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: 'image/*' })],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File,
   ): Promise<UpdateStorageLocationResDto> {
-    return this.storageLocationsService.updateStorageLocation(
-      groupId,
-      id,
-      reqDto,
-    );
+    let imageUrl = undefined;
+    if (reqDto.image) {
+      imageUrl = await uploadImage(
+        this.cloudinaryService,
+        StorageLocationsController.uploadOptions,
+        reqDto.image,
+        id,
+      );
+    } else if (file) {
+      imageUrl = await uploadImage(
+        this.cloudinaryService,
+        StorageLocationsController.uploadOptions,
+        file,
+        id,
+      );
+    }
+
+    return this.storageLocationsService.updateStorageLocation(groupId, id, {
+      ...reqDto,
+      image: imageUrl,
+      file: undefined,
+    });
   }
 }
