@@ -4,32 +4,20 @@ import { GrCrudService } from './gr-crud.service';
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
-  UpdateGrMbResDto,
   CreateGrReqDto,
-  CreateGrResDto,
   GetGrResDto,
   kafkaTopic,
   UpdateGrReqDto,
-  UpdateGrResDto,
   UpdateGrPkgReqDto,
-  UpdateGrPkgResDto,
   GroupDto,
   MemberDto,
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   ActivateGrPkgReqDto,
-  ActivateGrPkgResDto,
   CheckGrSUReqDto,
   UpdateChannelReqDto,
-  UpdateChannelResDto,
   GetGrChannelResDto,
-  CreateBillReqDto,
-  CreateBillResDto,
-  GetBillResDto,
-  UpdateBillReqDto,
-  UpdateBillResDto,
-  UpdateBillSttReqDto,
+  BaseResDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -53,129 +41,90 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR)
-  createGr(@Payload() createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
-    return this.grCrudService.createGr(createGrReqDto);
+  create(@Payload() createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
+    return this.grCrudService.create(createGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS)
-  findAllGrs(
+  find(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
-    return this.grCrudService.findAllGrs(collectionDto);
+    return this.grCrudService.find(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID)
-  findGrById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
-    return this.grCrudService.findGrById(id);
+  findById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
+    return this.grCrudService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR)
-  updateGr(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
-    return this.grCrudService.updateGr(updateGrReqDto);
+  update(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<BaseResDto> {
+    return this.grCrudService.update(updateGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_GR)
-  removeGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
-    return this.grCrudService.removeGr(id);
+  remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.grCrudService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.RESTORE_GR)
-  restoreGr(@Payload() id: Types.ObjectId): Promise<CreateGrResDto> {
-    return this.grCrudService.restoreGr(id);
+  restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.grCrudService.restore(id);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)
-  addMemb(
-    @Payload() updateGrMbReqDto: AddGrMbReqDto,
-  ): Promise<UpdateGrMbResDto> {
+  addMemb(@Payload() updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
     return this.grCrudService.addMemb(updateGrMbReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB)
-  rmMemb(@Payload() updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
+  rmMemb(@Payload() updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
     return this.grCrudService.rmMemb(updateGrMbReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG)
-  addGrPkg(
-    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
-    return this.grCrudService.addGrPkg(updateGrPkgReqDto);
+  addPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
+    return this.grCrudService.addPkg(updateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_PKG)
-  rmGrPkg(
-    @Payload() updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
-    return this.grCrudService.rmGrPkg(updateGrPkgReqDto);
+  rmPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
+    return this.grCrudService.rmPkg(updateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GRS_BY_USER)
-  getGrByUserId(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
-    return this.grCrudService.getGrByUserId(memberDto);
+  findByUser(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+    return this.grCrudService.findByUser(memberDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_CHANNEL_BY_USER)
-  getGrChannelByUserId(
-    @Payload() id: Types.ObjectId,
-  ): Promise<GetGrChannelResDto> {
-    return this.grCrudService.getGrChannelByUserId(id);
+  getChannelByUser(@Payload() id: Types.ObjectId): Promise<GetGrChannelResDto> {
+    return this.grCrudService.getChannelByUser(id);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR)
   updateAvatar(
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     return this.grCrudService.updateAvatar(updateAvatarReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_CHANNEL)
   updateChannel(
     @Payload() updateChannelReqDto: UpdateChannelReqDto,
-  ): Promise<UpdateChannelResDto> {
+  ): Promise<BaseResDto> {
     return this.grCrudService.updateChannel(updateChannelReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG)
-  activateGrPkg(
+  activatePkg(
     @Payload() activateGrPkgReqDto: ActivateGrPkgReqDto,
-  ): Promise<ActivateGrPkgResDto> {
-    return this.grCrudService.activateGrPkg(activateGrPkgReqDto);
+  ): Promise<BaseResDto> {
+    return this.grCrudService.activatePkg(activateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU)
-  checkGrSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
-    return this.grCrudService.checkGrSU(checkGrSUReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR_BILL)
-  createBill(
-    @Payload() createBillReqDto: CreateBillReqDto,
-  ): Promise<CreateBillResDto> {
-    return this.grCrudService.createBill(createBillReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_BILL)
-  getBill(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
-    return this.grCrudService.getBill(id);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL)
-  updateBill(
-    @Payload() updateBillReqDto: UpdateBillReqDto,
-  ): Promise<UpdateBillResDto> {
-    return this.grCrudService.updateBill(updateBillReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_BILL_STT)
-  updateBillStt(
-    @Payload() updateBillSttReqDto: UpdateBillSttReqDto,
-  ): Promise<UpdateBillResDto> {
-    return this.grCrudService.updateBillStt(updateBillSttReqDto);
-  }
-
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_BILL)
-  rmBill(@Payload() id: Types.ObjectId): Promise<CreateBillResDto> {
-    return this.grCrudService.rmBill(id);
+  isSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
+    return this.grCrudService.isSU(checkGrSUReqDto);
   }
 }

@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { TxnService } from './txn.service';
 import {
+  BaseResDto,
   CreateTransReqDto,
-  CreateTransResDto,
   VNPIpnUrlReqDto,
   ZPCallbackReqDto,
   kafkaTopic,
@@ -51,7 +51,7 @@ export class TxnController implements OnModuleInit {
   }
 
   @Get('vnpay/vnpay_return')
-  vnpCallback(@Query() req): Promise<CreateTransResDto> {
+  vnpCallback(@Query() req): Promise<BaseResDto> {
     console.log('Callback:', req);
     let vnpIpnUrlReqDto: VNPIpnUrlReqDto;
     if (typeof req === 'object') vnpIpnUrlReqDto = req;

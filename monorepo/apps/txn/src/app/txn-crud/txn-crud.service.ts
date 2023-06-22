@@ -17,14 +17,13 @@ import {
   ZPDataCallback,
   UpdateTrxHistReqDto,
   EmbedData,
-  CreateTransResDto,
   ZPCheckoutResDto,
   CreateGrReqDto,
   UpdateGrPkgReqDto,
   CheckoutReqDto,
   VNPCreateOrderReqDto,
   VNPIpnUrlReqDto,
-  VNPCreateOrderResDto,
+  BaseResDto,
 } from '@nyp19vp-be/shared';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
@@ -59,7 +58,7 @@ export class TxnCrudService {
     try {
       const res = await firstValueFrom(
         this.pkgMgmtClient
-          .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+          .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
           .pipe(timeout(5000)),
       );
       if (res.length) {
@@ -106,9 +105,7 @@ export class TxnCrudService {
     }
   }
 
-  async zpGetStatus(
-    createTransReqDto: CreateTransReqDto,
-  ): Promise<CreateTransResDto> {
+  async zpGetStatus(createTransReqDto: CreateTransReqDto): Promise<BaseResDto> {
     const { _id, user } = createTransReqDto;
     const zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto = mapZPGetStatusReqDto(
       _id,
@@ -125,7 +122,7 @@ export class TxnCrudService {
     } else {
       this.transModel.findById({ _id: _id }).then(async (checkExist) => {
         if (!checkExist) {
-          let result: CreateTransResDto;
+          let result: BaseResDto;
           const session = await this.connection.startSession();
           session.startTransaction();
           try {
@@ -206,9 +203,7 @@ export class TxnCrudService {
     }
   }
 
-  async zpCreateTrans(
-    zpDataCallback: ZPDataCallback,
-  ): Promise<CreateTransResDto> {
+  async zpCreateTrans(zpDataCallback: ZPDataCallback): Promise<BaseResDto> {
     const item: ItemDto[] = JSON.parse(zpDataCallback.item);
     const newTrans = new this.transModel({
       _id: zpDataCallback.app_trans_id,
@@ -343,15 +338,13 @@ export class TxnCrudService {
     );
     return data;
   }
-  async vnpCreateOrder(
-    checkoutReqDto: CheckoutReqDto,
-  ): Promise<VNPCreateOrderResDto> {
+  async vnpCreateOrder(checkoutReqDto: CheckoutReqDto): Promise<BaseResDto> {
     const { _id, cart, ipAddr, group } = checkoutReqDto;
     console.log(`VnPay Checkout #${_id}`, cart);
     const list_id = cart.map((x) => x.package);
     const res = await firstValueFrom(
       this.pkgMgmtClient
-        .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+        .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
         .pipe(timeout(5000)),
     );
     if (res.length) {
@@ -376,7 +369,7 @@ export class TxnCrudService {
     }
   }
   async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
-    let result: CreateTransResDto;
+    let result: BaseResDto;
     console.log('VnPay Callback:', vnpIpnUrlReqDto);
     const secureHash = vnpIpnUrlReqDto.vnp_SecureHash;
     const resCode = vnpIpnUrlReqDto.vnp_ResponseCode;

@@ -1,11 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  BaseResDto,
   CartPackage,
   CheckGrSUReqDto,
   CheckoutReqDto,
   CreateUserReqDto,
-  CreateUserResDto,
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
@@ -13,17 +13,11 @@ import {
   MOP,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   UpdateCartReqDto,
-  UpdateCartResDto,
   UpdateSettingReqDto,
-  UpdateSettingResDto,
   UpdateTrxHistReqDto,
-  UpdateTrxHistResDto,
   UpdateUserReqDto,
-  UpdateUserResDto,
   UserDto,
-  VNPCreateOrderResDto,
   ZPCheckoutResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -47,7 +41,7 @@ export class UsersCrudService {
     @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
   ) {}
 
-  async create(createUserReqDto: CreateUserReqDto): Promise<CreateUserResDto> {
+  async create(createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {
     console.log('users-svc#create-user: ', createUserReqDto);
     const newUser = new this.userModel({
       name: createUserReqDto.name,
@@ -177,9 +171,7 @@ export class UsersCrudService {
       });
   }
 
-  async updateInfo(
-    updateUserReqDto: UpdateUserReqDto,
-  ): Promise<UpdateUserResDto> {
+  async updateInfo(updateUserReqDto: UpdateUserReqDto): Promise<BaseResDto> {
     const { _id } = updateUserReqDto;
     console.log(`users-svc#udpate-user:`, _id);
     return await this.userModel
@@ -219,7 +211,7 @@ export class UsersCrudService {
 
   async updateSetting(
     updateSettingReqDto: UpdateSettingReqDto,
-  ): Promise<UpdateSettingResDto> {
+  ): Promise<BaseResDto> {
     const { _id } = updateSettingReqDto;
     console.log(`users-svc#udpate-setting:`, _id);
     return await this.userModel
@@ -252,7 +244,7 @@ export class UsersCrudService {
 
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     const { _id, avatar } = updateAvatarReqDto;
     return await this.userModel
       .findByIdAndUpdate({ _id: _id }, { avatar: avatar })
@@ -279,7 +271,7 @@ export class UsersCrudService {
       });
   }
 
-  async removeUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+  async removeUser(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`users-svc#delete-user:`, id);
     return await this.userModel
       .deleteById(id)
@@ -306,7 +298,7 @@ export class UsersCrudService {
         });
       });
   }
-  async restoreUser(id: Types.ObjectId): Promise<CreateUserResDto> {
+  async restoreUser(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`users-svc#restore-deleted-user:`, id);
     return await this.userModel
       .restore({ _id: id })
@@ -333,9 +325,7 @@ export class UsersCrudService {
       });
   }
 
-  async updateCart(
-    updateCartReqDto: UpdateCartReqDto,
-  ): Promise<UpdateCartResDto> {
+  async updateCart(updateCartReqDto: UpdateCartReqDto): Promise<BaseResDto> {
     const { _id, cart } = updateCartReqDto;
     console.log(`update items of user's cart`, cart);
     return await this.userModel
@@ -372,7 +362,7 @@ export class UsersCrudService {
           const list_id = res.cart.map((x) => x.package);
           const pkgs = await firstValueFrom(
             this.pkgClient
-              .send(kafkaTopic.PACKAGE_MGMT.GET_MANY_PKG, list_id)
+              .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
               .pipe(timeout(5000)),
           );
           const result = [];
@@ -437,7 +427,7 @@ export class UsersCrudService {
 
   async updateTrxHist(
     updateTrxHistReqDto: UpdateTrxHistReqDto,
-  ): Promise<UpdateTrxHistResDto> {
+  ): Promise<BaseResDto> {
     const { _id, trx, cart } = updateTrxHistReqDto;
     console.log(`update items of user's cart`, trx);
     console.log(cart);
@@ -484,7 +474,7 @@ export class UsersCrudService {
   }
   async checkout(
     checkoutReqDto: CheckoutReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     const { _id, cart, method, ipAddr } = checkoutReqDto;
     console.log(`User #${_id} checkout:`, cart, ipAddr);
     const mop = MOP.KEY[method.type];
@@ -527,7 +517,7 @@ export class UsersCrudService {
   }
   async renewPkg(
     renewGrPkgReqDto: RenewGrPkgReqDto,
-  ): Promise<ZPCheckoutResDto | VNPCreateOrderResDto> {
+  ): Promise<ZPCheckoutResDto | BaseResDto> {
     const { _id, cart, group, ipAddr, method } = renewGrPkgReqDto;
     const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
     const mop = MOP.KEY[method.type];

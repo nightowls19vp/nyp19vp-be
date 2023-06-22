@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
-export type BillingDocument = HydratedDocument<Billing> & SoftDeleteDocument;
+export type BillDocument = HydratedDocument<Bill> & SoftDeleteDocument;
 
 class Borrower {
   @Prop({ type: String, required: true })
@@ -20,7 +20,7 @@ class Borrower {
 }
 
 @Schema({ timestamps: true })
-export class Billing {
+export class Bill {
   @Prop({ type: String, required: true })
   summary: string;
 
@@ -49,8 +49,8 @@ export class Billing {
   updatedAt: Date;
 }
 
-export const BillingSchema = SchemaFactory.createForClass(Billing);
-BillingSchema.plugin(MongooseDelete, {
+export const BillSchema = SchemaFactory.createForClass(Bill);
+BillSchema.plugin(MongooseDelete, {
   overrideMethods: true,
   deletedAt: true,
 });

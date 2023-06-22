@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { BaseResDto } from '../base.dto';
 
 export class ItemDto {
   @ApiProperty({
@@ -94,5 +93,3 @@ export class CreateTransReqDto {
   @IsOptional()
   method?: PaymentMethodDto;
 }
-
-export class CreateTransResDto extends BaseResDto {}

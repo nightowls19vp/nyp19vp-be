@@ -3,7 +3,8 @@ import { HydratedDocument, Types } from 'mongoose';
 import { GrPkg } from './gr-pkg.schema';
 import { Member } from './member.schema';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
-import { Billing } from './billing.schema';
+import { Bill } from './billing.schema';
+import { Todos } from './todos.schema';
 
 export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
@@ -31,7 +32,10 @@ export class Group {
   channel: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Billing' }] })
-  billing: Billing[];
+  billing: Bill[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Todos' }] })
+  todos: Todos[];
 
   @Prop({ required: true, minlength: 1 })
   packages: GrPkg[];

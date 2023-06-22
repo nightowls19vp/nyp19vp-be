@@ -62,14 +62,10 @@ export class PackageDto extends IdDto {
 
 export class CreatePkgReqDto extends OmitType(PackageDto, ['updatedBy']) {}
 
-export class CreatePkgResDto extends BaseResDto {}
-
 export class UpdatePkgReqDto extends IntersectionType(
   IdDto,
   OmitType(PackageDto, ['createdBy']),
 ) {}
-
-export class UpdatePkgResDto extends BaseResDto {}
 
 export class GetPkgResDto extends BaseResDto {
   @ApiProperty()

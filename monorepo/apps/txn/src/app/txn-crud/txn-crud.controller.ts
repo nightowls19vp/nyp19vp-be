@@ -2,10 +2,9 @@ import { Controller, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { TxnCrudService } from './txn-crud.service';
 import {
+  BaseResDto,
   CheckoutReqDto,
   CreateTransReqDto,
-  CreateTransResDto,
-  VNPCreateOrderResDto,
   VNPIpnUrlReqDto,
   ZPCheckoutResDto,
   ZPDataCallback,
@@ -20,13 +19,11 @@ export class TxnCrudController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.pkgMgmtClient.subscribeToResponseOf(
-      kafkaTopic.HEALT_CHECK.PACKAGE_MGMT,
-    );
-    for (const key in kafkaTopic.PACKAGE_MGMT) {
-      this.pkgMgmtClient.subscribeToResponseOf(kafkaTopic.PACKAGE_MGMT[key]);
+    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.PACKAGE);
+
+    for (const topic of pkgTopics) {
+      this.pkgMgmtClient.subscribeToResponseOf(topic);
     }
-    await Promise.all([this.pkgMgmtClient.connect()]);
 
     this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
     for (const key in kafkaTopic.USERS) {
@@ -45,28 +42,28 @@ export class TxnCrudController implements OnModuleInit {
   @MessagePattern(kafkaTopic.TXN.ZP_GET_STT)
   async zpGetStatus(
     @Payload() createTransReqDto: CreateTransReqDto,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.zpGetStatus(createTransReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.ZP_CREATE_TRANS)
   async zpCreateTrans(
     @Payload() zpDataCallback: ZPDataCallback,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.zpCreateTrans(zpDataCallback);
   }
 
   @MessagePattern(kafkaTopic.TXN.VNP_CREATE_ORD)
   async vnpCreateOrder(
     @Payload() checkoutReqDto: CheckoutReqDto,
-  ): Promise<VNPCreateOrderResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.vnpCreateOrder(checkoutReqDto);
   }
 
   @MessagePattern(kafkaTopic.TXN.VNP_CALLBACK)
   async vnpCallback(
     @Payload() vnpIpnUrlReqDto: VNPIpnUrlReqDto,
-  ): Promise<CreateTransResDto> {
+  ): Promise<BaseResDto> {
     return await this.txnCrudService.vnpCallback(vnpIpnUrlReqDto);
   }
 }

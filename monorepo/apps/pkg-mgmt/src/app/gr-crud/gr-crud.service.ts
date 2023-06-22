@@ -8,23 +8,17 @@ import {
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import {
   CreateGrReqDto,
-  CreateGrResDto,
   GetGrResDto,
   GroupDto,
   PackageDto,
   AddGrMbReqDto,
   RmGrMbReqDto,
-  UpdateGrMbResDto,
   UpdateGrPkgReqDto,
-  UpdateGrPkgResDto,
   UpdateGrReqDto,
-  UpdateGrResDto,
   MemberDto,
   GetGrsByUserResDto,
   UpdateAvatarReqDto,
-  UpdateAvatarResDto,
   ActivateGrPkgReqDto,
-  ActivateGrPkgResDto,
   GrPkgDto,
   CheckGrSUReqDto,
   GetGrDto,
@@ -33,14 +27,8 @@ import {
   UserDto,
   kafkaTopic,
   UpdateChannelReqDto,
-  UpdateChannelResDto,
   GetGrChannelResDto,
-  CreateBillResDto,
-  CreateBillReqDto,
-  GetBillResDto,
-  UpdateBillReqDto,
-  UpdateBillResDto,
-  UpdateBillSttReqDto,
+  BaseResDto,
 } from '@nyp19vp-be/shared';
 import mongoose, { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -55,20 +43,17 @@ import { v4 } from 'uuid';
 import { ClientKafka } from '@nestjs/microservices';
 import { ObjectId } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
-import { Billing, BillingDocument } from '../../schemas/billing.schema';
 
 @Injectable()
 export class GrCrudService {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-    @InjectModel(Billing.name)
-    private billModel: SoftDeleteModel<BillingDocument>,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
-  async createGr(createGrReqDto: CreateGrReqDto): Promise<CreateGrResDto> {
+  async create(createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
     console.log('pkg-mgmt-svc#create-group: ', createGrReqDto);
     const { user } = createGrReqDto.member;
     const listPkg = [];
@@ -113,7 +98,7 @@ export class GrCrudService {
       });
   }
 
-  async findAllGrs(
+  async find(
     collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
     console.log('pkg-mgmt-svc#get-all-groups');
@@ -131,7 +116,7 @@ export class GrCrudService {
       });
   }
 
-  async findGrById(id: Types.ObjectId): Promise<GetGrResDto> {
+  async findById(id: Types.ObjectId): Promise<GetGrResDto> {
     console.log(`pkg-mgmt-svc#get-group #${id}`);
     return this.grModel
       .findById({ _id: id })
@@ -201,7 +186,7 @@ export class GrCrudService {
         });
       });
   }
-  getGrByUserId(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+  findByUser(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
     const { user, role } = memberDto;
     console.log(`pkg-mgmt-svc#get-groups-userId #${user}`);
     const query = { user: user };
@@ -281,7 +266,7 @@ export class GrCrudService {
       });
   }
 
-  async updateGr(updateGrReqDto: UpdateGrReqDto): Promise<UpdateGrResDto> {
+  async update(updateGrReqDto: UpdateGrReqDto): Promise<BaseResDto> {
     const { _id } = updateGrReqDto;
     console.log(`pkg-mgmt-svc#update-group #${_id}'s name`);
     return await this.grModel
@@ -310,7 +295,7 @@ export class GrCrudService {
       });
   }
 
-  async removeGr(id: Types.ObjectId): Promise<CreateGrResDto> {
+  async remove(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`pkg-mgmt-svc#delete-group #${id}`);
     return await this.grModel
       .deleteById(id)
@@ -344,7 +329,7 @@ export class GrCrudService {
       });
   }
 
-  async restoreGr(id: Types.ObjectId): Promise<CreateGrResDto> {
+  async restore(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`pkg-mgmt-svc#Restore-deleted-group #${id}`);
     return await this.grModel
       .restore({ _id: id })
@@ -378,7 +363,7 @@ export class GrCrudService {
       });
   }
 
-  async addMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async addMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#add-new-member #${user_id} to-group #${id}`);
@@ -433,7 +418,7 @@ export class GrCrudService {
         }
       });
   }
-  async rmMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<UpdateGrMbResDto> {
+  async rmMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
     const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
     console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
@@ -490,9 +475,7 @@ export class GrCrudService {
         }
       });
   }
-  async rmGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  async rmPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     const id = updateGrPkgReqDto._id;
     console.log(`pkg-mgmt-svc#remove-package-from-group #${id}`);
     const { _id } = updateGrPkgReqDto;
@@ -532,9 +515,7 @@ export class GrCrudService {
         });
       });
   }
-  async addGrPkg(
-    updateGrPkgReqDto: UpdateGrPkgReqDto,
-  ): Promise<UpdateGrPkgResDto> {
+  async addPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     const { _id, user } = updateGrPkgReqDto;
     console.log(`pkg-mgmt-svc#add-new-package-to-group #${_id}`);
     const grPkgs = await this.grModel.findOne(
@@ -607,7 +588,7 @@ export class GrCrudService {
   }
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
-  ): Promise<UpdateAvatarResDto> {
+  ): Promise<BaseResDto> {
     const { _id, avatar } = updateAvatarReqDto;
     return await this.grModel
       .findByIdAndUpdate({ _id: _id }, { avatar: avatar })
@@ -635,7 +616,7 @@ export class GrCrudService {
   }
   async updateChannel(
     updateChannelReqDto: UpdateChannelReqDto,
-  ): Promise<UpdateChannelResDto> {
+  ): Promise<BaseResDto> {
     const { _id, channel } = updateChannelReqDto;
     return await this.grModel
       .findByIdAndUpdate({ _id: _id }, { channel: channel })
@@ -661,9 +642,9 @@ export class GrCrudService {
         });
       });
   }
-  async activateGrPkg(
+  async activatePkg(
     activateGrPkgReqDto: ActivateGrPkgReqDto,
-  ): Promise<ActivateGrPkgResDto> {
+  ): Promise<BaseResDto> {
     const { _id, user } = activateGrPkgReqDto;
     const activatedPkg = await this.grModel.findOne({
       _id: _id,
@@ -731,7 +712,7 @@ export class GrCrudService {
       });
     }
   }
-  async getGrChannelByUserId(id: Types.ObjectId): Promise<GetGrChannelResDto> {
+  async getChannelByUser(id: Types.ObjectId): Promise<GetGrChannelResDto> {
     return await this.grModel
       .find(
         { members: { $elemMatch: { user: id } }, channel: { $exists: true } },
@@ -766,261 +747,7 @@ export class GrCrudService {
         });
       });
   }
-  async createBill(
-    createBillReqDto: CreateBillReqDto,
-  ): Promise<CreateBillResDto> {
-    const { _id, borrowers, lender, createdBy } = createBillReqDto;
-    const borrow_user = borrowers.map((user) => {
-      return user.user;
-    });
-    const isU = await this.isGrU(_id, borrow_user.concat([lender]));
-    const isAuthor = await this.isGrU(_id, [createdBy]);
-    if (!isAuthor) {
-      return Promise.resolve({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        error: 'UNAUTHORIZED',
-        message: `MUST be group's member to create bill`,
-      });
-    } else if (!isU) {
-      return Promise.resolve({
-        statusCode: HttpStatus.BAD_REQUEST,
-        error: 'BAD REQUEST',
-        message: `Lender and borrower MUST be group's members`,
-      });
-    } else if (borrow_user.includes(lender)) {
-      return Promise.resolve({
-        statusCode: HttpStatus.BAD_REQUEST,
-        error: 'BAD REQUEST',
-        message: `The lender MUST be different from the borrower`,
-      });
-    } else {
-      return await Promise.all(
-        borrowers.map(async (borrower) => {
-          const newBorrower = {
-            borrower: borrower.user,
-            amount: borrower.amount,
-            status: 'PENDING',
-          };
-          return newBorrower;
-        }),
-      ).then(async (listBorrowers) => {
-        const newBilling = new this.billModel({
-          summary: createBillReqDto.summary,
-          date: createBillReqDto.date,
-          lender: lender,
-          borrowers: listBorrowers,
-          description: createBillReqDto.description,
-          createdBy: createdBy,
-        });
-        return await newBilling.save().then(async (newBill) => {
-          return await this.grModel
-            .findByIdAndUpdate(
-              { _id: _id },
-              { $push: { billing: newBill._id } },
-            )
-            .then((res) => {
-              if (res) {
-                return Promise.resolve({
-                  statusCode: HttpStatus.CREATED,
-                  message: `Created bill of group ${_id}`,
-                });
-              } else {
-                return Promise.resolve({
-                  statusCode: HttpStatus.NOT_FOUND,
-                  error: 'NOT FOUND',
-                  message: `Group #${_id} not found`,
-                });
-              }
-            })
-            .catch((error) => {
-              return Promise.resolve({
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: error.message,
-                error: 'INTERNAL SERVER ERROR',
-              });
-            });
-        });
-      });
-    }
-  }
-  async getBill(_id: Types.ObjectId): Promise<GetBillResDto> {
-    console.log(`Get billing of group #${_id}`);
-    return await this.grModel
-      .findOne({ _id: _id }, { billing: 1 })
-      .populate({ path: 'billing', model: 'Billing' })
-      .then((res) => {
-        if (res) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `Got bill of group ${_id}`,
-            data: res.billing,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `Group #${_id} not found`,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          error: 'INTERNAL SERVER ERROR',
-        });
-      });
-  }
-  async updateBill(
-    updateBillReqDto: UpdateBillReqDto,
-  ): Promise<UpdateBillResDto> {
-    const { _id, borrowers } = updateBillReqDto;
-    console.log(`Update billing #${_id}`);
-    const billing = await this.billModel.findById({ _id: _id });
-    const borrow_user = borrowers.map((user) => {
-      return user.user;
-    });
-    const isU = await this.isGrU(_id, borrow_user);
-    if (!isU) {
-      return Promise.resolve({
-        statusCode: HttpStatus.BAD_REQUEST,
-        error: 'BAD REQUEST',
-        message: `Borrowers MUST be group's members`,
-      });
-    } else {
-      billing.borrowers.filter((elem) => {
-        if (borrowers.some((borrower) => borrower.user == elem.borrower)) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-      borrowers.map((borrower) => {
-        const idx = billing.borrowers.findIndex(
-          (obj) => obj.borrower == borrower.user,
-        );
-        if (idx != -1) {
-          billing.borrowers[idx].amount = borrower.amount;
-        } else {
-          billing.borrowers.push({
-            borrower: borrower.user,
-            amount: borrower.amount,
-            status: 'PENDING',
-          });
-        }
-      });
-      return await this.billModel
-        .findByIdAndUpdate(
-          { _id: _id },
-          {
-            $set: {
-              summary: updateBillReqDto.summary,
-              date: updateBillReqDto.date,
-              lender: updateBillReqDto.lender,
-              description: updateBillReqDto.description,
-              borrowers: billing.borrowers,
-              updatedBy: updateBillReqDto.updatedBy,
-            },
-          },
-        )
-        .then(async (res) => {
-          if (res) {
-            const data = await this.billModel.findById({ _id: _id });
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Update bill ${_id} successfully`,
-              data: data,
-            });
-          } else {
-            return Promise.resolve({
-              statusCode: HttpStatus.NOT_FOUND,
-              message: `Billing #${_id} not found`,
-              error: 'NOT FOUND',
-            });
-          }
-        })
-        .catch((error) => {
-          return Promise.resolve({
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: error.message,
-            error: 'INTERNAL SERVER ERROR',
-          });
-        });
-    }
-  }
-  async updateBillStt(
-    updateBillSttReqDto: UpdateBillSttReqDto,
-  ): Promise<UpdateBillResDto> {
-    const { _id, updatedBy, borrowers } = updateBillSttReqDto;
-    console.log(`Update billing status of group #${_id}`, updateBillSttReqDto);
-    const billing = await this.billModel.findById({ _id: _id });
-    if (updatedBy == billing.lender) {
-      if (billing) {
-        for (const borrower of borrowers) {
-          const idx = billing.borrowers.findIndex(
-            (obj) => obj.borrower == borrower.user,
-          );
-          if (idx != -1) {
-            billing.borrowers[idx].status = borrower.status;
-          }
-        }
-        return await this.billModel
-          .updateOne({ _id: _id }, { $set: { borrowers: billing.borrowers } })
-          .then(() => {
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Update bill ${_id}' status successfully`,
-              data: billing.borrowers,
-            });
-          })
-          .catch((error) => {
-            return Promise.resolve({
-              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              message: error.message,
-              error: 'INTERNAL SERVER ERROR',
-            });
-          });
-      } else {
-        return Promise.resolve({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: `Billing #${_id} not found`,
-          error: 'NOT FOUND',
-        });
-      }
-    } else {
-      return Promise.resolve({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: `No permission`,
-        error: 'UNAUTHORIZED',
-      });
-    }
-  }
-  async rmBill(id: Types.ObjectId): Promise<CreateBillResDto> {
-    console.log(`Remove billing #${id}`);
-    return await this.billModel
-      .findByIdAndDelete({ _id: id })
-      .then((res) => {
-        if (res) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `Remove billing ${id} successfully`,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `Billing #${id} not found`,
-            error: 'NOT FOUND',
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          error: 'INTERNAL SERVER ERROR',
-        });
-      });
-  }
-  async checkGrSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
+  async isSU(checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     const { _id, user } = checkGrSUReqDto;
     const isSU = await this.grModel.findOne({
       _id: _id,

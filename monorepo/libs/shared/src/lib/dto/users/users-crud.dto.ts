@@ -184,8 +184,6 @@ export class UpdateTrxHistReqDto extends IntersectionType(IdDto, CartDto) {
   trx: string;
 }
 
-export class UpdateTrxHistResDto extends BaseResDto {}
-
 export class GetUserInfoResDto extends BaseResDto {
   @ApiProperty()
   @Type(() => UserInfo)
@@ -200,18 +198,12 @@ export class GetUserSettingResDto extends IntersectionType(
 
 export class CreateUserReqDto extends UserInfo {}
 
-export class CreateUserResDto extends BaseResDto {}
-
 export class UpdateUserReqDto extends IntersectionType(
   IdDto,
   OmitType(UserInfo, ['email', 'avatar']),
 ) {}
 
-export class UpdateUserResDto extends BaseResDto {}
-
 export class UpdateSettingReqDto extends IntersectionType(IdDto, UserSetting) {}
-
-export class UpdateSettingResDto extends BaseResDto {}
 
 export class UpdateAvatarReqDto extends IntersectionType(
   IdDto,
@@ -229,8 +221,6 @@ export class UpdateAvatarWithBase64 {
   base64: string;
 }
 
-export class UpdateAvatarResDto extends BaseResDto {}
-
 export class CartPackage extends PackageDto {
   @ApiProperty({
     description: 'Quantity of package',
@@ -246,8 +236,6 @@ export class GetCartResDto extends IntersectionType(BaseResDto) {
 }
 
 export class UpdateCartReqDto extends IntersectionType(IdDto, CartDto) {}
-
-export class UpdateCartResDto extends BaseResDto {}
 
 class PaymentMethod {
   @ApiProperty({
