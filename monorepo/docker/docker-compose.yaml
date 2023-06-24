@@ -3,7 +3,7 @@ services:
   kafdrop:
     container_name: kafdrop
     image: obsidiandynamics/kafdrop
-    restart: 'no'
+    restart: 'always'
     ports:
       - '9000:9000'
     environment:
@@ -15,6 +15,7 @@ services:
   zookeeper:
     container_name: zookeeper
     image: docker.io/bitnami/zookeeper:3.8
+    restart: 'always'
     ports:
       - '2181:2181'
     volumes:
@@ -25,6 +26,7 @@ services:
   kafka:
     container_name: kafka-bitnami
     image: docker.io/bitnami/kafka:3.4
+    restart: 'always'
     ports:
       - '29092:29092'
       - '9092:9092'
@@ -38,9 +40,6 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,CONTROLLER://:9093,EXTERNAL://:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      # max.request.size=200000000
-      # message.max.bytes=200000000
-      # max.partition.fetch.bytes=200000000
       - KAFKA_CFG_MESSAGE_MAX_BYTES=200000000
       - KAFKA_CFG_MAX_PARTITION_FETCH_BYTES=200000000
       - KAFKA_CFG_MAX_REQUEST_SIZE=200000000
