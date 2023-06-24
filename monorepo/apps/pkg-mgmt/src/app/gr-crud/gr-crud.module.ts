@@ -23,6 +23,19 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           },
         },
       },
+      {
+        name: 'PROD_MGMT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'prod-mgmt' + 'gr-crud' + 'prod-mgmt',
+            brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
+          },
+          consumer: {
+            groupId: 'prod-mgmt-consumer' + 'gr-crud' + 'prod-mgmt',
+          },
+        },
+      },
     ]),
   ],
   controllers: [GrCrudController],

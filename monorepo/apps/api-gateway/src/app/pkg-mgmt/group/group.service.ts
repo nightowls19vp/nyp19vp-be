@@ -81,7 +81,7 @@ export class GroupService implements OnModuleInit {
   }
   async findById(id: Types.ObjectId): Promise<GetGrResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID, id),
+      this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else

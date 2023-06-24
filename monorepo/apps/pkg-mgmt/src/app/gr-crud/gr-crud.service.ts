@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import {
@@ -45,14 +46,24 @@ import { ObjectId } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class GrCrudService {
+export class GrCrudService implements OnModuleInit {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    @Inject('PROD_MGMT_SERVICE') private readonly prodClient: ClientKafka,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
+  async onModuleInit() {
+    this.prodClient.subscribeToResponseOf(kafkaTopic.PROD_MGMT.init);
+
+    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
+    for (const key in kafkaTopic.USERS) {
+      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
+    }
+    await Promise.all([this.usersClient.connect()]);
+  }
   async create(createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
     console.log('pkg-mgmt-svc#create-group: ', createGrReqDto);
     const { user } = createGrReqDto.member;
@@ -84,11 +95,25 @@ export class GrCrudService {
     }
     return await this.grModel
       .insertMany(listPkg)
-      .then(() => {
-        return Promise.resolve({
-          statusCode: HttpStatus.CREATED,
-          message: `create groups successfully`,
-        });
+      .then((res) => {
+        let flag = true;
+        const forloop = async (_) => {
+          for (const ele of res) {
+            const eleRes = await firstValueFrom(
+              this.prodClient.send(kafkaTopic.PROD_MGMT.init, ele._id),
+            );
+            if (eleRes != HttpStatus.CREATED) {
+              flag = false;
+              break;
+            }
+          }
+        };
+        if (flag) {
+          return Promise.resolve({
+            statusCode: HttpStatus.CREATED,
+            message: `create groups successfully`,
+          });
+        }
       })
       .catch((error) => {
         return Promise.resolve({
