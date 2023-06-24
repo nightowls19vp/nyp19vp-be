@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   BaseResDto,
@@ -33,14 +33,24 @@ import { firstValueFrom, timeout } from 'rxjs';
 import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
-export class UsersCrudService {
+export class UsersCrudService implements OnModuleInit {
   constructor(
     @InjectModel(User.name)
     private userModel: SoftDeleteModel<UserDocument>,
     @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
     @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
   ) {}
+  async onModuleInit() {
+    this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
+    for (const key in kafkaTopic.TXN) {
+      this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
+    }
+    await Promise.all([this.txnClient.connect()]);
 
+    this.pkgClient.subscribeToResponseOf(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY);
+
+    this.pkgClient.subscribeToResponseOf(kafkaTopic.PKG_MGMT.GROUP.IS_SU);
+  }
   async create(createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {
     console.log('users-svc#create-user: ', createUserReqDto);
     const newUser = new this.userModel({
@@ -522,7 +532,7 @@ export class UsersCrudService {
     const checkGrSUReqDto: CheckGrSUReqDto = { _id: group, user: _id };
     const mop = MOP.KEY[method.type];
     const isSU: boolean = await firstValueFrom(
-      this.pkgClient.send(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU, checkGrSUReqDto),
+      this.pkgClient.send(kafkaTopic.PKG_MGMT.GROUP.IS_SU, checkGrSUReqDto),
     );
     if (!isSU) {
       return Promise.resolve({

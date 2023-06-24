@@ -1,5 +1,4 @@
 import * as bcrypt from 'bcrypt';
-import { time } from 'console';
 import * as crypto from 'crypto';
 import { ELoginType, IJwtPayload } from 'libs/shared/src/lib/core';
 import { BaseResDto } from 'libs/shared/src/lib/dto/base.dto';
@@ -375,7 +374,7 @@ export class AuthService {
     try {
       grResDto = await firstValueFrom(
         this.pkgMgmtClient
-          .send(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID, reqDto.grId)
+          .send(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID, reqDto.grId)
           .pipe(timeout(toMs('5s'))),
       );
     } catch (error) {

@@ -2,8 +2,8 @@ import {
   CollectionDto,
   CollectionResponse,
 } from '@forlagshuset/nestjs-mongoose-paginate';
-import { Controller, Inject, OnModuleInit } from '@nestjs/common';
-import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
   BaseResDto,
   CheckoutReqDto,
@@ -25,26 +25,8 @@ import { UsersCrudService } from './users-crud.service';
 import { Types } from 'mongoose';
 
 @Controller()
-export class UsersCrudController implements OnModuleInit {
-  constructor(
-    private readonly usersCrudService: UsersCrudService,
-    @Inject('TXN_SERVICE') private readonly txnClient: ClientKafka,
-    @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
-  ) {}
-
-  async onModuleInit() {
-    this.txnClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.TXN);
-    for (const key in kafkaTopic.TXN) {
-      this.txnClient.subscribeToResponseOf(kafkaTopic.TXN[key]);
-    }
-    await Promise.all([this.txnClient.connect()]);
-
-    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.PACKAGE);
-
-    for (const topic of pkgTopics) {
-      this.pkgClient.subscribeToResponseOf(topic);
-    }
-  }
+export class UsersCrudController {
+  constructor(private readonly usersCrudService: UsersCrudService) {}
 
   @MessagePattern(kafkaTopic.USERS.CREATE)
   create(@Payload() createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {

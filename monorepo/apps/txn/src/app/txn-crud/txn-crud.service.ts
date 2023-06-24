@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import {
   ItemDto,
@@ -39,17 +40,33 @@ import { SoftDeleteModel } from 'mongoose-delete';
 import moment from 'moment-timezone';
 
 @Injectable()
-export class TxnCrudService {
+export class TxnCrudService implements OnModuleInit {
   constructor(
     private httpService: HttpService,
     @InjectModel(Transaction.name)
     private transModel: SoftDeleteModel<TransactionDocument>,
-    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
+    @Inject('PKG_MGMT_SERVICE') private readonly pkgClient: ClientKafka,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @Inject('ZALOPAY_CONFIG') private readonly zpconfig,
     @Inject('VNPAY_CONFIG') private readonly vnpconfig,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
+
+  async onModuleInit() {
+    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.GROUP);
+
+    for (const topic of pkgTopics) {
+      this.pkgClient.subscribeToResponseOf(topic);
+    }
+
+    this.pkgClient.subscribeToResponseOf(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY);
+
+    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
+    for (const key in kafkaTopic.USERS) {
+      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
+    }
+    await Promise.all([this.usersClient.connect()]);
+  }
 
   async zpCheckout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
     const { _id, cart, group } = checkoutReqDto;
@@ -57,7 +74,7 @@ export class TxnCrudService {
     const list_id = cart.map((x) => x.package);
     try {
       const res = await firstValueFrom(
-        this.pkgMgmtClient
+        this.pkgClient
           .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
           .pipe(timeout(5000)),
       );
@@ -145,8 +162,8 @@ export class TxnCrudService {
               user,
             );
             const createGr = await firstValueFrom(
-              this.pkgMgmtClient.send(
-                kafkaTopic.PACKAGE_MGMT.CREATE_GR,
+              this.pkgClient.send(
+                kafkaTopic.PKG_MGMT.GROUP.CREATE,
                 createGrReqDto,
               ),
             );
@@ -253,8 +270,8 @@ export class TxnCrudService {
             user: zpDataCallback.app_user,
           };
           const renewGrPkg = await firstValueFrom(
-            this.pkgMgmtClient
-              .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
+            this.pkgClient
+              .send(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG, updateGrPkgReqDto)
               .pipe(timeout(5000)),
           );
           if (renewGrPkg.statusCode != HttpStatus.OK) {
@@ -269,8 +286,8 @@ export class TxnCrudService {
             zpDataCallback.app_user,
           );
           const createGr = await firstValueFrom(
-            this.pkgMgmtClient
-              .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
+            this.pkgClient
+              .send(kafkaTopic.PKG_MGMT.GROUP.CREATE, createGrReqDto)
               .pipe(timeout(5000)),
           );
           if (createGr.statusCode != HttpStatus.CREATED) {
@@ -343,7 +360,7 @@ export class TxnCrudService {
     console.log(`VnPay Checkout #${_id}`, cart);
     const list_id = cart.map((x) => x.package);
     const res = await firstValueFrom(
-      this.pkgMgmtClient
+      this.pkgClient
         .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
         .pipe(timeout(5000)),
     );
@@ -418,8 +435,8 @@ export class TxnCrudService {
           );
           if (!group) {
             const createGr = await firstValueFrom(
-              this.pkgMgmtClient
-                .send(kafkaTopic.PACKAGE_MGMT.CREATE_GR, createGrReqDto)
+              this.pkgClient
+                .send(kafkaTopic.PKG_MGMT.GROUP.CREATE, createGrReqDto)
                 .pipe(timeout(5000)),
             );
             if (createGr.statusCode == HttpStatus.CREATED) {
@@ -446,8 +463,8 @@ export class TxnCrudService {
               user: users[0],
             };
             const renewGrPkg = await firstValueFrom(
-              this.pkgMgmtClient
-                .send(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG, updateGrPkgReqDto)
+              this.pkgClient
+                .send(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG, updateGrPkgReqDto)
                 .pipe(timeout(5000)),
             );
             if (renewGrPkg.statusCode == HttpStatus.OK) {

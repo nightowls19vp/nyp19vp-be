@@ -1,5 +1,5 @@
-import { Controller, Inject, OnModuleInit } from '@nestjs/common';
-import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TxnCrudService } from './txn-crud.service';
 import {
   BaseResDto,
@@ -11,26 +11,8 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 @Controller()
-export class TxnCrudController implements OnModuleInit {
-  constructor(
-    private readonly txnCrudService: TxnCrudService,
-    @Inject('PKG_MGMT_SERVICE') private readonly pkgMgmtClient: ClientKafka,
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) {}
-
-  async onModuleInit() {
-    const pkgTopics = Object.values(kafkaTopic.PKG_MGMT.PACKAGE);
-
-    for (const topic of pkgTopics) {
-      this.pkgMgmtClient.subscribeToResponseOf(topic);
-    }
-
-    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
-    for (const key in kafkaTopic.USERS) {
-      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
-    }
-    await Promise.all([this.usersClient.connect()]);
-  }
+export class TxnCrudController {
+  constructor(private readonly txnCrudService: TxnCrudService) {}
 
   @MessagePattern(kafkaTopic.TXN.ZP_CREATE_ORD)
   async zpCheckout(
