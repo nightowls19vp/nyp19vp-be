@@ -16,12 +16,12 @@ import ms from 'ms';
 import { PaginateQuery } from 'nestjs-paginate';
 import { firstValueFrom, timeout } from 'rxjs';
 
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';
 
 @Injectable()
-export class PurchaseLocationsService {
+export class PurchaseLocationsService implements OnModuleInit {
   constructor(
     @Inject('PROD_MGMT_SERVICE')
     private readonly prodMgmtClient: ClientKafka,

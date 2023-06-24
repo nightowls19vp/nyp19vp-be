@@ -38,9 +38,10 @@ export class ProductsService {
       where: { barcode },
     });
 
-    console.log('product', product);
-
     if (!product) {
+      console.log(
+        `product with barcode #${barcode} is not exist in db. Try to find online`,
+      );
       // try to find from external api
       const productData: ProductDto = await fetchProductDataFromGoUpc(barcode);
 

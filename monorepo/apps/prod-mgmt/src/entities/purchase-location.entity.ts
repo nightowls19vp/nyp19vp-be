@@ -36,10 +36,10 @@ export class PurchaseLocationEntity {
 
   @Column({
     name: 'name',
-    unique: true,
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
+    nullable: false,
+    unique: false,
     default: null,
   })
   name: string;

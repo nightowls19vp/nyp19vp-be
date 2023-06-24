@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { GroupEntity } from './group.entity';
 import { TimestampEmbeddedEntity } from './timestamp.embedded.entity';
 import { ItemEntity } from './item.entity';
@@ -28,10 +35,10 @@ export class StorageLocationEntity {
 
   @Column({
     name: 'name',
-    unique: true,
+    unique: false,
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
+    nullable: false,
     default: null,
   })
   name: string;
@@ -66,7 +73,7 @@ export class StorageLocationEntity {
   })
   description: string;
 
-  @ManyToOne(() => ItemEntity, (item) => item.storageLocation, {
+  @OneToMany(() => ItemEntity, (item) => item.storageLocation, {
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
