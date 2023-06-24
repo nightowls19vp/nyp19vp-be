@@ -3,7 +3,6 @@ import { OnModuleInit } from '@nestjs/common/interfaces';
 import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import {
-  AddGrMbReqDto,
   BaseResDto,
   CreateAccountReqDto,
   CreateAccountResDto,
@@ -53,7 +52,7 @@ export class AuthController implements OnModuleInit {
     await Promise.all([this.usersClient.connect()]);
 
     this.pkgMgmtClient.subscribeToResponseOf(
-      kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID,
+      kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
     );
   }
 

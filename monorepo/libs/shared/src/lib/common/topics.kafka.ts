@@ -44,28 +44,6 @@ export const USERS = {
   RENEW_PKG: 'renewGroupPackage',
 };
 
-export const PACKAGE_MGMT = {
-  CREATE_GR: 'createGroup',
-  GET_ALL_GRS: 'getAllGroups',
-  GET_GRS_BY_USER: 'getGroupsByUserId',
-  GET_GR_CHANNEL_BY_USER: 'getGroupChannelsByUserId',
-  GET_GR_BY_ID: 'getGroupById',
-  CREATE_GR_TODOS: 'createGroupTodos',
-  GET_GR_TODOS: 'getGroupTodos',
-  RM_GR_TODOS: 'removeGroupTodos',
-  UPDATE_GR: 'updateGroupName',
-  UPDATE_GR_AVATAR: 'updateGroupAvatar',
-  UPDATE_GR_CHANNEL: 'updateGroupChannel',
-  DELETE_GR: 'deleteGroup',
-  RESTORE_GR: 'restoreGroup',
-  ADD_GR_MEMB: 'addMemberToGroup',
-  RM_GR_MEMB: 'removeMemberFromGroup',
-  ADD_GR_PKG: 'addPackageToGroup',
-  ACTIVATE_GR_PKG: 'activatePackageInGroup',
-  RM_GR_PKG: 'removePackageFromGroup',
-  CHECK_GR_SU: 'isSuperUserOfAGroup',
-};
-
 export const PKG_MGMT = {
   PACKAGE: {
     CREATE: 'createPackage',

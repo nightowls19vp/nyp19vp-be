@@ -40,90 +40,90 @@ export class GrCrudController {
     await Promise.all([this.usersClient.connect()]);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CREATE_GR)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.CREATE)
   create(@Payload() createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
     return this.grCrudService.create(createGrReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_ALL_GRS)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET)
   find(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
     return this.grCrudService.find(collectionDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_BY_ID)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID)
   findById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
     return this.grCrudService.findById(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE)
   update(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<BaseResDto> {
     return this.grCrudService.update(updateGrReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.DELETE_GR)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DELETE)
   remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.grCrudService.remove(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RESTORE_GR)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.RESTORE)
   restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.grCrudService.restore(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_MEMB)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ADD_MEMB)
   addMemb(@Payload() updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
     return this.grCrudService.addMemb(updateGrMbReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_MEMB)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DEL_MEMB)
   rmMemb(@Payload() updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
     return this.grCrudService.rmMemb(updateGrMbReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.ADD_GR_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG)
   addPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     return this.grCrudService.addPkg(updateGrPkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.RM_GR_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DEL_PKG)
   rmPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
     return this.grCrudService.rmPkg(updateGrPkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GRS_BY_USER)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER)
   findByUser(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
     return this.grCrudService.findByUser(memberDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.GET_GR_CHANNEL_BY_USER)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_CHANNEL_BY_USER)
   getChannelByUser(@Payload() id: Types.ObjectId): Promise<GetGrChannelResDto> {
     return this.grCrudService.getChannelByUser(id);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_AVATAR)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_AVATAR)
   updateAvatar(
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<BaseResDto> {
     return this.grCrudService.updateAvatar(updateAvatarReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.UPDATE_GR_CHANNEL)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_CHANNEL)
   updateChannel(
     @Payload() updateChannelReqDto: UpdateChannelReqDto,
   ): Promise<BaseResDto> {
     return this.grCrudService.updateChannel(updateChannelReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.ACTIVATE_GR_PKG)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ACTIVATE_PKG)
   activatePkg(
     @Payload() activateGrPkgReqDto: ActivateGrPkgReqDto,
   ): Promise<BaseResDto> {
     return this.grCrudService.activatePkg(activateGrPkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PACKAGE_MGMT.CHECK_GR_SU)
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.IS_SU)
   isSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
     return this.grCrudService.isSU(checkGrSUReqDto);
   }
