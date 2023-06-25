@@ -38,7 +38,7 @@ dotenv.config({
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'auth' + 'api-gateway' + 'pkg-mgmt',
+            clientId: 'auth-consumer' + 'api-gateway' + 'pkg-mgmt',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {

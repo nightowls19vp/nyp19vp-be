@@ -20,11 +20,11 @@ import { Todos, TodosSchema } from '../../schemas/todos.schema';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users' + 'gr-crud' + 'users',
+            clientId: 'users' + 'todo-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'gr-crud' + 'users',
+            groupId: 'users-consumer' + 'todo-crud' + 'users',
           },
         },
       },
