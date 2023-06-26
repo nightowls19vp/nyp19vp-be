@@ -9,6 +9,7 @@ import {
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  IdDto,
   Items,
   MOP,
   RenewGrPkgReqDto,
@@ -124,9 +125,14 @@ export class UsersCrudService implements OnModuleInit {
       });
   }
 
+  async findMany(list_id: IdDto[]): Promise<UserDto[]> {
+    const res = await this.userModel.find({ _id: { $in: list_id } }).exec();
+    return res;
+  }
+
   async findInfoByEmail(email: string): Promise<GetUserInfoResDto> {
     return await this.userModel
-      .findOne({ email: email, deletedAt: { $exists: false } })
+      .findOne({ email: email })
       .then((res) => {
         if (!res) {
           return Promise.resolve({

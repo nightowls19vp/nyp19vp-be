@@ -15,7 +15,7 @@ class TodoDto {
   isCompleted: boolean;
 }
 
-class TodosDto {
+export class TodosDto {
   @ApiProperty({
     type: String,
     nullable: true,

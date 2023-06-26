@@ -1,28 +1,48 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  OnModuleInit,
+  forwardRef,
+} from '@nestjs/common';
 import { Bill, BillDocument } from '../../schemas/billing.schema';
 import { SoftDeleteModel } from 'mongoose-delete';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   BaseResDto,
   CreateBillReqDto,
+  GetGrDto_Bill,
+  GetBillResDto,
+  GetBorrowerDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
+  UserDto,
+  kafkaTopic,
+  mapUserDtoToPopulateUserDto,
+  PopulateUserDto,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
 import { GrCrudService } from '../gr-crud/gr-crud.service';
+import { ClientKafka } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
-export class BillCrudService {
+export class BillCrudService implements OnModuleInit {
   constructor(
+    @Inject(forwardRef(() => GrCrudService))
     private readonly grCrudService: GrCrudService,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
   ) {}
+  onModuleInit() {
+    this.usersClient.subscribeToResponseOf(kafkaTopic.USERS.GET_MANY);
+  }
   async create(createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
     const { _id, borrowers, lender, createdBy } = createBillReqDto;
     const borrow_user = borrowers.map((user) => {
-      return user.user;
+      return user.borrower;
     });
     const isU = await this.grCrudService.isGrU(
       _id,
@@ -51,7 +71,7 @@ export class BillCrudService {
       return await Promise.all(
         borrowers.map(async (borrower) => {
           const newBorrower = {
-            borrower: borrower.user,
+            borrower: borrower.borrower,
             amount: borrower.amount,
             status: 'PENDING',
           };
@@ -97,22 +117,24 @@ export class BillCrudService {
       });
     }
   }
-  async get(_id: Types.ObjectId): Promise<BaseResDto> {
+  async get(_id: Types.ObjectId): Promise<GetBillResDto> {
     console.log(`Get billing of group #${_id}`);
     return await this.grModel
       .findOne({ _id: _id }, { billing: 1 })
       .populate({ path: 'billing', model: 'Bill' })
-      .then((res) => {
+      .sort({ createdAt: -1 })
+      .then(async (res) => {
         if (res) {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `Got bill of group ${_id}`,
-            data: res.billing,
+            billing: await this.mapBillModelToGetGrDto_Bill(res),
           });
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
             message: `Group #${_id} not found`,
+            billing: null,
           });
         }
       })
@@ -121,15 +143,52 @@ export class BillCrudService {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
           error: 'INTERNAL SERVER ERROR',
+          billing: null,
         });
       });
+  }
+  async mapBillModelToGetGrDto_Bill(model): Promise<GetGrDto_Bill[]> {
+    const result = await Promise.all(
+      model.billing.map(async (bill) => {
+        const list_id = bill.borrowers.map((borrower) => {
+          return borrower.borrower;
+        });
+        list_id.push(bill.lender);
+        const list_user = await firstValueFrom(
+          this.usersClient
+            .send(kafkaTopic.USERS.GET_MANY, list_id)
+            .pipe(timeout(5000)),
+        );
+        const newBorrowers = [];
+        for (let i = 0; i < list_user.length - 1; i++) {
+          const borrow = {
+            borrower: mapUserDtoToPopulateUserDto(list_user[i]),
+            amount: bill.borrowers[i].amount,
+            status: bill.borrowers[i].status,
+          };
+          newBorrowers.push(borrow);
+        }
+        const getGrDto_Bill: GetGrDto_Bill = {
+          _id: bill._id,
+          summary: bill.summary,
+          date: bill.date,
+          lender: mapUserDtoToPopulateUserDto(list_user[list_user.length - 1]),
+          borrowers: newBorrowers,
+          description: bill.description,
+          createdBy: bill.createdBy,
+          updatedBy: bill.updatedBy,
+        };
+        return getGrDto_Bill;
+      }),
+    );
+    return result;
   }
   async update(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
     const { _id, borrowers } = updateBillReqDto;
     console.log(`Update billing #${_id}`);
     const billing = await this.billModel.findById({ _id: _id });
     const borrow_user = borrowers.map((user) => {
-      return user.user;
+      return user.borrower;
     });
     const isU = await this.grCrudService.isGrU(_id, borrow_user);
     if (!isU) {
@@ -140,7 +199,7 @@ export class BillCrudService {
       });
     } else {
       billing.borrowers.filter((elem) => {
-        if (borrowers.some((borrower) => borrower.user == elem.borrower)) {
+        if (borrowers.some((borrower) => borrower.borrower == elem.borrower)) {
           return true;
         } else {
           return false;
@@ -148,13 +207,13 @@ export class BillCrudService {
       });
       borrowers.map((borrower) => {
         const idx = billing.borrowers.findIndex(
-          (obj) => obj.borrower == borrower.user,
+          (obj) => obj.borrower == borrower.borrower,
         );
         if (idx != -1) {
           billing.borrowers[idx].amount = borrower.amount;
         } else {
           billing.borrowers.push({
-            borrower: borrower.user,
+            borrower: borrower.borrower,
             amount: borrower.amount,
             status: 'PENDING',
           });
@@ -209,7 +268,7 @@ export class BillCrudService {
       if (billing) {
         for (const borrower of borrowers) {
           const idx = billing.borrowers.findIndex(
-            (obj) => obj.borrower == borrower.user,
+            (obj) => obj.borrower == borrower.borrower,
           );
           if (idx != -1) {
             billing.borrowers[idx].status = borrower.status;

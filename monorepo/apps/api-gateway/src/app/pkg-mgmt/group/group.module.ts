@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { GroupController } from './group.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { SocketGateway } from '../../socket/socket.gateway';
-import { SocketService } from '../../socket/socket.service';
 import { CommModule } from '../../comm/comm.module';
 
 @Module({
@@ -39,6 +37,6 @@ import { CommModule } from '../../comm/comm.module';
     CommModule,
   ],
   controllers: [GroupController],
-  providers: [GroupService, SocketGateway, SocketService],
+  providers: [GroupService],
 })
 export class GroupModule {}

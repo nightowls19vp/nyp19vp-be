@@ -11,6 +11,7 @@ import {
   GetCartResDto,
   GetUserInfoResDto,
   GetUserSettingResDto,
+  IdDto,
   kafkaTopic,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
@@ -33,7 +34,7 @@ export class UsersCrudController {
     return this.usersCrudService.create(createUserReqDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_ALL)
+  @MessagePattern(kafkaTopic.USERS.GET)
   findAll(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
@@ -78,12 +79,12 @@ export class UsersCrudController {
     return this.usersCrudService.updateAvatar(updateAvatarReqDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.DELETE_USER)
+  @MessagePattern(kafkaTopic.USERS.REMOVE)
   removeUser(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.usersCrudService.removeUser(id);
   }
 
-  @MessagePattern(kafkaTopic.USERS.RESTORE_USER)
+  @MessagePattern(kafkaTopic.USERS.RESTORE)
   restoreUser(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
     return this.usersCrudService.restoreUser(id);
   }
@@ -125,5 +126,10 @@ export class UsersCrudController {
     @Payload() renewGrPkgReqDto: RenewGrPkgReqDto,
   ): Promise<ZPCheckoutResDto | BaseResDto> {
     return this.usersCrudService.renewPkg(renewGrPkgReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.USERS.GET_MANY)
+  findMany(@Payload() list_id: IdDto[]): Promise<UserDto[]> {
+    return this.usersCrudService.findMany(list_id);
   }
 }

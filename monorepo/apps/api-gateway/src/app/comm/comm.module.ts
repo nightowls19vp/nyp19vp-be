@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { CommService } from './comm.service';
 import { CommController } from './comm.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 
 @Module({
   imports: [

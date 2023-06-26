@@ -1,23 +1,23 @@
-import { Controller, Inject } from '@nestjs/common';
-import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GrCrudService } from './gr-crud.service';
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
   CreateGrReqDto,
   GetGrResDto,
+  GetGrsResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrPkgReqDto,
   GroupDto,
-  MemberDto,
-  GetGrsByUserResDto,
   UpdateAvatarReqDto,
   ActivateGrPkgReqDto,
   CheckGrSUReqDto,
   UpdateChannelReqDto,
-  GetGrChannelResDto,
   BaseResDto,
+  PaginationParams,
+  ProjectionParams,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -27,18 +27,7 @@ import { Types } from 'mongoose';
 
 @Controller()
 export class GrCrudController {
-  constructor(
-    private readonly grCrudService: GrCrudService,
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
-  ) {}
-
-  async onModuleInit() {
-    this.usersClient.subscribeToResponseOf(kafkaTopic.HEALT_CHECK.USERS);
-    for (const key in kafkaTopic.USERS) {
-      this.usersClient.subscribeToResponseOf(kafkaTopic.USERS[key]);
-    }
-    await Promise.all([this.usersClient.connect()]);
-  }
+  constructor(private readonly grCrudService: GrCrudService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.CREATE)
   create(@Payload() createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
@@ -53,8 +42,10 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID)
-  findById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
-    return this.grCrudService.findById(id);
+  findById(
+    @Payload() projectionParams: ProjectionParams,
+  ): Promise<GetGrResDto> {
+    return this.grCrudService.findById(projectionParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE)
@@ -93,13 +84,10 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER)
-  findByUser(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
-    return this.grCrudService.findByUser(memberDto);
-  }
-
-  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_CHANNEL_BY_USER)
-  getChannelByUser(@Payload() id: Types.ObjectId): Promise<GetGrChannelResDto> {
-    return this.grCrudService.getChannelByUser(id);
+  findByUser(
+    @Payload() paginationParams: PaginationParams,
+  ): Promise<GetGrsResDto> {
+    return this.grCrudService.findByUser(paginationParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_AVATAR)

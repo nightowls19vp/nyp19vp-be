@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TxnCrudService } from './txn-crud.service';
 import { TxnCrudController } from './txn-crud.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { zpconfig } from '../../core/config/zalopay.config';
@@ -43,8 +42,6 @@ dotenv.config({
           },
         },
       },
-    ]),
-    ClientsModule.register([
       {
         name: 'USERS_SERVICE',
         transport: Transport.KAFKA,

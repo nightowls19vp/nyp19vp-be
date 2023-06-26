@@ -32,13 +32,13 @@ import {
   GroupDto,
   ParseObjectIdPipe,
   BaseResDto,
-  MemberDto,
-  GetGrsByUserResDto,
   UpdateAvatarReqDto,
   ActivateGrPkgReqDto,
   PkgGrInvReqDto,
   UpdateChannelReqDto,
-  GetGrChannelResDto,
+  PaginationParams,
+  GetGrsResDto,
+  ProjectionParams,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -51,6 +51,7 @@ import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../../constants/authentic
 import { AccessJwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { ATUser } from '../../decorators/at-user.decorator';
 import { isEmpty } from 'class-validator';
+import { GrValidationPipe, GrsValidationPipe } from './pipe/validation.pipe';
 
 @ApiTags('Package Management/Group')
 @Controller('pkg-mgmt/gr')
@@ -82,24 +83,14 @@ export class GroupController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Get('user_id')
-  @ApiQuery({ name: 'role', enum: ['All', 'User', 'Super User'] })
+  @Get('user')
   findByUser(
     @ATUser() user: unknown,
-    @Query('role') role: string,
-  ): Promise<GetGrsByUserResDto> {
-    console.log("Get groups by user's id", user['userInfo']['_id']);
-    const memberDto: MemberDto = { user: user['userInfo']['_id'], role };
-    return this.groupService.findByUser(memberDto);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @Get('user_id/channel')
-  findChannelByUser(@ATUser() user: unknown): Promise<GetGrChannelResDto> {
-    console.log("Get groups by user's id", user['userInfo']['_id']);
-    const id: Types.ObjectId = new Types.ObjectId(user['userInfo']['_id']);
-    return this.groupService.findChannelByUser(id);
+    @Query(new GrsValidationPipe()) paginationParams: PaginationParams,
+  ): Promise<GetGrsResDto> {
+    paginationParams.user = user['userInfo']['_id'];
+    console.log("Get groups by user's id", paginationParams);
+    return this.groupService.findByUser(paginationParams);
   }
 
   // create a magic link to invite user to join group
@@ -155,12 +146,13 @@ export class GroupController {
 
   @Get(':id')
   @ApiOkResponse({ description: 'Get group by Id', type: GetGrResDto })
-  @ApiParam({ name: 'id', type: String })
   findById(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
+    @Param('id') id: string,
+    @Query(new GrsValidationPipe()) projectionParams: ProjectionParams,
   ): Promise<GetGrResDto> {
-    console.log(`Get group #${id}`);
-    return this.groupService.findById(id);
+    console.log(`Get group #${id}`, projectionParams);
+    projectionParams._id = id;
+    return this.groupService.findById(projectionParams);
   }
 
   @Delete(':id')

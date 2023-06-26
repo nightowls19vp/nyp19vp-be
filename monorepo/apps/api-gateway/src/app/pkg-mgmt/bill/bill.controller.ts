@@ -13,6 +13,7 @@ import { BillService } from './bill.service';
 import {
   BaseResDto,
   CreateBillReqDto,
+  GetBillResDto,
   ParseObjectIdPipe,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
@@ -48,7 +49,7 @@ export class BillController {
   @Get(':group_id')
   find(
     @Param('group_id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<BaseResDto> {
+  ): Promise<GetBillResDto> {
     console.log(`Get billing of group #${id}`);
     return this.billService.find(id);
   }

@@ -3,6 +3,7 @@ import {
   PickType,
   IntersectionType,
   OmitType,
+  ApiPropertyOptional,
 } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
@@ -12,17 +13,21 @@ import {
   IsEnum,
   IsISO8601,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
-import { Items, UserDto } from '../users/users-crud.dto';
+import { Items, PopulateUserDto } from '../users/users-crud.dto';
 import { PackageDto } from './pkg-crud.dto';
+import { TodosDto } from './todos-crud.dto';
+import { GetGrDto_Bill } from './bill-crud.dto';
 
-export class MemberDto {
+class MemberDto {
   @ApiProperty({
     type: String,
     nullable: true,
@@ -160,37 +165,6 @@ export class CreateGrReqDto {
   member: MemberDto;
 }
 
-export class GetGrChannelResDto extends BaseResDto {
-  channels: string[];
-}
-
-export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
-  package: PackageDto;
-}
-
-export class GetGrDto_Memb extends OmitType(MemberDto, ['user']) {
-  user: UserDto;
-}
-
-export class GetGrDto extends OmitType(GroupDto, ['packages', 'members']) {
-  packages: GetGrDto_Pkg[];
-  members: GetGrDto_Memb[];
-}
-
-export class GetGrResDto extends BaseResDto {
-  @ApiProperty()
-  @ValidateNested()
-  @Type(() => GetGrDto)
-  group: GetGrDto;
-}
-
-export class GetGrsByUserResDto extends BaseResDto {
-  @ApiProperty()
-  @ValidateNested({ each: true })
-  @Type(() => GetGrDto)
-  groups: GetGrDto[];
-}
-
 export class UpdateChannelReqDto extends IntersectionType(
   IdDto,
   PickType(GroupDto, ['channel']),
@@ -272,4 +246,106 @@ export class PkgGrInvResDto extends BaseResDto {
   data?: {
     emailsFailed: string[];
   };
+}
+
+export class ProjectionParams extends IdDto {
+  @ApiPropertyOptional({
+    description:
+      'Use only allowed properties separated by semicolon; To return all fields in the matching documents, omit this parameter',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  projection?: string;
+
+  proj?: Record<string, unknown>;
+}
+
+export class PaginationParams extends OmitType(ProjectionParams, ['_id']) {
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  user: string;
+
+  @ApiPropertyOptional({
+    description: 'Role of user',
+    enum: ['User', 'Super User'],
+    required: false,
+  })
+  @IsEnum(['User', 'Super User'])
+  @IsOptional()
+  role?: string;
+
+  @Type(() => Number)
+  @Min(0)
+  @ApiPropertyOptional({
+    example: 0,
+    description: 'The range based pagination',
+    required: false,
+  })
+  @IsOptional()
+  page?: number = 0;
+
+  @Type(() => Number)
+  @Min(0)
+  @IsOptional()
+  @IsNumber()
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Limits the number of records or documents',
+    required: false,
+  })
+  limit?: number = 5;
+
+  @ApiPropertyOptional({
+    example: '-createdAt',
+    description:
+      'Use only allowed properties separated by semicolon; default is ascending createdAt; prefix name with hyphen/minus sign to get descending order',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  sort?: string;
+
+  sorter?: Record<string, 1 | -1>;
+}
+
+export interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  next?: number;
+  prev?: number;
+}
+
+export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
+  package: PackageDto;
+}
+
+export class GetGrDto_Memb extends OmitType(MemberDto, ['user']) {
+  user: PopulateUserDto;
+}
+
+export class GetGrDto extends IdDto {
+  name?: string;
+  avatar?: string;
+  channel?: string;
+  billing?: GetGrDto_Bill[];
+  todos?: TodosDto[];
+  packages?: GetGrDto_Pkg[];
+  members?: GetGrDto_Memb[];
+}
+
+export class GetGrResDto extends BaseResDto {
+  @ApiProperty()
+  @ValidateNested()
+  group: GetGrDto;
+}
+
+export class GetGrsResDto extends BaseResDto {
+  @ApiProperty()
+  @ValidateNested({ each: true })
+  groups: GetGrDto[];
+
+  pagination: Pagination;
 }

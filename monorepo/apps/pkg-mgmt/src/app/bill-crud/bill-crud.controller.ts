@@ -4,6 +4,7 @@ import { BillCrudService } from './bill-crud.service';
 import {
   BaseResDto,
   CreateBillReqDto,
+  GetBillResDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
   kafkaTopic,
@@ -20,7 +21,7 @@ export class BillCrudController {
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET)
-  get(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+  get(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
     return this.billCrudService.get(id);
   }
 
