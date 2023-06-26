@@ -10,17 +10,20 @@ import { ClientKafka } from '@nestjs/microservices';
 import {
   BaseResDto,
   CreateBillReqDto,
+  GetBillResDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { SocketGateway } from '../../socket/socket.gateway';
 
 @Injectable()
 export class BillService implements OnModuleInit {
   constructor(
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   onModuleInit() {
@@ -46,6 +49,19 @@ export class BillService implements OnModuleInit {
         ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) {
+        const list_id = createBillReqDto.borrowers.map((borrower) => {
+          return borrower.borrower;
+        });
+        list_id.push(createBillReqDto.lender);
+        async () => {
+          for (const user_id of list_id) {
+            await this.socketGateway.handleEvent(
+              'createdBill',
+              user_id,
+              res.data,
+            );
+          }
+        };
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {
@@ -55,7 +71,7 @@ export class BillService implements OnModuleInit {
       }
     });
   }
-  async find(id: Types.ObjectId): Promise<BaseResDto> {
+  async find(id: Types.ObjectId): Promise<GetBillResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET, id)

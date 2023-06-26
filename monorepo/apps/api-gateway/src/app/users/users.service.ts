@@ -116,7 +116,7 @@ export class UsersService {
     collectionDto: CollectionDto,
   ): Promise<CollectionResponse<UserDto>> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_ALL, collectionDto),
+      this.usersClient.send(kafkaTopic.USERS.GET, collectionDto),
     );
   }
   async updateSetting(
@@ -174,7 +174,7 @@ export class UsersService {
 
   async deleteUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.DELETE_USER, id).pipe(
+      this.usersClient.send(kafkaTopic.USERS.REMOVE, id).pipe(
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
@@ -266,7 +266,7 @@ export class UsersService {
   }
   async restoreUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.RESTORE_USER, id).pipe(
+      this.usersClient.send(kafkaTopic.USERS.RESTORE, id).pipe(
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();

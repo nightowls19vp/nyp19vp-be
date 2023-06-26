@@ -2,17 +2,19 @@ import { Module } from '@nestjs/common';
 import { TodosCrudService } from './todos-crud.service';
 import { TodosCrudController } from './todos-crud.controller';
 import { GrCrudModule } from '../gr-crud/gr-crud.module';
-import { GrCrudService } from '../gr-crud/gr-crud.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Package, PackageSchema } from '../../schemas/package.schema';
 import { Group, GroupSchema } from '../../schemas/group.schema';
 import { Todos, TodosSchema } from '../../schemas/todos.schema';
+import { Bill, BillSchema } from '../../schemas/billing.schema';
+import { BillCrudModule } from '../bill-crud/bill-crud.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
     MongooseModule.forFeature([{ name: Todos.name, schema: TodosSchema }]),
+    MongooseModule.forFeature([{ name: Bill.name, schema: BillSchema }]),
     MongooseModule.forFeature([{ name: Package.name, schema: PackageSchema }]),
     ClientsModule.register([
       {
@@ -43,8 +45,10 @@ import { Todos, TodosSchema } from '../../schemas/todos.schema';
       },
     ]),
     GrCrudModule,
+    BillCrudModule,
   ],
   controllers: [TodosCrudController],
-  providers: [TodosCrudService, GrCrudService],
+  providers: [TodosCrudService],
+  exports: [TodosCrudService],
 })
 export class TodosCrudModule {}

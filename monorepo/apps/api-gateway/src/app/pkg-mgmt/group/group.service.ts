@@ -22,13 +22,13 @@ import {
   GroupDto,
   BaseResDto,
   ValidateJoinGroupTokenResDto,
-  MemberDto,
-  GetGrsByUserResDto,
+  GetGrsResDto,
   UpdateAvatarReqDto,
   ActivateGrPkgReqDto,
   PkgGrInvReqDto,
   UpdateChannelReqDto,
-  GetGrChannelResDto,
+  PaginationParams,
+  ProjectionParams,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
@@ -79,9 +79,12 @@ export class GroupService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.GROUP.GET, collectionDto),
     );
   }
-  async findById(id: Types.ObjectId): Promise<GetGrResDto> {
+  async findById(projectionParams: ProjectionParams): Promise<GetGrResDto> {
     return await firstValueFrom(
-      this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID, id),
+      this.packageMgmtClient.send(
+        kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+        JSON.stringify(projectionParams),
+      ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
       else
@@ -241,11 +244,11 @@ export class GroupService implements OnModuleInit {
         });
     });
   }
-  async findByUser(memberDto: MemberDto): Promise<GetGrsByUserResDto> {
+  async findByUser(paginationParams: PaginationParams): Promise<GetGrsResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(
         kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER,
-        JSON.stringify(memberDto),
+        JSON.stringify(paginationParams),
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
@@ -317,27 +320,6 @@ export class GroupService implements OnModuleInit {
           kafkaTopic.PKG_MGMT.GROUP.UPDATE_CHANNEL,
           JSON.stringify(updateChannelReqDto),
         )
-        .pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new RequestTimeoutException();
-          }),
-        ),
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) {
-        return res;
-      } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
-      }
-    });
-  }
-  async findChannelByUser(id: Types.ObjectId): Promise<GetGrChannelResDto> {
-    return await firstValueFrom(
-      this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.GROUP.GET_CHANNEL_BY_USER, id)
         .pipe(
           timeout(5000),
           catchError(() => {

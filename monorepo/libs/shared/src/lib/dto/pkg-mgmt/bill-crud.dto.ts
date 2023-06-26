@@ -8,6 +8,7 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { BaseResDto, IdDto } from '../base.dto';
+import { PopulateUserDto } from '../users/users-crud.dto';
 
 class BorrowerDto {
   @ApiProperty({
@@ -17,7 +18,7 @@ class BorrowerDto {
     example: '648a7dff13638f64bbf9c156',
   })
   @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  user: string;
+  borrower: string;
 
   @ApiProperty({ type: Number, required: true, minimum: 1000, example: 10000 })
   amount: number;
@@ -27,7 +28,7 @@ class BorrowerDto {
   status?: string;
 }
 
-class BillingDto {
+export class BillingDto {
   @ApiProperty({ type: String, nullable: true, required: true })
   summary: string;
 
@@ -36,7 +37,7 @@ class BillingDto {
   date?: Date;
 
   @ApiProperty({
-    example: [{ user: '648a7dff13638f64bbf9c156', amount: 10000 }],
+    example: [{ borrower: '648a7dff13638f64bbf9c156', amount: 10000 }],
   })
   @Type(() => BorrowerDto)
   @ValidateNested({ each: true })
@@ -45,8 +46,6 @@ class BillingDto {
   @ApiProperty({ type: String, nullable: true, required: true })
   @Transform((v: TransformFnParams) => new ObjectId(v.value))
   lender: string;
-
-  amount: number;
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()
@@ -62,11 +61,23 @@ export class CreateBillReqDto extends IntersectionType(
   OmitType(BillingDto, ['updatedBy']),
 ) {}
 
+export class GetBorrowerDto extends OmitType(BorrowerDto, ['borrower']) {
+  borrower: PopulateUserDto;
+}
+
+export class GetGrDto_Bill extends IntersectionType(
+  IdDto,
+  OmitType(BillingDto, ['lender', 'borrowers']),
+) {
+  lender: PopulateUserDto;
+  borrowers: GetBorrowerDto[];
+}
+
 export class GetBillResDto extends BaseResDto {
   @ApiProperty()
   @ValidateNested({ each: true })
-  @Type(() => BillingDto)
-  billing: BillingDto[];
+  @Type(() => GetGrDto_Bill)
+  billing: GetGrDto_Bill[];
 }
 
 export class UpdateBillReqDto extends IntersectionType(
@@ -74,7 +85,7 @@ export class UpdateBillReqDto extends IntersectionType(
   OmitType(BillingDto, ['createdBy']),
 ) {}
 
-class UpdateBorrowSttReqDto extends PickType(BorrowerDto, ['user']) {
+class UpdateBorrowSttReqDto extends PickType(BorrowerDto, ['borrower']) {
   @ApiProperty({ enum: ['APPROVED', 'PENDING', 'CANCELED'] })
   @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
   status: string;

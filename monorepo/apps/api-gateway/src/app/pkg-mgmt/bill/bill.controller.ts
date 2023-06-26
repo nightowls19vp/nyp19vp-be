@@ -13,6 +13,7 @@ import { BillService } from './bill.service';
 import {
   BaseResDto,
   CreateBillReqDto,
+  GetBillResDto,
   ParseObjectIdPipe,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
@@ -45,10 +46,10 @@ export class BillController {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @ApiParam({ name: 'group_id', type: String })
-  @Get('group_id')
+  @Get(':group_id')
   find(
     @Param('group_id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<BaseResDto> {
+  ): Promise<GetBillResDto> {
     console.log(`Get billing of group #${id}`);
     return this.billService.find(id);
   }

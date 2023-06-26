@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { BillService } from './bill.service';
 import { BillController } from './bill.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { SocketModule } from '../../socket/socket.module';
+import { CommModule } from '../../comm/comm.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    SocketModule,
+    CommModule,
   ],
   controllers: [BillController],
   providers: [BillService],

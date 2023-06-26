@@ -5,9 +5,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
-import { SocketGateway } from '../socket/socket.gateway';
-import { SocketService } from '../socket/socket.service';
-import { SocketModule } from '../socket/socket.module';
 import { CommModule } from '../comm/comm.module';
 import { BillModule } from './bill/bill.module';
 import { PackageModule } from './package/package.module';

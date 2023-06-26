@@ -6,18 +6,18 @@ import {
   RmGrMbReqDto,
   CreateGrReqDto,
   GetGrResDto,
+  GetGrsResDto,
   kafkaTopic,
   UpdateGrReqDto,
   UpdateGrPkgReqDto,
   GroupDto,
-  MemberDto,
-  GetGrsByUserResDto,
   UpdateAvatarReqDto,
   ActivateGrPkgReqDto,
   CheckGrSUReqDto,
   UpdateChannelReqDto,
-  GetGrChannelResDto,
   BaseResDto,
+  PaginationParams,
+  ProjectionParams,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -42,8 +42,10 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID)
-  findById(@Payload() id: Types.ObjectId): Promise<GetGrResDto> {
-    return this.grCrudService.findById(id);
+  findById(
+    @Payload() projectionParams: ProjectionParams,
+  ): Promise<GetGrResDto> {
+    return this.grCrudService.findById(projectionParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE)
@@ -82,13 +84,10 @@ export class GrCrudController {
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER)
-  findByUser(@Payload() memberDto: MemberDto): Promise<GetGrsByUserResDto> {
-    return this.grCrudService.findByUser(memberDto);
-  }
-
-  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_CHANNEL_BY_USER)
-  getChannelByUser(@Payload() id: Types.ObjectId): Promise<GetGrChannelResDto> {
-    return this.grCrudService.getChannelByUser(id);
+  findByUser(
+    @Payload() paginationParams: PaginationParams,
+  ): Promise<GetGrsResDto> {
+    return this.grCrudService.findByUser(paginationParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_AVATAR)
