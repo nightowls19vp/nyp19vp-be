@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { ProdMgmtItemDto } from './item.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
@@ -10,25 +10,25 @@ export class GroupProductDto {
   @ApiProperty()
   name?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   image?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   barcode?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   price?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   region?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   brand?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   category?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   description?: string;
 
   @ApiProperty({ type: TimestampEmbeddedDto, readOnly: true })

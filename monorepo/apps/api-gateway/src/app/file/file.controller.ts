@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { Multer } from 'multer';
+
 import {
   Body,
   Controller,
@@ -7,19 +7,18 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-
-import { FileService } from './file.service';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
-import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { UpdateAvatarWithBase64 } from '@nyp19vp-be/shared';
-import { ATUser } from '../decorators/at-user.decorator';
+
 import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
+import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
+import { ATUser } from '../decorators/at-user.decorator';
+import { FileService } from './file.service';
 
 @Controller('file')
 export class FileController {

@@ -17,6 +17,9 @@ export class PurchaseLocationDto {
   address?: AddressEmbeddedDto;
 
   @ApiProperty({ required: false })
+  image?: string;
+
+  @ApiProperty({ required: false })
   description?: string;
 
   @ApiProperty({ required: false, type: TimestampEmbeddedDto, readOnly: true })

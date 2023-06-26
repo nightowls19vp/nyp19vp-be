@@ -93,6 +93,7 @@ export class GroupsProductsService {
 
     // add groupProduct to group
     const groupProduct = this.groupProductRepo.create({
+      id: reqDto.id,
       group: group,
       barcode: reqDto.barcode,
       brand: reqDto.brand,

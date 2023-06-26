@@ -110,6 +110,7 @@ export const COMM = {
 
 export const PROD_MGMT = {
   init: 'prod_mgmt_init', // create group with group id and package id
+  clone: 'prod_mgmt_clone', // clone group with group id and package id
 
   products: {
     create: 'prod_mgmt_create_product',

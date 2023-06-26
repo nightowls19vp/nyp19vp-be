@@ -36,10 +36,10 @@ export class PurchaseLocationEntity {
 
   @Column({
     name: 'name',
-    unique: true,
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
-    nullable: true,
+    nullable: false,
+    unique: false,
     default: null,
   })
   name: string;
@@ -53,6 +53,16 @@ export class PurchaseLocationEntity {
     default: null,
   })
   addedBy: string;
+
+  @Column({
+    name: 'image',
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+    nullable: false,
+    default:
+      'https://res.cloudinary.com/nightowls19vp/image/upload/v1687419179/default.png',
+  })
+  image: string;
 
   @OneToMany(() => ItemEntity, (item) => item.purchaseLocation, {
     cascade: true,

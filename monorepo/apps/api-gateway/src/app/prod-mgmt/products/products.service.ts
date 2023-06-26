@@ -5,14 +5,14 @@ import {
 import ms from 'ms';
 import { firstValueFrom, timeout } from 'rxjs';
 
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';
 
 import { ProductDto } from '../dto/product.dto';
 
 @Injectable()
-export class ProductsService {
+export class ProductsService implements OnModuleInit {
   constructor(
     @Inject('PROD_MGMT_SERVICE')
     private readonly prodMgmtClient: ClientKafka,
