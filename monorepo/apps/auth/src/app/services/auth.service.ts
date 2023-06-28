@@ -23,6 +23,7 @@ import {
   LoginResWithTokensDto,
   LogoutResDto,
   PkgGrInvReqDto,
+  ProjectionParams,
   RefreshTokenResDto,
   ValidateJoinGroupTokenReqDto,
   ValidateJoinGroupTokenResDto,
@@ -372,9 +373,16 @@ export class AuthService {
     // retrieve group info
     let grResDto: GetGrResDto = null;
     try {
+      const projectParams: ProjectionParams = {
+        _id: reqDto.grId,
+        proj: {},
+      };
       grResDto = await firstValueFrom(
         this.pkgMgmtClient
-          .send(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID, reqDto.grId)
+          .send(
+            kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+            JSON.stringify(projectParams),
+          )
           .pipe(timeout(toMs('5s'))),
       );
     } catch (error) {
@@ -395,7 +403,7 @@ export class AuthService {
           template: 'invite-to-gr.hbs',
           context: {
             inviterName: userInfoResDto?.user?.name,
-            groupName: grResDto.group.name,
+            groupName: grResDto?.group?.name,
             url: url,
             code: tokenIns.id,
             expiredTime: ms(
