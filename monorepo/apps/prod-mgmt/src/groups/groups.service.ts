@@ -8,7 +8,6 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { GroupEntity } from '../entities/group.entity';
-
 @Injectable()
 export class GroupsService {
   constructor(

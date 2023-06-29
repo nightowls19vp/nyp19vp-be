@@ -9,7 +9,7 @@ import {
   CheckoutReqDto,
   CreateUserReqDto,
   GetCartResDto,
-  GetUserInfoResDto,
+  GetUserResDto,
   GetUserSettingResDto,
   IdDto,
   kafkaTopic,
@@ -20,6 +20,7 @@ import {
   UpdateTrxHistReqDto,
   UpdateUserReqDto,
   UserDto,
+  UserInfo,
   ZPCheckoutResDto,
 } from '@nyp19vp-be/shared';
 import { UsersCrudService } from './users-crud.service';
@@ -41,14 +42,9 @@ export class UsersCrudController {
     return this.usersCrudService.findAll(collectionDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_ID)
-  findInfoById(@Payload() id: Types.ObjectId): Promise<GetUserInfoResDto> {
+  @MessagePattern(kafkaTopic.USERS.GET_BY_ID)
+  findInfoById(@Payload() id: Types.ObjectId): Promise<GetUserResDto> {
     return this.usersCrudService.findInfoById(id);
-  }
-
-  @MessagePattern(kafkaTopic.USERS.GET_INFO_BY_EMAIL)
-  findInfoByEmail(@Payload() email: string): Promise<GetUserInfoResDto> {
-    return this.usersCrudService.findInfoByEmail(email);
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_SETTING_BY_ID)
@@ -129,7 +125,7 @@ export class UsersCrudController {
   }
 
   @MessagePattern(kafkaTopic.USERS.GET_MANY)
-  findMany(@Payload() list_id: IdDto[]): Promise<UserDto[]> {
+  findMany(@Payload() list_id: IdDto[]): Promise<UserInfo[]> {
     return this.usersCrudService.findMany(list_id);
   }
 }

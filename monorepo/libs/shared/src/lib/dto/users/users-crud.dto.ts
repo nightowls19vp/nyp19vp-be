@@ -184,7 +184,7 @@ export class UpdateTrxHistReqDto extends IntersectionType(IdDto, CartDto) {
   trx: string;
 }
 
-export class GetUserInfoResDto extends BaseResDto {
+export class GetUserResDto extends BaseResDto {
   @ApiProperty()
   @Type(() => UserInfo)
   @ValidateNested()
@@ -283,19 +283,3 @@ export class RenewGrPkgReqDto extends IntersectionType(
   @Type(() => Items)
   cart: Item;
 }
-
-export class PopulateUserDto extends IntersectionType(IdDto, UserInfo) {}
-
-export const mapUserDtoToPopulateUserDto = (user: any): PopulateUserDto => {
-  const {
-    cart,
-    trxHist,
-    setting,
-    deleted,
-    createdAt,
-    updatedAt,
-    __v,
-    ...rest
-  } = user;
-  return rest;
-};

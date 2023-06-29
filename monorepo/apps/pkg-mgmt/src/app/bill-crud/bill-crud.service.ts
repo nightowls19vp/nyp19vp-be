@@ -1,10 +1,4 @@
-import {
-  HttpStatus,
-  Inject,
-  Injectable,
-  OnModuleInit,
-  forwardRef,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Bill, BillDocument } from '../../schemas/billing.schema';
 import { SoftDeleteModel } from 'mongoose-delete';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,25 +7,18 @@ import {
   CreateBillReqDto,
   GetGrDto_Bill,
   GetBillResDto,
-  GetBorrowerDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
-  UserDto,
   kafkaTopic,
-  mapUserDtoToPopulateUserDto,
-  PopulateUserDto,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
-import { GrCrudService } from '../gr-crud/gr-crud.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class BillCrudService implements OnModuleInit {
   constructor(
-    @Inject(forwardRef(() => GrCrudService))
-    private readonly grCrudService: GrCrudService,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
@@ -44,11 +31,8 @@ export class BillCrudService implements OnModuleInit {
     const borrow_user = borrowers.map((user) => {
       return user.borrower;
     });
-    const isU = await this.grCrudService.isGrU(
-      _id,
-      borrow_user.concat([lender]),
-    );
-    const isAuthor = await this.grCrudService.isGrU(_id, [createdBy]);
+    const isU = await this.isGrU(_id, borrow_user.concat([lender]));
+    const isAuthor = await this.isGrU(_id, [createdBy]);
     if (!isAuthor) {
       return Promise.resolve({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -117,72 +101,67 @@ export class BillCrudService implements OnModuleInit {
       });
     }
   }
-  async get(_id: Types.ObjectId): Promise<GetBillResDto> {
-    console.log(`Get billing of group #${_id}`);
-    return await this.grModel
-      .findOne({ _id: _id }, { billing: 1 })
-      .populate({ path: 'billing', model: 'Bill' })
-      .sort({ createdAt: -1 })
+
+  async findById(id: Types.ObjectId): Promise<GetBillResDto> {
+    console.log(`Get billing #${id}`);
+    return await this.billModel
+      .findById(id)
       .then(async (res) => {
-        if (res) {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `Got bill of group ${_id}`,
-            billing: await this.mapBillModelToGetGrDto_Bill(res),
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `Group #${_id} not found`,
-            billing: null,
-          });
-        }
+        return {
+          statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+          message: res
+            ? `Get billing #${id} successfully`
+            : `Billing #${id} not found`,
+          billing: res ? await this.mapBillModelToGetGrDto_Bill(res) : null,
+        };
       })
       .catch((error) => {
-        return Promise.resolve({
+        return {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
           error: 'INTERNAL SERVER ERROR',
           billing: null,
-        });
+        };
       });
   }
-  async mapBillModelToGetGrDto_Bill(model): Promise<GetGrDto_Bill[]> {
-    const result = await Promise.all(
-      model.billing.map(async (bill) => {
-        const list_id = bill.borrowers.map((borrower) => {
-          return borrower.borrower;
-        });
-        list_id.push(bill.lender);
-        const list_user = await firstValueFrom(
-          this.usersClient
-            .send(kafkaTopic.USERS.GET_MANY, list_id)
-            .pipe(timeout(5000)),
-        );
-        const newBorrowers = [];
-        for (let i = 0; i < list_user.length - 1; i++) {
-          const borrow = {
-            borrower: mapUserDtoToPopulateUserDto(list_user[i]),
-            amount: bill.borrowers[i].amount,
-            status: bill.borrowers[i].status,
-          };
-          newBorrowers.push(borrow);
-        }
-        const getGrDto_Bill: GetGrDto_Bill = {
-          _id: bill._id,
-          summary: bill.summary,
-          date: bill.date,
-          lender: mapUserDtoToPopulateUserDto(list_user[list_user.length - 1]),
-          borrowers: newBorrowers,
-          description: bill.description,
-          createdBy: bill.createdBy,
-          updatedBy: bill.updatedBy,
-        };
-        return getGrDto_Bill;
-      }),
+
+  async mapBillModelToGetGrDto_Bill(model): Promise<GetGrDto_Bill> {
+    const list_others = [model.lender, model.createdBy];
+    model.updatedBy ? list_others.push(model.updatedBy) : null;
+    const list_borrower = model.borrowers.map((borrower) => {
+      return borrower.borrower;
+    });
+    const list_id = list_borrower.concat(list_others);
+    const list_user = await firstValueFrom(
+      this.usersClient
+        .send(kafkaTopic.USERS.GET_MANY, list_id)
+        .pipe(timeout(5000)),
     );
-    return result;
+    const newBorrowers = [];
+    for (let i = 0; i < list_borrower.length; i++) {
+      const user = list_user.find((elem) => elem._id == list_borrower[i]);
+      const borrow = {
+        borrower: user,
+        amount: model.borrowers[i].amount,
+        status: model.borrowers[i].status,
+      };
+      newBorrowers.push(borrow);
+    }
+    const getGrDto_Bill: GetGrDto_Bill = {
+      _id: model._id,
+      summary: model.summary,
+      date: model.date,
+      lender: list_user.find((elem) => elem._id == model.lender),
+      borrowers: newBorrowers,
+      description: model.description,
+      createdBy: list_user.find((elem) => elem._id == model.createdBy),
+      updatedBy: model.updatedBy
+        ? list_user.find((elem) => elem._id == model.updatedBy)
+        : undefined,
+    };
+    return getGrDto_Bill;
   }
+
   async update(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
     const { _id, borrowers } = updateBillReqDto;
     console.log(`Update billing #${_id}`);
@@ -190,7 +169,7 @@ export class BillCrudService implements OnModuleInit {
     const borrow_user = borrowers.map((user) => {
       return user.borrower;
     });
-    const isU = await this.grCrudService.isGrU(_id, borrow_user);
+    const isU = await this.isGrU(_id, borrow_user);
     if (!isU) {
       return Promise.resolve({
         statusCode: HttpStatus.BAD_REQUEST,
@@ -344,5 +323,17 @@ export class BillCrudService implements OnModuleInit {
           error: 'INTERNAL SERVER ERROR',
         });
       });
+  }
+  async isGrU(_id: string, isGrUReqDto: string[]): Promise<boolean> {
+    const group = await this.grModel.findOne({ _id: _id }, { members: 1 });
+    const members = group.members.map((res) => {
+      return res.user;
+    });
+    for (const elem of isGrUReqDto) {
+      if (!members.includes(elem)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

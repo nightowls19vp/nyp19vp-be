@@ -4,11 +4,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { ACCESS_JWT_STRATEGY_NAME } from '../constants/authentication';
-import { BaseResDto, GetUserInfoResDto, config } from '@nyp19vp-be/shared';
+import { BaseResDto, config } from '@nyp19vp-be/shared';
 
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
-import { IJwtPayload, IUser } from 'libs/shared/src/lib/core';
 import { UsersService } from '../../users/users.service';
 import { getAccessToken } from '../utils/get-jwt-token';
 

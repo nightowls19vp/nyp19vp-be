@@ -15,7 +15,7 @@ import {
   CheckoutReqDto,
   CreateUserReqDto,
   GetCartResDto,
-  GetUserInfoResDto,
+  GetUserResDto,
   GetUserSettingResDto,
   kafkaTopic,
   RenewGrPkgReqDto,
@@ -74,9 +74,9 @@ export class UsersService {
       });
     }
   }
-  async getUserById(id: Types.ObjectId): Promise<GetUserInfoResDto> {
+  async getUserById(id: Types.ObjectId): Promise<GetUserResDto> {
     return await firstValueFrom(
-      this.usersClient.send(kafkaTopic.USERS.GET_INFO_BY_ID, id).pipe(
+      this.usersClient.send(kafkaTopic.USERS.GET_BY_ID, id).pipe(
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();

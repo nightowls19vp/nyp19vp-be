@@ -6,6 +6,8 @@ import {
   BaseResDto,
   CreateTodosReqDto,
   GetTodosResDto,
+  RmTodosReqDto,
+  UpdateTodoReqDto,
   UpdateTodosReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -20,9 +22,9 @@ export class TodosCrudController {
     return this.todosCrudService.create(createTodosReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET)
-  find(@Payload() id: Types.ObjectId): Promise<GetTodosResDto> {
-    return this.todosCrudService.find(id);
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET_BY_ID)
+  findById(@Payload() id: Types.ObjectId): Promise<GetTodosResDto> {
+    return this.todosCrudService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE)
@@ -30,15 +32,21 @@ export class TodosCrudController {
     return this.todosCrudService.update(updateTodosReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.ADD_TODO)
-  addTodos(@Payload() addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
-    return this.todosCrudService.addTodos(addTodosReqDto);
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE_TODO)
+  updateTodo(
+    @Payload() updateTodoReqDto: UpdateTodoReqDto,
+  ): Promise<BaseResDto> {
+    return this.todosCrudService.updateTodo(updateTodoReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DEL_TODO)
-  rmTodos(@Payload() addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
-    console.log(addTodosReqDto);
-    return this.todosCrudService.rmTodos(addTodosReqDto);
+  rmTodos(@Payload() rmTodosReqDto: RmTodosReqDto): Promise<BaseResDto> {
+    return this.todosCrudService.rmTodos(rmTodosReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.ADD_TODO)
+  addTodos(@Payload() addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
+    return this.todosCrudService.addTodos(addTodosReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DELETE)

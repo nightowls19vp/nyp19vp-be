@@ -22,9 +22,9 @@ import {
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
-import { Items, PopulateUserDto } from '../users/users-crud.dto';
+import { Items, UserInfo } from '../users/users-crud.dto';
 import { PackageDto } from './pkg-crud.dto';
-import { TodosDto } from './todos-crud.dto';
+import { GetGrDto_Todos } from './todos-crud.dto';
 import { GetGrDto_Bill } from './bill-crud.dto';
 
 class MemberDto {
@@ -322,8 +322,9 @@ export class GetGrDto_Pkg extends OmitType(GrPkgDto, ['package']) {
   package: PackageDto;
 }
 
-export class GetGrDto_Memb extends OmitType(MemberDto, ['user']) {
-  user: PopulateUserDto;
+export class GetGrDto_Memb extends PickType(MemberDto, ['role']) {
+  user: UserInfo;
+  addedBy: UserInfo;
 }
 
 export class GetGrDto extends IdDto {
@@ -331,7 +332,7 @@ export class GetGrDto extends IdDto {
   avatar?: string;
   channel?: string;
   billing?: GetGrDto_Bill[];
-  todos?: TodosDto[];
+  todos?: GetGrDto_Todos[];
   packages?: GetGrDto_Pkg[];
   members?: GetGrDto_Memb[];
 }

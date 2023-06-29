@@ -7,7 +7,7 @@ import {
   CheckoutReqDto,
   CreateUserReqDto,
   GetCartResDto,
-  GetUserInfoResDto,
+  GetUserResDto,
   GetUserSettingResDto,
   IdDto,
   Items,
@@ -19,6 +19,7 @@ import {
   UpdateTrxHistReqDto,
   UpdateUserReqDto,
   UserDto,
+  UserInfo,
   ZPCheckoutResDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -96,7 +97,7 @@ export class UsersCrudService implements OnModuleInit {
       });
   }
 
-  async findInfoById(id: Types.ObjectId): Promise<GetUserInfoResDto> {
+  async findInfoById(id: Types.ObjectId): Promise<GetUserResDto> {
     console.log(`users-svc#get-user-by-id:`, id);
     return await this.userModel
       .findById({ _id: id })
@@ -125,37 +126,14 @@ export class UsersCrudService implements OnModuleInit {
       });
   }
 
-  async findMany(list_id: IdDto[]): Promise<UserDto[]> {
-    const res = await this.userModel.find({ _id: { $in: list_id } }).exec();
+  async findMany(list_id: IdDto[]): Promise<UserInfo[]> {
+    const res = await this.userModel
+      .find(
+        { _id: { $in: list_id } },
+        { name: 1, dob: 1, email: 1, phone: 1, avatar: 1 },
+      )
+      .exec();
     return res;
-  }
-
-  async findInfoByEmail(email: string): Promise<GetUserInfoResDto> {
-    return await this.userModel
-      .findOne({ email: email })
-      .then((res) => {
-        if (!res) {
-          return Promise.resolve({
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `No user with id: #${email} found`,
-            error: 'NOT FOUND',
-            user: res,
-          });
-        } else {
-          return Promise.resolve({
-            statusCode: HttpStatus.OK,
-            message: `get user #${email} successfully`,
-            user: res,
-          });
-        }
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          user: null,
-        });
-      });
   }
 
   async findSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {

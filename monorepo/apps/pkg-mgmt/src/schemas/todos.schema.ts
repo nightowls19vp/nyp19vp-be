@@ -1,10 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
-export type TodosDocument = HydratedDocument<Todos> & SoftDeleteDocument;
+export type TodoListDocument = HydratedDocument<TodoList> & SoftDeleteDocument;
+export type TodoDocument = HydratedDocument<Todo>;
 
-class Todo {
+@Schema()
+export class Todo {
   @Prop({ type: String, required: true })
   todo: string;
 
@@ -16,11 +18,11 @@ class Todo {
 }
 
 @Schema({ timestamps: true })
-export class Todos {
+export class TodoList {
   @Prop({ type: String, required: true })
   summary: string;
 
-  @Prop()
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Todo' }] })
   todos: Todo[];
 
   @Prop({ type: String, required: false })
@@ -36,8 +38,9 @@ export class Todos {
   updatedAt: Date;
 }
 
-export const TodosSchema = SchemaFactory.createForClass(Todos);
-TodosSchema.plugin(MongooseDelete, {
+export const TodoSchema = SchemaFactory.createForClass(Todo);
+export const TodoListSchema = SchemaFactory.createForClass(TodoList);
+TodoListSchema.plugin(MongooseDelete, {
   overrideMethods: true,
   deletedAt: true,
 });

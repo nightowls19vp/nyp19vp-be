@@ -16,6 +16,8 @@ import {
   CreateTodosReqDto,
   GetTodosResDto,
   ParseObjectIdPipe,
+  RmTodosReqDto,
+  UpdateTodoReqDto,
   UpdateTodosReqDto,
 } from '@nyp19vp-be/shared';
 import { AccessJwtAuthGuard } from '../../auth/guards/jwt.guard';
@@ -50,55 +52,81 @@ export class TodosController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'group_id', type: String })
-  @Get(':group_id')
-  find(
-    @Param('group_id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  @ApiParam({ name: 'id', type: String })
+  @Get(':id')
+  findById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetTodosResDto> {
-    console.log(`Get todos of group #${id}`);
-    return this.todosService.find(id);
+    console.log(`Get todos #${id}`);
+    return this.todosService.findById(id);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Put(':id')
   update(
+    @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() updateTodosReqDto: UpdateTodosReqDto,
   ): Promise<BaseResDto> {
     console.log(`Update todos #${id}`, updateTodosReqDto);
     updateTodosReqDto._id = id;
+    updateTodosReqDto.updatedBy = user?.['userInfo']?.['_id'];
     return this.todosService.update(updateTodosReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiOperation({ summary: 'Remove todos from checklist' })
-  @Delete(':id')
-  rmTodos(
+  @Put(':id/todo/:todo_id')
+  updateTodo(
+    @ATUser() user: unknown,
     @Param('id') id: string,
-    @Body() addTodosReqDto: AddTodosReqDto,
+    @Param('todo_id') todo_id: string,
+    @Body() updateTodoReqDto: UpdateTodoReqDto,
   ): Promise<BaseResDto> {
-    console.log(`Remove todos #${id}`, addTodosReqDto);
-    addTodosReqDto._id = id;
-    return this.todosService.rmTodos(addTodosReqDto);
+    console.log(
+      `Update todo #${todo_id} of todo-list #${id}`,
+      updateTodoReqDto,
+    );
+    updateTodoReqDto._id = id;
+    updateTodoReqDto.todo_id = todo_id;
+    updateTodoReqDto.updatedBy = user?.['userInfo']?.['_id'];
+    return this.todosService.updateTodo(updateTodoReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @ApiOperation({ summary: 'Remove todos from checklist' })
+  @Delete(':id/todo')
+  rmTodos(
+    @ATUser() user: unknown,
+    @Param('id') id: string,
+    @Body() rmTodosReqDto: RmTodosReqDto,
+  ): Promise<BaseResDto> {
+    console.log(`Remove todos #${id}`, rmTodosReqDto);
+    rmTodosReqDto._id = id;
+    rmTodosReqDto.updatedBy = user?.['userInfo']?.['_id'];
+    return this.todosService.rmTodos(rmTodosReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @ApiOperation({ summary: 'Add todos to checklist' })
-  @Put(':id/todo')
+  @Post(':id/todo')
   addTodos(
+    @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() addTodosReqDto: AddTodosReqDto,
   ): Promise<BaseResDto> {
     console.log(`Add todos #${id}`, addTodosReqDto);
     addTodosReqDto._id = id;
+    addTodosReqDto.updatedBy = user?.['userInfo']?.['_id'];
     return this.todosService.addTodos(addTodosReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
+  @ApiParam({ name: 'id', type: String })
   @Delete(':id')
   remove(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
@@ -109,6 +137,7 @@ export class TodosController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
+  @ApiParam({ name: 'id', type: String })
   @Patch(':id')
   restore(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,

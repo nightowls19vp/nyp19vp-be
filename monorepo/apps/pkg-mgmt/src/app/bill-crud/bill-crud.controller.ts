@@ -20,9 +20,9 @@ export class BillCrudController {
     return this.billCrudService.create(createBillReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET)
-  get(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
-    return this.billCrudService.get(id);
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET_BY_ID)
+  findById(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
+    return this.billCrudService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE)
