@@ -27,8 +27,7 @@ export const AUTH = {
 export const USERS = {
   CREATE: 'createUser',
   SEARCH_USER: 'searchFull-textUser',
-  GET_INFO_BY_ID: 'getUserInfoById',
-  GET_INFO_BY_EMAIL: 'getUserInfoByEmail',
+  GET_BY_ID: 'getUserById',
   GET_SETTING_BY_ID: 'getUserSettingById',
   GET: 'getAllUsers',
   GET_MANY: 'getManyUsers',
@@ -75,7 +74,7 @@ export const PKG_MGMT = {
   EXTENSION: {
     BILL: {
       CREATE: 'createGroupBilling',
-      GET: 'getGroupBilling',
+      GET_BY_ID: 'getGroupBillingById',
       UPDATE: 'updateGroupBilling',
       UPDATE_STT: 'updateGroupBillingStatus',
       DELETE: 'removeGroupBilling',
@@ -83,10 +82,11 @@ export const PKG_MGMT = {
     },
     TODOS: {
       CREATE: 'createGroupTodos',
-      GET: 'getGroupTodos',
+      GET_BY_ID: 'getGroupTodos',
       UPDATE: 'updateGroupTodos',
-      ADD_TODO: 'addGroupTodos',
-      DEL_TODO: 'removeGroupTodos',
+      UPDATE_TODO: 'updateGroupTodo',
+      ADD_TODO: 'addGroupTodo',
+      DEL_TODO: 'removeGroupTodo',
       DELETE: 'removeGroupTodos',
       RESTORE: 'restoreGroupTodos',
     },

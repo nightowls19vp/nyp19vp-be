@@ -71,10 +71,10 @@ export class BillService implements OnModuleInit {
       }
     });
   }
-  async find(id: Types.ObjectId): Promise<GetBillResDto> {
+  async findById(id: Types.ObjectId): Promise<GetBillResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET_BY_ID, id)
         .pipe(
           timeout(5000),
           catchError(() => {

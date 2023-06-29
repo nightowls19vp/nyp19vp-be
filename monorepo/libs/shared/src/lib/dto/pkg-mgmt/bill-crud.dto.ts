@@ -8,7 +8,7 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { BaseResDto, IdDto } from '../base.dto';
-import { PopulateUserDto } from '../users/users-crud.dto';
+import { UserInfo } from '../users/users-crud.dto';
 
 class BorrowerDto {
   @ApiProperty({
@@ -62,22 +62,24 @@ export class CreateBillReqDto extends IntersectionType(
 ) {}
 
 export class GetBorrowerDto extends OmitType(BorrowerDto, ['borrower']) {
-  borrower: PopulateUserDto;
+  borrower: UserInfo;
 }
 
 export class GetGrDto_Bill extends IntersectionType(
   IdDto,
-  OmitType(BillingDto, ['lender', 'borrowers']),
+  OmitType(BillingDto, ['lender', 'borrowers', 'createdBy', 'updatedBy']),
 ) {
-  lender: PopulateUserDto;
-  borrowers: GetBorrowerDto[];
+  lender: UserInfo;
+  borrowers: UserInfo[];
+  createdBy: UserInfo;
+  updatedBy: UserInfo;
 }
 
 export class GetBillResDto extends BaseResDto {
   @ApiProperty()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => GetGrDto_Bill)
-  billing: GetGrDto_Bill[];
+  billing: GetGrDto_Bill;
 }
 
 export class UpdateBillReqDto extends IntersectionType(

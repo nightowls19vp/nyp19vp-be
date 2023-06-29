@@ -17,7 +17,7 @@ import {
   config,
   ERole,
   GetGrResDto,
-  GetUserInfoResDto,
+  GetUserResDto,
   kafkaTopic,
   LoginReqDto,
   LoginResWithTokensDto,
@@ -356,11 +356,11 @@ export class AuthService {
     }
 
     // retrieve inviter info
-    let userInfoResDto: GetUserInfoResDto = null;
+    let userInfoResDto: GetUserResDto = null;
     try {
       userInfoResDto = await firstValueFrom(
         this.usersClient
-          .send(kafkaTopic.USERS.GET_INFO_BY_ID, reqDto.addedBy)
+          .send(kafkaTopic.USERS.GET_BY_ID, reqDto.addedBy)
           .pipe(timeout(toMs('5s'))),
       );
     } catch (error) {

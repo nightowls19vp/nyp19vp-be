@@ -12,6 +12,8 @@ import {
   BaseResDto,
   CreateTodosReqDto,
   GetTodosResDto,
+  RmTodosReqDto,
+  UpdateTodoReqDto,
   UpdateTodosReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
@@ -54,10 +56,10 @@ export class TodosService implements OnModuleInit {
       }
     });
   }
-  async find(id: Types.ObjectId): Promise<GetTodosResDto> {
+  async findById(id: Types.ObjectId): Promise<GetTodosResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET_BY_ID, id)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -81,6 +83,30 @@ export class TodosService implements OnModuleInit {
         .send(
           kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE,
           JSON.stringify(updateTodosReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async updateTodo(updateTodoReqDto: UpdateTodoReqDto): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE_TODO,
+          JSON.stringify(updateTodoReqDto),
         )
         .pipe(
           timeout(5000),
@@ -141,12 +167,12 @@ export class TodosService implements OnModuleInit {
       }
     });
   }
-  async addTodos(addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
+  async rmTodos(rmTodosReqDto: RmTodosReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.ADD_TODO,
-          JSON.stringify(addTodosReqDto),
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DEL_TODO,
+          JSON.stringify(rmTodosReqDto),
         )
         .pipe(
           timeout(5000),
@@ -165,11 +191,11 @@ export class TodosService implements OnModuleInit {
       }
     });
   }
-  async rmTodos(addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
+  async addTodos(addTodosReqDto: AddTodosReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DEL_TODO,
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.ADD_TODO,
           JSON.stringify(addTodosReqDto),
         )
         .pipe(

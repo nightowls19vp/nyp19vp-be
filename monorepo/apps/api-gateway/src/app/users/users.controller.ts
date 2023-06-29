@@ -18,7 +18,7 @@ import {
   CheckoutReqDto,
   CreateUserReqDto,
   GetCartResDto,
-  GetUserInfoResDto,
+  GetUserResDto,
   GetUserSettingResDto,
   kafkaTopic,
   ParseObjectIdPipe,
@@ -105,13 +105,13 @@ export class UsersController implements OnModuleInit {
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Get(':id')
-  @ApiOkResponse({ description: 'Got user by Id', type: GetUserInfoResDto })
+  @ApiOkResponse({ description: 'Got user by Id', type: GetUserResDto })
   @ApiParam({ name: 'id', type: String })
   @ApiNotFoundResponse({ description: 'No user found' })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   async getUserById(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<GetUserInfoResDto> {
+  ): Promise<GetUserResDto> {
     console.log(`get user info by #${id}`);
     return this.usersService.getUserById(id);
   }

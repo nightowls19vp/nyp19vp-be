@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GrCrudService } from './gr-crud.service';
 import { GrCrudController } from './gr-crud.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,11 +7,22 @@ import { Package, PackageSchema } from '../../schemas/package.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Bill, BillSchema } from '../../schemas/billing.schema';
 import { BillCrudModule } from '../bill-crud/bill-crud.module';
+import { TodosCrudModule } from '../todos-crud/todos-crud.module';
+import {
+  Todo,
+  TodoList,
+  TodoListSchema,
+  TodoSchema,
+} from '../../schemas/todos.schema';
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
-    MongooseModule.forFeature([{ name: Bill.name, schema: BillSchema }]),
-    MongooseModule.forFeature([{ name: Package.name, schema: PackageSchema }]),
+    MongooseModule.forFeature([
+      { name: Group.name, schema: GroupSchema },
+      { name: Bill.name, schema: BillSchema },
+      { name: Package.name, schema: PackageSchema },
+      { name: TodoList.name, schema: TodoListSchema },
+      { name: Todo.name, schema: TodoSchema },
+    ]),
     ClientsModule.register([
       {
         name: 'USERS_SERVICE',
@@ -40,7 +51,8 @@ import { BillCrudModule } from '../bill-crud/bill-crud.module';
         },
       },
     ]),
-    forwardRef(() => BillCrudModule),
+    BillCrudModule,
+    TodosCrudModule,
   ],
   controllers: [GrCrudController],
   providers: [GrCrudService],

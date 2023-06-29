@@ -45,20 +45,20 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'group_id', type: String })
-  @Get(':group_id')
-  find(
-    @Param('group_id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  @ApiParam({ name: 'id', type: String })
+  @Get(':id')
+  findById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetBillResDto> {
-    console.log(`Get billing of group #${id}`);
-    return this.billService.find(id);
+    console.log(`Get billing #${id}`);
+    return this.billService.findById(id);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put(':billing_id')
+  @Put(':id')
   update(
-    @Param('billing_id') id: string,
+    @Param('id') id: string,
     @Body() updateBillReqDto: UpdateBillReqDto,
   ): Promise<BaseResDto> {
     console.log(`Update billing #${id}`, updateBillReqDto);
@@ -68,10 +68,10 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put(':billing_id/status')
+  @Put(':id/status')
   updateStt(
     @ATUser() user: unknown,
-    @Param('billing_id') id: string,
+    @Param('id') id: string,
     @Body() updateBillSttReqDto: UpdateBillSttReqDto,
   ): Promise<BaseResDto> {
     console.log(`Update billing status of group #${id}`, updateBillSttReqDto);
@@ -82,23 +82,23 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'billing_id', type: String })
-  @Delete(':billing_id')
+  @ApiParam({ name: 'id', type: String })
+  @Delete(':id')
   remove(
-    @Param('billing_id', new ParseObjectIdPipe()) billing_id: Types.ObjectId,
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<BaseResDto> {
-    console.log(`Remove billing #${billing_id}`);
-    return this.billService.remove(billing_id);
+    console.log(`Remove billing #${id}`);
+    return this.billService.remove(id);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @ApiParam({ name: 'billing_id', type: String })
-  @Patch(':billing_id')
+  @ApiParam({ name: 'id', type: String })
+  @Patch(':id')
   restore(
-    @Param('billing_id', new ParseObjectIdPipe()) billing_id: Types.ObjectId,
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<BaseResDto> {
-    console.log(`Restore billing #${billing_id}`);
-    return this.billService.restore(billing_id);
+    console.log(`Restore billing #${id}`);
+    return this.billService.restore(id);
   }
 }

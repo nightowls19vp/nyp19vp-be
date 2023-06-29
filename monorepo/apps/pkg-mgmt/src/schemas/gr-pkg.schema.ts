@@ -1,8 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Package } from './package.schema';
-
-export type GrPkgDocument = HydratedDocument<GrPkg>;
+import { Prop } from '@nestjs/mongoose';
 
 class Pkg {
   @Prop({ type: String, required: true })
@@ -15,7 +11,6 @@ class Pkg {
   noOfMember: number;
 }
 
-@Schema()
 export class GrPkg {
   @Prop({ required: true })
   package: Pkg;
@@ -33,5 +28,3 @@ export class GrPkg {
   })
   status: string;
 }
-
-export const GrPkgSchema = SchemaFactory.createForClass(GrPkg);

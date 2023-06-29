@@ -14,7 +14,7 @@ import {
   CreateAccountResDto,
   CreateUserReqDto,
   ERole,
-  GetUserInfoResDto,
+  GetUserResDto,
   IJwtPayload,
   kafkaTopic,
   SocialLinkReqDto,
@@ -403,11 +403,11 @@ export class AccountService {
   //   throw new RpcException('not implemented');
   // }
 
-  async getUserInfoById(id: string): Promise<GetUserInfoResDto> {
+  async getUserInfoById(id: string): Promise<GetUserResDto> {
     try {
-      const getUserInfoRes: GetUserInfoResDto = await firstValueFrom(
+      const getUserInfoRes: GetUserResDto = await firstValueFrom(
         this.usersClient
-          .send(kafkaTopic.USERS.GET_INFO_BY_ID, id)
+          .send(kafkaTopic.USERS.GET_BY_ID, id)
           .pipe(timeout(toMs('5s'))),
       );
 

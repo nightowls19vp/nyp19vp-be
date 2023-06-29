@@ -47,6 +47,13 @@ services:
     depends_on:
       - zookeeper
 
+  mongo-keys:
+    container_name: mongo-keys
+    image: depop/openssl-bats
+    volumes:
+      - mongo-keys:/mongo-conf
+    command: 'bash -c "openssl rand -base64 741 > /mongo-conf/mongodb-keyfile; chmod 600 /mongo-conf/mongodb-keyfile; chown 999 /mongo-conf/mongodb-keyfile"'
+
   mongodb:
     container_name: mongodb
     env_file:
@@ -59,8 +66,26 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
+      - mongo-keys:/opt/keyfile
       - db_data:/data/db
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    entrypoint: ['/usr/bin/mongod', '--replSet', 'rs0', '--bind_ip_all', '--keyFile', '/opt/keyfile/mongodb-keyfile']
+  
+  mongo-replica-setup:
+    container_name: mongo-setup
+    env_file:
+      - ./.env
+    image: mongo
+    volumes:
+    - ./docker-entrypoint-initdb.d/mongo-setup.sh:/docker-entrypoint-initdb.d/mongo-setup.sh
+    entrypoint: ["bash", "/docker-entrypoint-initdb.d/mongo-setup.sh" ]
+    env_file:
+        - .env
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+        - mongodb
 
   mysql-auth:
     container_name: mysql-auth
