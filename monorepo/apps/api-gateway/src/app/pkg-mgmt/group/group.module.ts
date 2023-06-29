@@ -26,11 +26,11 @@ import { SocketModule } from '../../socket/socket.module';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'auth' + 'api-gateway' + 'group',
+            clientId: 'auth-consumer' + 'api-gateway' + 'pkg-mgmt-group',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'auth-consumer' + 'api-gateway' + 'group',
+            groupId: 'auth-consumer' + 'api-gateway' + 'pkg-mgmt-group',
           },
         },
       },

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { NestCloudinaryClientModule } from '../../file/cloudinary/cloudinary.module';
 import { StorageLocationsController } from './storage-locations.controller';
 import { StorageLocationsService } from './storage-locations.service';
 
@@ -23,6 +24,6 @@ import { StorageLocationsService } from './storage-locations.service';
     ]),
   ],
   controllers: [StorageLocationsController],
-  providers: [StorageLocationsService],
+  providers: [StorageLocationsService, NestCloudinaryClientModule],
 })
 export class StorageLocationsModule {}

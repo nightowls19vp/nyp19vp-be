@@ -95,6 +95,7 @@ export class StorageLocationsService {
     }
 
     const storageLocation = this.storageLocationRepo.create({
+      id: reqDto.id,
       name: reqDto.name,
       image: reqDto.image,
       addedBy: reqDto.addedBy,

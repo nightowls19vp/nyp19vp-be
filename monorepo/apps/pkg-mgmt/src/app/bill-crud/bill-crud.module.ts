@@ -18,11 +18,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users' + 'gr-crud' + 'users',
+            clientId: 'users' + 'bill-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'gr-crud' + 'users',
+            groupId: 'users-consumer' + 'bill-crud' + 'users',
           },
         },
       },

@@ -1,14 +1,15 @@
-import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
+import { Express } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Multer } from 'multer';
+import { Paginated, PaginateQuery } from 'nestjs-paginate';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseResDto } from '../../base.dto';
 import { ProdMgmtGroupDto } from '../dto/group.dto';
 import { StorageLocationDto } from '../dto/storage-location.dto';
-import { PaginateQuery, Paginated } from 'nestjs-paginate';
 
-export class CreateStorageLocationReqDto extends PickType(
-  PartialType(StorageLocationDto),
-  ['name', 'addedBy', 'image', 'description'],
-) {
+export class CreateStorageLocationReqDto extends StorageLocationDto {
   @ApiProperty()
   groupId?: string;
 
@@ -16,6 +17,20 @@ export class CreateStorageLocationReqDto extends PickType(
     readOnly: true,
   })
   group?: ProdMgmtGroupDto;
+
+  @ApiProperty({
+    type: 'file',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class CreateStorageLocationResDto extends BaseResDto {
@@ -94,6 +109,21 @@ export class UpdateStorageLocationReqDto extends StorageLocationDto {
     readOnly: true,
   })
   id: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class UpdateStorageLocationResDto extends BaseResDto {

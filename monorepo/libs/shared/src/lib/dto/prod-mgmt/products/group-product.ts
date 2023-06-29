@@ -1,3 +1,6 @@
+import { Express } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Multer } from 'multer';
 import { Paginated, PaginateQuery } from 'nestjs-paginate';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -10,6 +13,21 @@ import { GroupProductDto } from '../dto/group-product.dto';
 export class CreateGroupProductReqDto extends GroupProductDto {
   @ApiProperty()
   groupId: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class CreateGroupProductResDto extends BaseResDto {
@@ -93,6 +111,21 @@ export class UpdateGroupProductReqDto extends GroupProductDto {
     readOnly: true,
   })
   groupId: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    name: 'file',
+  })
+  file?: Express.Multer.File;
+
+  @ApiProperty({
+    description:
+      'The image of the group product. Accepts base64 string or URL.',
+    type: 'string',
+  })
+  image?: string;
 }
 
 export class UpdateGroupProductResDto extends BaseResDto {

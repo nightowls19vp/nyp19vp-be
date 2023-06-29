@@ -25,11 +25,11 @@ import { BillCrudModule } from '../bill-crud/bill-crud.module';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users' + 'gr-crud' + 'users',
+            clientId: 'users' + 'todo-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'gr-crud' + 'users',
+            groupId: 'users-consumer' + 'todo-crud' + 'users',
           },
         },
       },

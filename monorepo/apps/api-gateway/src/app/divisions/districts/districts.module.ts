@@ -12,11 +12,11 @@ import { DistrictsService } from './districts.service';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'prod-mgmt-districts',
+            clientId: 'prod-mgmt' + 'api-gateway' + 'districts',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'prod-mgmt-api-gateway-districts', // FIXME,
+            groupId: 'prod-mgmt' + 'api-gateway' + 'districts',
           },
         },
       },
