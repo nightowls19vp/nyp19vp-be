@@ -9,6 +9,7 @@ import {
   RmTodosReqDto,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
+  UpdateTodosStateReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -30,6 +31,13 @@ export class TodosCrudController {
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE)
   update(@Payload() updateTodosReqDto: UpdateTodosReqDto): Promise<BaseResDto> {
     return this.todosCrudService.update(updateTodosReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE_STATE)
+  updateState(
+    @Payload() updateTodosStateReqDto: UpdateTodosStateReqDto,
+  ): Promise<BaseResDto> {
+    return this.todosCrudService.updateState(updateTodosStateReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE_TODO)

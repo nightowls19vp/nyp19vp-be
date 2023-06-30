@@ -192,7 +192,7 @@ export class GrCrudService implements OnModuleInit {
             await this.todoModel.populate(gr.todos, {
               path: 'todos',
             });
-            return await this.mapGrModelToGetGrDto(gr);
+            return await this.mapGrModelToGetGrDto(gr, user);
           }),
         );
         return Promise.resolve({
@@ -779,24 +779,30 @@ export class GrCrudService implements OnModuleInit {
     }
     return undefined;
   }
-  async mapGrModelToGetGrDto_Todos(model): Promise<GetGrDto_Todos[]> {
+  async mapGrModelToGetGrDto_Todos(
+    model,
+    owner?: string,
+  ): Promise<GetGrDto_Todos[]> {
     if (model.todos) {
       const result = model.todos.map(async (todo) => {
         console.log(todo);
-        return await this.todosCrudService.mapTodosModelToGetGrDto_Todos(todo);
+        return await this.todosCrudService.mapTodosModelToGetGrDto_Todos(
+          todo,
+          owner,
+        );
       });
       return await Promise.all(result);
     }
     return undefined;
   }
-  async mapGrModelToGetGrDto(model): Promise<GetGrDto> {
+  async mapGrModelToGetGrDto(model, owner?: string): Promise<GetGrDto> {
     const result: GetGrDto = {
       _id: model._id,
       name: model.name,
       avatar: model.avatar,
       channel: model.channel,
       billing: await this.mapGrModelToGetGrDto_Bill(model),
-      todos: await this.mapGrModelToGetGrDto_Todos(model),
+      todos: await this.mapGrModelToGetGrDto_Todos(model, owner),
       packages: await this.mapGrModelToGetGrDto_Pkg(model),
       members: await this.mapGrModelToGetGrDto_Memb(model),
     };

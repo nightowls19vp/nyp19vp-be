@@ -231,11 +231,24 @@ export class GroupService implements OnModuleInit {
       ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
-        await this.socketGateway.handleEvent(
-          'joinGr',
-          payload.user,
-          payload.user,
+        const projectionParams: ProjectionParams = {
+          _id: decodeRes['grId'],
+          proj: { members: true },
+        };
+        const members = await firstValueFrom(
+          this.packageMgmtClient.send(
+            kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+            projectionParams,
+          ),
         );
+        const noti = members.group.members.map(async (member) => {
+          await this.socketGateway.handleEvent(
+            'joinGr',
+            member.user._id,
+            payload,
+          );
+        });
+        await Promise.all(noti);
         return res;
       } else
         throw new HttpException(res.message, res.statusCode, {

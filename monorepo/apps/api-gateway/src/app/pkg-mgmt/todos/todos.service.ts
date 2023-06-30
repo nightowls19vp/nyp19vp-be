@@ -15,6 +15,7 @@ import {
   RmTodosReqDto,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
+  UpdateTodosStateReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -83,6 +84,32 @@ export class TodosService implements OnModuleInit {
         .send(
           kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE,
           JSON.stringify(updateTodosReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode, {
+          cause: new Error(res.error),
+          description: res.error,
+        });
+      }
+    });
+  }
+  async updateState(
+    updateTodosStateReqDto: UpdateTodosStateReqDto,
+  ): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.TODOS.UPDATE_STATE,
+          JSON.stringify(updateTodosStateReqDto),
         )
         .pipe(
           timeout(5000),
