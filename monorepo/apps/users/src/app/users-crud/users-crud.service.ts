@@ -127,6 +127,7 @@ export class UsersCrudService implements OnModuleInit {
   }
 
   async findMany(list_id: IdDto[]): Promise<UserInfo[]> {
+    console.log('Find many users');
     const res = await this.userModel
       .find(
         { _id: { $in: list_id } },

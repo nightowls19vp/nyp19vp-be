@@ -25,6 +25,14 @@ export class TodoList {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Todo' }] })
   todos: Todo[];
 
+  @Prop({
+    type: String,
+    enum: ['Private', 'Public'],
+    required: true,
+    default: 'Public',
+  })
+  state: string;
+
   @Prop({ type: String, required: false })
   createdBy: string;
 

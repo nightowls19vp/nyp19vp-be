@@ -84,6 +84,7 @@ export const PKG_MGMT = {
       CREATE: 'createGroupTodos',
       GET_BY_ID: 'getGroupTodos',
       UPDATE: 'updateGroupTodos',
+      UPDATE_STATE: 'udpateGroupTodosState',
       UPDATE_TODO: 'updateGroupTodo',
       ADD_TODO: 'addGroupTodo',
       DEL_TODO: 'removeGroupTodo',

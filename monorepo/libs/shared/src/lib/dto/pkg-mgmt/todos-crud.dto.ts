@@ -5,7 +5,7 @@ import {
   PickType,
 } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { UserInfo } from '../users/users-crud.dto';
 import { ObjectId } from 'mongodb';
@@ -59,6 +59,14 @@ export class TodosDto {
   @ValidateNested({ each: true })
   todos: TodoDto[];
 
+  @ApiProperty({
+    enum: ['Private', 'Public'],
+    default: 'Public',
+    example: 'Public',
+  })
+  @IsEnum(['Private', 'Public'])
+  state: string;
+
   createdBy: string;
 
   updatedBy: string;
@@ -82,6 +90,11 @@ export class GetTodosResDto extends BaseResDto {
 export class UpdateTodosReqDto extends IntersectionType(
   IdDto,
   PickType(TodosDto, ['summary', 'updatedBy']),
+) {}
+
+export class UpdateTodosStateReqDto extends IntersectionType(
+  IdDto,
+  PickType(TodosDto, ['createdBy', 'state']),
 ) {}
 
 export class UpdateTodoReqDto extends IntersectionType(

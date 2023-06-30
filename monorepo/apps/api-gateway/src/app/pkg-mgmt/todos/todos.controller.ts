@@ -19,6 +19,7 @@ import {
   RmTodosReqDto,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
+  UpdateTodosStateReqDto,
 } from '@nyp19vp-be/shared';
 import { AccessJwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../../constants/authentication';
@@ -73,6 +74,20 @@ export class TodosController {
     updateTodosReqDto._id = id;
     updateTodosReqDto.updatedBy = user?.['userInfo']?.['_id'];
     return this.todosService.update(updateTodosReqDto);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Put(':id/state')
+  updateState(
+    @ATUser() user: unknown,
+    @Param('id') id: string,
+    @Body() updateTodosStateReqDto: UpdateTodosStateReqDto,
+  ): Promise<BaseResDto> {
+    console.log(`Update todos #${id}'s state`, updateTodosStateReqDto);
+    updateTodosStateReqDto._id = id;
+    updateTodosStateReqDto.createdBy = user?.['userInfo']?.['_id'];
+    return this.todosService.updateState(updateTodosStateReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)

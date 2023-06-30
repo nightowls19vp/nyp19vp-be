@@ -47,21 +47,20 @@ export class BillService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.CREATED) {
         const list_id = createBillReqDto.borrowers.map((borrower) => {
           return borrower.borrower;
         });
         list_id.push(createBillReqDto.lender);
-        async () => {
-          for (const user_id of list_id) {
-            await this.socketGateway.handleEvent(
-              'createdBill',
-              user_id,
-              res.data,
-            );
-          }
-        };
+        const noti = list_id.map(async (user_id) => {
+          await this.socketGateway.handleEvent(
+            'createdBill',
+            user_id,
+            res.data,
+          );
+        });
+        await Promise.all(noti);
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {
@@ -105,8 +104,20 @@ export class BillService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
+        const list_id = updateBillReqDto.borrowers.map((borrower) => {
+          return borrower.borrower;
+        });
+        list_id.push(updateBillReqDto.lender);
+        const noti = list_id.map(async (user_id) => {
+          await this.socketGateway.handleEvent(
+            'updatedBill',
+            user_id,
+            res.data,
+          );
+        });
+        await Promise.all(noti);
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {
@@ -131,8 +142,19 @@ export class BillService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
+        const list_id = updateBillSttReqDto.borrowers.map((borrower) => {
+          return borrower.borrower;
+        });
+        const noti = list_id.map(async (user_id) => {
+          await this.socketGateway.handleEvent(
+            'updatedBill',
+            user_id,
+            res.data,
+          );
+        });
+        await Promise.all(noti);
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode, {

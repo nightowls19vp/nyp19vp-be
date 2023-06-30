@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import {
@@ -14,6 +15,7 @@ import {
   RmTodosReqDto,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
+  UpdateTodosStateReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -30,7 +32,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { BillCrudService } from '../bill-crud/bill-crud.service';
 
 @Injectable()
-export class TodosCrudService {
+export class TodosCrudService implements OnModuleInit {
   constructor(
     private readonly billCrudService: BillCrudService,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
@@ -40,6 +42,9 @@ export class TodosCrudService {
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
+  onModuleInit() {
+    this.usersClient.subscribeToResponseOf(kafkaTopic.USERS.GET_MANY);
+  }
   async create(createTodosReqDto: CreateTodosReqDto): Promise<BaseResDto> {
     const { _id, todos, createdBy } = createTodosReqDto;
     const isAuthor = await this.billCrudService.isGrU(_id, [createdBy]);
@@ -62,6 +67,7 @@ export class TodosCrudService {
       const newTodos = new this.todosModel({
         summary: createTodosReqDto.summary,
         todos: await Promise.all(createdTodos),
+        state: createTodosReqDto.state,
         createdBy: createdBy,
       });
       return await newTodos.save().then(async (saveTodos) => {
@@ -116,25 +122,37 @@ export class TodosCrudService {
         });
       });
   }
-  async mapTodosModelToGetGrDto_Todos(model): Promise<GetGrDto_Todos> {
-    const list_others = model.updatedBy
-      ? [model.createdBy, model.updatedBy]
-      : [model.createdBy];
-    const list_user = await firstValueFrom(
-      this.usersClient
-        .send(kafkaTopic.USERS.GET_MANY, list_others)
-        .pipe(timeout(5000)),
-    );
-    const result: GetGrDto_Todos = {
-      _id: model._id,
-      summary: model.summary,
-      todos: model.todos,
-      createdBy: list_user.find((elem) => elem._id == model.createdBy),
-      updatedBy: model.updatedBy
-        ? list_user.find((elem) => elem._id == model.updatedBy)
-        : undefined,
-    };
-    return result;
+  async mapTodosModelToGetGrDto_Todos(
+    model,
+    owner?: string,
+  ): Promise<GetGrDto_Todos> {
+    if (
+      owner != undefined &&
+      model.state == 'Private' &&
+      model.createdBy != owner
+    ) {
+      return undefined;
+    } else {
+      const list_others = model.updatedBy
+        ? [model.createdBy, model.updatedBy]
+        : [model.createdBy];
+      const list_user = await firstValueFrom(
+        this.usersClient
+          .send(kafkaTopic.USERS.GET_MANY, list_others)
+          .pipe(timeout(5000)),
+      );
+      const result: GetGrDto_Todos = {
+        _id: model._id,
+        summary: model.summary,
+        todos: model.todos,
+        state: model.state,
+        createdBy: list_user.find((elem) => elem._id == model.createdBy),
+        updatedBy: model.updatedBy
+          ? list_user.find((elem) => elem._id == model.updatedBy)
+          : undefined,
+      };
+      return result;
+    }
   }
   async update(updateTodosReqDto: UpdateTodosReqDto): Promise<BaseResDto> {
     const { _id } = updateTodosReqDto;
@@ -164,6 +182,51 @@ export class TodosCrudService {
           error: 'INTERNAL SERVER ERROR',
         });
       });
+  }
+  async updateState(
+    updateTodosStateReqDto: UpdateTodosStateReqDto,
+  ): Promise<BaseResDto> {
+    const { _id } = updateTodosStateReqDto;
+    console.log(`Updaate todos #${_id}'s state`);
+    const todosList = await this.todosModel.findById(_id);
+    if (!todosList) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Todos #${_id} not found`,
+        error: 'NOT FOUND',
+      };
+    }
+    if (todosList.createdBy == updateTodosStateReqDto.createdBy) {
+      return await this.todosModel
+        .updateOne(
+          { _id: _id },
+          {
+            $set: {
+              state: updateTodosStateReqDto.state,
+              updatedBy: updateTodosStateReqDto.createdBy,
+            },
+          },
+        )
+        .then(() => {
+          return {
+            statusCode: HttpStatus.OK,
+            message: `Update todos #${_id}'s state successfully`,
+          };
+        })
+        .catch((error) => {
+          return Promise.resolve({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: error.message,
+            error: 'INTERNAL SERVER ERROR',
+          });
+        });
+    } else {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'No Permission',
+        error: 'UNAUTHORIZED',
+      };
+    }
   }
   async updateTodo(updateTodoReqDto: UpdateTodoReqDto): Promise<BaseResDto> {
     const { _id, todo_id } = updateTodoReqDto;
