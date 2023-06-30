@@ -60,7 +60,7 @@ services:
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_REPLICA_SET_NAME=rs0
       - MONGODB_ADVERTISED_HOSTNAME=localhost
-      - MONGODB_ROOT_PASSWORD=root
+      - MONGODB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
       # Add more environment variables for authentication if needed
 
@@ -106,7 +106,6 @@ volumes:
     driver: local
   mysql_db_prod_mgmt:
     driver: local
-  mongo-keys:
   zookeeper_data:
     driver: local
   kafka_data:
