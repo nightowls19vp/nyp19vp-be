@@ -12,6 +12,7 @@ import { Socket, Server } from 'socket.io';
 import { SocketService } from './socket.service';
 import { CommService } from '../comm/comm.service';
 import { ClientSocketReqDto } from '@nyp19vp-be/shared';
+import { HttpStatus } from '@nestjs/common';
 
 @WebSocketGateway(3001, { cors: true })
 export class SocketGateway
@@ -45,21 +46,24 @@ export class SocketGateway
     );
   }
 
-  afterInit(server: any) {
+  afterInit(server) {
     console.log('Socket Gateway Initialized');
   }
-  async handleEvent(event: string, user_id: string, data: any) {
+  async handleEvent(event: string, user_id: string, data) {
     const client = await this.commService.getClientSocket(user_id);
-    if (!client) this.server.to(client.socket.client_id).emit(event, data);
+    if (client.socket) {
+      console.log(event, 'emitted to', client.socket.client_id, ':', data);
+      this.server.to(client.socket.client_id).emit(event, data);
+    }
   }
 
   @SubscribeMessage('receive-message')
-  checkout_callback(
+  async checkout_callback(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: string,
   ) {
-    console.log(client.id, data);
-    this.server.to(client.id).emit('send_message', data);
+    // this.server.to(client.id).emit('send_message', data);
+    await this.handleEvent('send_message', data, data);
   }
 }
 const mapToClientSocketReqDto = (user, client: Socket): ClientSocketReqDto => {

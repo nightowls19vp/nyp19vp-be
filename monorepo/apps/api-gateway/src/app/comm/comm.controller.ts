@@ -2,7 +2,7 @@ import {
   Controller,
   Body,
   Inject,
-  Patch,
+  Delete,
   Get,
   Param,
   Post,
@@ -40,7 +40,7 @@ export class CommController {
     return this.commService.createClientSocket(clientSocketReqDto);
   }
 
-  @Patch('/socket-client')
+  @Delete('/socket-client')
   removeClientSocket(
     @Body() clientSocketReqDto: ClientSocketReqDto,
   ): Promise<ClientSocketResDto> {
