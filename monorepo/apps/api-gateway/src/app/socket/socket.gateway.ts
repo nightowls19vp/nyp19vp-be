@@ -50,7 +50,7 @@ export class SocketGateway
   }
   async handleEvent(event: string, user_id: string, data: any) {
     const client = await this.commService.getClientSocket(user_id);
-    this.server.to(client.socket.client_id).emit(event, data);
+    if (!client) this.server.to(client.socket.client_id).emit(event, data);
   }
 
   @SubscribeMessage('receive-message')
