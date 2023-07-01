@@ -1,4 +1,5 @@
 import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
+import { FilterOperator } from 'nestjs-paginate';
 
 export const itemsColumns = [
   // ItemEntity
@@ -17,14 +18,18 @@ export const itemsColumns = [
   'groupProduct.price',
   'groupProduct.region',
 
-  //todo: PurchaseLocationEntity
+  'purchaseLocation.id',
 
-  //todo: StorageLocationEntity
+  'storageLocation.id',
 ];
 
 // map array of strings to object with keys of strings and values of `true`
-export const itemsFilterableColumns: IPaginateFilterableColumns =
-  itemsColumns.reduce((acc, val) => ({ ...acc, [val]: true }), {});
+// but, for `purchaseLocation.id` and `storageLocation.id`, the values is `FilterOperator.EQ`
+export const itemsFilterableColumns: IPaginateFilterableColumns = {
+  ...itemsColumns.reduce((acc, val) => ({ ...acc, [val]: true }), {}),
+  'purchaseLocation.id': [FilterOperator.EQ],
+  'storageLocation.id': [FilterOperator.EQ],
+};
 
 export const itemsSortableColumns: string[] = itemsColumns.map(
   (val) => `${val}`,
