@@ -17,7 +17,7 @@ import {
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
-import { PackageDto } from '../pkg-mgmt/pkg-crud.dto';
+import { PackageDto } from '../pkg-mgmt/package.dto';
 
 class UserSetting {
   @ApiProperty({

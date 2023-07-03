@@ -34,10 +34,7 @@ export class CommService {
       if (res.statusCode == HttpStatus.CREATED) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -57,10 +54,7 @@ export class CommService {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -77,10 +71,7 @@ export class CommService {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }

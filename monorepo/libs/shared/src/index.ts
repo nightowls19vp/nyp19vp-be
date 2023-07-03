@@ -30,17 +30,19 @@ export * from './lib/dto/auth/authentication.dto';
 
 export * from './lib/dto/auth/authorization.dto';
 
-export * from './lib/dto/users/users-crud.dto';
+export * from './lib/dto/users/users.dto';
 
-export * from './lib/dto/pkg-mgmt/pkg-crud.dto';
+export * from './lib/dto/pkg-mgmt/package.dto';
 
-export * from './lib/dto/pkg-mgmt/gr-crud.dto';
+export * from './lib/dto/pkg-mgmt/group.dto';
 
-export * from './lib/dto/pkg-mgmt/bill-crud.dto';
+export * from './lib/dto/pkg-mgmt/bill.dto';
 
-export * from './lib/dto/pkg-mgmt/todos-crud.dto';
+export * from './lib/dto/pkg-mgmt/todos.dto';
 
-export * from './lib/dto/txn/txn-crud.dto';
+export * from './lib/dto/pkg-mgmt/task.dto';
+
+export * from './lib/dto/txn/txn.dto';
 
 export * from './lib/dto/txn/zalopay.dto';
 

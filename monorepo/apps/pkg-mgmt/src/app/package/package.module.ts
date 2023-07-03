@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { PkgCrudService } from './pkg-crud.service';
-import { PkgCrudController } from './pkg-crud.controller';
+import { PackageService } from './package.service';
+import { PackageController } from './package.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Package, PackageSchema } from '../../schemas/package.schema';
 
@@ -8,7 +8,7 @@ import { Package, PackageSchema } from '../../schemas/package.schema';
   imports: [
     MongooseModule.forFeature([{ name: Package.name, schema: PackageSchema }]),
   ],
-  controllers: [PkgCrudController],
-  providers: [PkgCrudService],
+  controllers: [PackageController],
+  providers: [PackageService],
 })
-export class PkgCrudModule {}
+export class PackageModule {}

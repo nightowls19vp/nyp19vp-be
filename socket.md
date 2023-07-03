@@ -23,6 +23,16 @@
 
     - Event: updatedBill
 
+# Todos
+
+## Create Todos
+
+    - Event: createdTodos
+
+## Update Todos
+
+    - Event: updatedTodos
+
 # Join Group successfully
 
     - Event: joinGr

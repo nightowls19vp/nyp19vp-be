@@ -18,7 +18,7 @@ import {
 import { SoftDeleteModel } from 'mongoose-delete';
 
 @Injectable()
-export class PkgCrudService {
+export class PackageService {
   constructor(
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,

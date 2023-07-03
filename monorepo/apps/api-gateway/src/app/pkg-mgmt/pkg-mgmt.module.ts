@@ -10,6 +10,7 @@ import { BillModule } from './bill/bill.module';
 import { PackageModule } from './package/package.module';
 import { TodosModule } from './todos/todos.module';
 import { GroupModule } from './group/group.module';
+import { TaskModule } from './task/task.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -49,6 +50,7 @@ dotenv.config({
     TodosModule,
     GroupModule,
     CommModule,
+    TaskModule,
   ],
   controllers: [PkgMgmtController],
   providers: [PkgMgmtService],

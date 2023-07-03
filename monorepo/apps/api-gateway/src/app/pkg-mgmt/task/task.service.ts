@@ -9,37 +9,41 @@ import {
 import { ClientKafka } from '@nestjs/microservices';
 import {
   BaseResDto,
-  CreateBillReqDto,
-  GetBillResDto,
-  UpdateBillReqDto,
-  UpdateBillSttReqDto,
+  CreateTaskReqDto,
+  UpdateTaskReqDto,
+  UpdateTaskStateReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
-import { Types } from 'mongoose';
-import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { SocketGateway } from '../../socket/socket.gateway';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { Types } from 'mongoose';
+import { CronService } from './cron/cron.service';
 
 @Injectable()
-export class BillService implements OnModuleInit {
+export class TaskService implements OnModuleInit {
   constructor(
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
     private readonly socketGateway: SocketGateway,
+    private readonly cronService: CronService,
   ) {}
-
   onModuleInit() {
-    const billTopics = Object.values(kafkaTopic.PKG_MGMT.EXTENSION.BILL);
+    const taskTopics = Object.values(kafkaTopic.PKG_MGMT.EXTENSION.TASK);
 
-    for (const topic of billTopics) {
+    for (const topic of taskTopics) {
       this.packageMgmtClient.subscribeToResponseOf(topic);
     }
+
+    this.packageMgmtClient.subscribeToResponseOf(
+      kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+    );
   }
 
-  async create(createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
+  async create(createTaskReqDto: CreateTaskReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.CREATE,
-          JSON.stringify(createBillReqDto),
+          kafkaTopic.PKG_MGMT.EXTENSION.TASK.CREATE,
+          JSON.stringify(createTaskReqDto),
         )
         .pipe(
           timeout(5000),
@@ -49,28 +53,36 @@ export class BillService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.CREATED) {
-        const list_id = createBillReqDto.borrowers.map((borrower) => {
-          return borrower.borrower;
-        });
-        list_id.push(createBillReqDto.lender);
-        const noti = list_id.map(async (user_id) => {
-          await this.socketGateway.handleEvent(
-            'createdBill',
-            user_id,
-            res.data,
-          );
-        });
-        await Promise.all(noti);
+        // if (createTaskReqDto.state == 'Public') {
+        //   const projectionParams: ProjectionParams = {
+        //     _id: createTodosReqDto._id,
+        //     proj: { members: true },
+        //   };
+        //   const members = await firstValueFrom(
+        //     this.packageMgmtClient.send(
+        //       kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+        //       projectionParams,
+        //     ),
+        //   );
+        //   const noti = members.group.members.map(async (member) => {
+        //     await this.socketGateway.handleEvent(
+        //       'createdTodos',
+        //       member.user._id,
+        //       res.data,
+        //     );
+        //   });
+        //   await Promise.all(noti);
+        // }
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);
       }
     });
   }
-  async findById(id: Types.ObjectId): Promise<GetBillResDto> {
+  async update(updateTaskReqDto: UpdateTaskReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET_BY_ID, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE, updateTaskReqDto)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -85,47 +97,14 @@ export class BillService implements OnModuleInit {
       }
     });
   }
-  async update(updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
-    return await firstValueFrom(
-      this.packageMgmtClient
-        .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE,
-          JSON.stringify(updateBillReqDto),
-        )
-        .pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new RequestTimeoutException();
-          }),
-        ),
-    ).then(async (res) => {
-      if (res.statusCode == HttpStatus.OK) {
-        const list_id = updateBillReqDto.borrowers.map((borrower) => {
-          return borrower.borrower;
-        });
-        list_id.push(updateBillReqDto.lender);
-        const noti = list_id.map(async (user_id) => {
-          await this.socketGateway.handleEvent(
-            'updatedBill',
-            user_id,
-            res.data,
-          );
-        });
-        await Promise.all(noti);
-        return res;
-      } else {
-        throw new HttpException(res.message, res.statusCode);
-      }
-    });
-  }
-  async updateStt(
-    updateBillSttReqDto: UpdateBillSttReqDto,
+  async updateState(
+    updateTaskStateReqDto: UpdateTaskStateReqDto,
   ): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
         .send(
-          kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT,
-          JSON.stringify(updateBillSttReqDto),
+          kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE_STATE,
+          updateTaskStateReqDto,
         )
         .pipe(
           timeout(5000),
@@ -133,19 +112,20 @@ export class BillService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then(async (res) => {
+    ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
-        const list_id = updateBillSttReqDto.borrowers.map((borrower) => {
-          return borrower.borrower;
-        });
-        const noti = list_id.map(async (user_id) => {
-          await this.socketGateway.handleEvent(
-            'updatedBill',
-            user_id,
-            res.data,
-          );
-        });
-        await Promise.all(noti);
+        const hours = res.data.startDate.getHours();
+        const minutes = res.data.startDate.getMinutes();
+        const date = res.data.startDate.getDate();
+        const month = res.data.startDate.getMonth();
+        // this.cronService.scheduleCron(
+        //   res.data._id,
+        //   minutes,
+        //   hours,
+        //   date,
+        //   month,
+        //   '*',
+        // );
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);
@@ -155,7 +135,7 @@ export class BillService implements OnModuleInit {
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.DELETE, id)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -173,7 +153,7 @@ export class BillService implements OnModuleInit {
   async restore(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.RESTORE, id)
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.RESTORE, id)
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -187,5 +167,26 @@ export class BillService implements OnModuleInit {
         throw new HttpException(res.message, res.statusCode);
       }
     });
+  }
+  async findById(id: Types.ObjectId): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.GET_BY_ID, id)
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode);
+      }
+    });
+  }
+  callback(jobName: string) {
+    console.log(jobName);
   }
 }

@@ -16,7 +16,7 @@ import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
 import { ELoginType, IUser } from '../../core';
 import { BaseResDto } from '../base.dto';
-import { UserInfo } from '../users/users-crud.dto';
+import { UserInfo } from '../users/users.dto';
 
 class LocalAuthenticationInfo {
   @ApiProperty({

@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { GrCrudService } from './gr-crud.service';
+import { GroupService } from './group.service';
 import {
   AddGrMbReqDto,
   RmGrMbReqDto,
@@ -18,6 +18,7 @@ import {
   BaseResDto,
   PaginationParams,
   ProjectionParams,
+  GetGrByExReqDto,
 } from '@nyp19vp-be/shared';
 import {
   CollectionDto,
@@ -26,93 +27,100 @@ import {
 import { Types } from 'mongoose';
 
 @Controller()
-export class GrCrudController {
-  constructor(private readonly grCrudService: GrCrudService) {}
+export class GroupController {
+  constructor(private readonly groupService: GroupService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.CREATE)
   create(@Payload() createGrReqDto: CreateGrReqDto): Promise<BaseResDto> {
-    return this.grCrudService.create(createGrReqDto);
+    return this.groupService.create(createGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET)
   find(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<GroupDto>> {
-    return this.grCrudService.find(collectionDto);
+    return this.groupService.find(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID)
   findById(
     @Payload() projectionParams: ProjectionParams,
   ): Promise<GetGrResDto> {
-    return this.grCrudService.findById(projectionParams);
+    return this.groupService.findById(projectionParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE)
   update(@Payload() updateGrReqDto: UpdateGrReqDto): Promise<BaseResDto> {
-    return this.grCrudService.update(updateGrReqDto);
+    return this.groupService.update(updateGrReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DELETE)
   remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.grCrudService.remove(id);
+    return this.groupService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.RESTORE)
   restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.grCrudService.restore(id);
+    return this.groupService.restore(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ADD_MEMB)
   addMemb(@Payload() updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
-    return this.grCrudService.addMemb(updateGrMbReqDto);
+    return this.groupService.addMemb(updateGrMbReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DEL_MEMB)
   rmMemb(@Payload() updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
-    return this.grCrudService.rmMemb(updateGrMbReqDto);
+    return this.groupService.rmMemb(updateGrMbReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG)
   addPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
-    return this.grCrudService.addPkg(updateGrPkgReqDto);
+    return this.groupService.addPkg(updateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.DEL_PKG)
   rmPkg(@Payload() updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
-    return this.grCrudService.rmPkg(updateGrPkgReqDto);
+    return this.groupService.rmPkg(updateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER)
   findByUser(
     @Payload() paginationParams: PaginationParams,
   ): Promise<GetGrsResDto> {
-    return this.grCrudService.findByUser(paginationParams);
+    return this.groupService.findByUser(paginationParams);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_AVATAR)
   updateAvatar(
     @Payload() updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<BaseResDto> {
-    return this.grCrudService.updateAvatar(updateAvatarReqDto);
+    return this.groupService.updateAvatar(updateAvatarReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.UPDATE_CHANNEL)
   updateChannel(
     @Payload() updateChannelReqDto: UpdateChannelReqDto,
   ): Promise<BaseResDto> {
-    return this.grCrudService.updateChannel(updateChannelReqDto);
+    return this.groupService.updateChannel(updateChannelReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.ACTIVATE_PKG)
   activatePkg(
     @Payload() activateGrPkgReqDto: ActivateGrPkgReqDto,
   ): Promise<BaseResDto> {
-    return this.grCrudService.activatePkg(activateGrPkgReqDto);
+    return this.groupService.activatePkg(activateGrPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.IS_SU)
   isSU(@Payload() checkGrSUReqDto: CheckGrSUReqDto): Promise<boolean> {
-    return this.grCrudService.isSU(checkGrSUReqDto);
+    return this.groupService.isSU(checkGrSUReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_EXTENSION)
+  findByExtension(
+    @Payload() getGrByExReqDto: GetGrByExReqDto,
+  ): Promise<GetGrResDto> {
+    return this.groupService.findByExtension(getGrByExReqDto);
   }
 }

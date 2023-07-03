@@ -8,7 +8,7 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { BaseResDto, IdDto } from '../base.dto';
-import { UserInfo } from '../users/users-crud.dto';
+import { UserInfo } from '../users/users.dto';
 
 class BorrowerDto {
   @ApiProperty({

@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { PkgCrudService } from './pkg-crud.service';
+import { PackageService } from './package.service';
 import {
   BaseResDto,
   CreatePkgReqDto,
@@ -17,43 +17,43 @@ import {
 import { Types } from 'mongoose';
 
 @Controller()
-export class PkgCrudController {
-  constructor(private readonly pkgCrudService: PkgCrudService) {}
+export class PackageController {
+  constructor(private readonly packageService: PackageService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.CREATE)
   create(@Payload() createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
-    return this.pkgCrudService.create(createPkgReqDto);
+    return this.packageService.create(createPkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET)
   find(
     @Payload() collectionDto: CollectionDto,
   ): Promise<CollectionResponse<PackageDto>> {
-    return this.pkgCrudService.find(collectionDto);
+    return this.packageService.find(collectionDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID)
   findById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
-    return this.pkgCrudService.findById(id);
+    return this.packageService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.UPDATE)
   update(@Payload() updatePkgReqDto: UpdatePkgReqDto): Promise<BaseResDto> {
-    return this.pkgCrudService.update(updatePkgReqDto);
+    return this.packageService.update(updatePkgReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.DELETE)
   remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.pkgCrudService.remove(id);
+    return this.packageService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.RESTORE)
   restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.pkgCrudService.restore(id);
+    return this.packageService.restore(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY)
   async findMany(@Payload() list_id: IdDto[]): Promise<PackageDto[]> {
-    return await this.pkgCrudService.findMany(list_id);
+    return await this.packageService.findMany(list_id);
   }
 }

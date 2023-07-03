@@ -6,6 +6,7 @@ enum Group {
   channel,
   billing,
   todos,
+  task,
   packages,
   members,
 }

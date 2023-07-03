@@ -7,7 +7,7 @@ import {
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
-import { UserInfo } from '../users/users-crud.dto';
+import { UserInfo } from '../users/users.dto';
 import { ObjectId } from 'mongodb';
 
 class TodoDto {

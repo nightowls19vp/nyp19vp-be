@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { BillCrudService } from './bill-crud.service';
+import { BillService } from './bill.service';
 import {
   BaseResDto,
   CreateBillReqDto,
@@ -12,38 +12,38 @@ import {
 import { Types } from 'mongoose';
 
 @Controller()
-export class BillCrudController {
-  constructor(private readonly billCrudService: BillCrudService) {}
+export class BillController {
+  constructor(private readonly billService: BillService) {}
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.CREATE)
   create(@Payload() createBillReqDto: CreateBillReqDto): Promise<BaseResDto> {
-    return this.billCrudService.create(createBillReqDto);
+    return this.billService.create(createBillReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET_BY_ID)
   findById(@Payload() id: Types.ObjectId): Promise<GetBillResDto> {
-    return this.billCrudService.findById(id);
+    return this.billService.findById(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE)
   update(@Payload() updateBillReqDto: UpdateBillReqDto): Promise<BaseResDto> {
-    return this.billCrudService.update(updateBillReqDto);
+    return this.billService.update(updateBillReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT)
   updateStt(
     @Payload() updateBillSttReqDto: UpdateBillSttReqDto,
   ): Promise<BaseResDto> {
-    return this.billCrudService.updateStt(updateBillSttReqDto);
+    return this.billService.updateStt(updateBillSttReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE)
   remove(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.billCrudService.remove(id);
+    return this.billService.remove(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.RESTORE)
   restore(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
-    return this.billCrudService.restore(id);
+    return this.billService.restore(id);
   }
 }

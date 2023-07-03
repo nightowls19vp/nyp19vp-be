@@ -1,16 +1,23 @@
 import { Module } from '@nestjs/common';
-import { BillCrudService } from './bill-crud.service';
-import { BillCrudController } from './bill-crud.controller';
-import { Bill, BillSchema } from '../../schemas/billing.schema';
+import { TodosService } from './todos.service';
+import { TodosController } from './todos.controller';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Group, GroupSchema } from '../../schemas/group.schema';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import {
+  Todo,
+  TodoList,
+  TodoListSchema,
+  TodoSchema,
+} from '../../schemas/todos.schema';
+import { BillModule } from '../bill/bill.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Group.name, schema: GroupSchema },
-      { name: Bill.name, schema: BillSchema },
+      { name: TodoList.name, schema: TodoListSchema },
+      { name: Todo.name, schema: TodoSchema },
     ]),
     ClientsModule.register([
       {
@@ -18,11 +25,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users' + 'bill-crud' + 'users',
+            clientId: 'users' + 'todo-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'bill-crud' + 'users',
+            groupId: 'users-consumer' + 'todo-crud' + 'users',
           },
         },
       },
@@ -40,9 +47,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    BillModule,
   ],
-  controllers: [BillCrudController],
-  providers: [BillCrudService],
-  exports: [BillCrudService],
+  controllers: [TodosController],
+  providers: [TodosService],
+  exports: [TodosService],
 })
-export class BillCrudModule {}
+export class TodosModule {}

@@ -29,12 +29,12 @@ import {
 import mongoose, { Types } from 'mongoose';
 import { firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
-import { BillCrudService } from '../bill-crud/bill-crud.service';
+import { BillService } from '../bill/bill.service';
 
 @Injectable()
-export class TodosCrudService implements OnModuleInit {
+export class TodosService implements OnModuleInit {
   constructor(
-    private readonly billCrudService: BillCrudService,
+    private readonly billService: BillService,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(TodoList.name)
     private todosModel: SoftDeleteModel<TodoListDocument>,
@@ -47,7 +47,7 @@ export class TodosCrudService implements OnModuleInit {
   }
   async create(createTodosReqDto: CreateTodosReqDto): Promise<BaseResDto> {
     const { _id, todos, createdBy } = createTodosReqDto;
-    const isAuthor = await this.billCrudService.isGrU(_id, [createdBy]);
+    const isAuthor = await this.billService.isGrU(_id, [createdBy]);
     if (!isAuthor) {
       return Promise.resolve({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -156,7 +156,7 @@ export class TodosCrudService implements OnModuleInit {
   }
   async update(updateTodosReqDto: UpdateTodosReqDto): Promise<BaseResDto> {
     const { _id } = updateTodosReqDto;
-    console.log(`Updaate todos #${_id}`);
+    console.log(`Update todos #${_id}`);
     return await this.todosModel
       .findByIdAndUpdate(
         { _id: _id },
@@ -167,12 +167,17 @@ export class TodosCrudService implements OnModuleInit {
           },
         },
       )
-      .then((res) => {
+      .then(async (res) => {
         return {
           statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
           message: res
             ? `Update todos #${_id} successfully`
             : `Todos #${_id} not found`,
+          data: res
+            ? await this.todosModel
+                .findById(_id)
+                .populate({ path: 'todos', model: 'Todo' })
+            : null,
         };
       })
       .catch((error) => {
@@ -187,7 +192,7 @@ export class TodosCrudService implements OnModuleInit {
     updateTodosStateReqDto: UpdateTodosStateReqDto,
   ): Promise<BaseResDto> {
     const { _id } = updateTodosStateReqDto;
-    console.log(`Updaate todos #${_id}'s state`);
+    console.log(`Update todos #${_id}'s state`);
     const todosList = await this.todosModel.findById(_id);
     if (!todosList) {
       return {

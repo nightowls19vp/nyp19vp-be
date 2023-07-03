@@ -59,6 +59,7 @@ export const PKG_MGMT = {
     GET: 'getAllGroups',
     GET_BY_USER: 'getGroupsByUserId',
     GET_BY_ID: 'getGroupById',
+    GET_BY_EXTENSION: 'getGroupsByExtension',
     UPDATE: 'updateGroupName',
     UPDATE_AVATAR: 'updateGroupAvatar',
     UPDATE_CHANNEL: 'updateGroupChannel',
@@ -82,7 +83,7 @@ export const PKG_MGMT = {
     },
     TODOS: {
       CREATE: 'createGroupTodos',
-      GET_BY_ID: 'getGroupTodos',
+      GET_BY_ID: 'getGroupTodosById',
       UPDATE: 'updateGroupTodos',
       UPDATE_STATE: 'udpateGroupTodosState',
       UPDATE_TODO: 'updateGroupTodo',
@@ -90,6 +91,14 @@ export const PKG_MGMT = {
       DEL_TODO: 'removeGroupTodo',
       DELETE: 'removeGroupTodos',
       RESTORE: 'restoreGroupTodos',
+    },
+    TASK: {
+      CREATE: 'createGroupTask',
+      GET_BY_ID: 'getGroupTaskById',
+      UPDATE: 'updateGroupTask',
+      UPDATE_STATE: 'udpateGroupTaskState',
+      DELETE: 'removeGroupTask',
+      RESTORE: 'restoreGroupTask',
     },
   },
 };

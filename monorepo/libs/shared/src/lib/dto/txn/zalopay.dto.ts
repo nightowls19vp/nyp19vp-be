@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { BaseResDto } from '../base.dto';
 import { Type } from 'class-transformer';
-import { CreateTransReqDto } from './txn-crud.dto';
+import { CreateTransReqDto } from './txn.dto';
 
 export class EmbedData {
   @ApiProperty({
