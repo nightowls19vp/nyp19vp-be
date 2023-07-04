@@ -58,11 +58,13 @@ export class BillController {
   @UseGuards(AccessJwtAuthGuard)
   @Put(':id')
   update(
+    @ATUser() user: unknown,
     @Param('id') id: string,
     @Body() updateBillReqDto: UpdateBillReqDto,
   ): Promise<BaseResDto> {
     console.log(`Update billing #${id}`, updateBillReqDto);
     updateBillReqDto._id = id;
+    updateBillReqDto.updatedBy = user?.['userInfo']?.['_id'];
     return this.billService.update(updateBillReqDto);
   }
 

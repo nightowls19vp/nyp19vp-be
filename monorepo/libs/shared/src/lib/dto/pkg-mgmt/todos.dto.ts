@@ -7,8 +7,9 @@ import {
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
-import { UserInfo } from '../users/users-crud.dto';
+import { UserInfo } from '../users/users.dto';
 import { ObjectId } from 'mongodb';
+import { State } from './task.dto';
 
 class TodoDto {
   @ApiProperty({
@@ -60,11 +61,11 @@ export class TodosDto {
   todos: TodoDto[];
 
   @ApiProperty({
-    enum: ['Private', 'Public'],
-    default: 'Public',
-    example: 'Public',
+    enum: State,
+    default: State[1],
+    example: State[1],
   })
-  @IsEnum(['Private', 'Public'])
+  @IsEnum(State)
   state: string;
 
   createdBy: string;

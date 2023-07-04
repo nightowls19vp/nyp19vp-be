@@ -65,11 +65,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async find(
@@ -87,11 +83,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async update(updatePkgReqDto: UpdateGrReqDto): Promise<BaseResDto> {
@@ -102,11 +94,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
@@ -114,11 +102,7 @@ export class GroupService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.GROUP.DELETE, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async restore(id: Types.ObjectId): Promise<BaseResDto> {
@@ -126,11 +110,7 @@ export class GroupService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.GROUP.RESTORE, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async addMemb(updateGrMbReqDto: AddGrMbReqDto): Promise<BaseResDto> {
@@ -141,11 +121,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async rmMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
@@ -156,11 +132,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async rmPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
@@ -171,11 +143,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async addPkg(updateGrPkgReqDto: UpdateGrPkgReqDto): Promise<BaseResDto> {
@@ -186,11 +154,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
 
@@ -250,11 +214,7 @@ export class GroupService implements OnModuleInit {
         });
         await Promise.all(noti);
         return res;
-      } else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      } else throw new HttpException(res.message, res.statusCode);
     });
   }
   async findByUser(paginationParams: PaginationParams): Promise<GetGrsResDto> {
@@ -265,11 +225,7 @@ export class GroupService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async updateAvatar(
@@ -291,10 +247,7 @@ export class GroupService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -317,10 +270,7 @@ export class GroupService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -343,10 +293,7 @@ export class GroupService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }

@@ -164,20 +164,8 @@ export class AccountService {
     }
   }
 
-  findAll() {
-    return `This action returns all accounts`;
-  }
-
   async findOneBy(option): Promise<AccountEntity> {
     return this.accountRepo.findOneBy(option);
-  }
-
-  update() {
-    return `This action updates an account`;
-  }
-
-  remove(id: number) {
-    return `This action removes an account`;
   }
 
   // It will create a new account, new social medial account too if not account_id found

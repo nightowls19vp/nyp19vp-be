@@ -1,5 +1,5 @@
 import { ERole } from '../../authorization';
-import { AddGrMbReqDto } from '../pkg-mgmt/gr-crud.dto';
+import { AddGrMbReqDto } from '../pkg-mgmt/group.dto';
 
 export class AuthorizeReqDto {
   jwt: string;

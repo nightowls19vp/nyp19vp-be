@@ -3,14 +3,23 @@ import { DataBaseModule } from '../core/database/database.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PkgCrudModule } from './pkg-crud/pkg-crud.module';
-import { GrCrudModule } from './gr-crud/gr-crud.module';
+import { PackageModule } from './package/package.module';
+import { GroupModule } from './group/group.module';
 import { InitDbModule } from '../core/init-db/init-db.module';
-import { BillCrudModule } from './bill-crud/bill-crud.module';
-import { TodosCrudModule } from './todos-crud/todos-crud.module';
+import { BillModule } from './bill/bill.module';
+import { TodosModule } from './todos/todos.module';
+import { TaskModule } from './task/task.module';
 
 @Module({
-  imports: [PkgCrudModule, DataBaseModule, GrCrudModule, InitDbModule, BillCrudModule, TodosCrudModule],
+  imports: [
+    PackageModule,
+    DataBaseModule,
+    GroupModule,
+    InitDbModule,
+    BillModule,
+    TodosModule,
+    TaskModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

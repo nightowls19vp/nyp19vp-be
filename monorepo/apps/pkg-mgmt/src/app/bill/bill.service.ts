@@ -10,6 +10,7 @@ import {
   UpdateBillReqDto,
   UpdateBillSttReqDto,
   kafkaTopic,
+  BillStatus,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
@@ -17,7 +18,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
-export class BillCrudService implements OnModuleInit {
+export class BillService implements OnModuleInit {
   constructor(
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
@@ -57,7 +58,7 @@ export class BillCrudService implements OnModuleInit {
           const newBorrower = {
             borrower: borrower.borrower,
             amount: borrower.amount,
-            status: 'PENDING',
+            status: BillStatus[0],
           };
           return newBorrower;
         }),
@@ -77,18 +78,13 @@ export class BillCrudService implements OnModuleInit {
               { $push: { billing: newBill._id } },
             )
             .then((res) => {
-              if (res) {
-                return Promise.resolve({
-                  statusCode: HttpStatus.CREATED,
-                  message: `Created bill of group ${_id}`,
-                });
-              } else {
-                return Promise.resolve({
-                  statusCode: HttpStatus.NOT_FOUND,
-                  error: 'NOT FOUND',
-                  message: `Group #${_id} not found`,
-                });
-              }
+              return {
+                statusCode: res ? HttpStatus.CREATED : HttpStatus.NOT_FOUND,
+                message: res
+                  ? `Created bill of group ${_id}`
+                  : `Group #${_id} not found`,
+                data: newBill,
+              };
             })
             .catch((error) => {
               return Promise.resolve({
@@ -166,76 +162,64 @@ export class BillCrudService implements OnModuleInit {
     const { _id, borrowers } = updateBillReqDto;
     console.log(`Update billing #${_id}`);
     const billing = await this.billModel.findById({ _id: _id });
-    const borrow_user = borrowers.map((user) => {
-      return user.borrower;
+    billing.borrowers.filter((elem) => {
+      if (borrowers.some((borrower) => borrower.borrower == elem.borrower)) {
+        return true;
+      } else {
+        return false;
+      }
     });
-    const isU = await this.isGrU(_id, borrow_user);
-    if (!isU) {
-      return Promise.resolve({
-        statusCode: HttpStatus.BAD_REQUEST,
-        error: 'BAD REQUEST',
-        message: `Borrowers MUST be group's members`,
-      });
-    } else {
-      billing.borrowers.filter((elem) => {
-        if (borrowers.some((borrower) => borrower.borrower == elem.borrower)) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-      borrowers.map((borrower) => {
-        const idx = billing.borrowers.findIndex(
-          (obj) => obj.borrower == borrower.borrower,
-        );
-        if (idx != -1) {
-          billing.borrowers[idx].amount = borrower.amount;
-        } else {
-          billing.borrowers.push({
-            borrower: borrower.borrower,
-            amount: borrower.amount,
-            status: 'PENDING',
-          });
-        }
-      });
-      return await this.billModel
-        .findByIdAndUpdate(
-          { _id: _id },
-          {
-            $set: {
-              summary: updateBillReqDto.summary,
-              date: updateBillReqDto.date,
-              lender: updateBillReqDto.lender,
-              description: updateBillReqDto.description,
-              borrowers: billing.borrowers,
-              updatedBy: updateBillReqDto.updatedBy,
-            },
-          },
-        )
-        .then(async (res) => {
-          if (res) {
-            const data = await this.billModel.findById({ _id: _id });
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Update bill ${_id} successfully`,
-              data: data,
-            });
-          } else {
-            return Promise.resolve({
-              statusCode: HttpStatus.NOT_FOUND,
-              message: `Billing #${_id} not found`,
-              error: 'NOT FOUND',
-            });
-          }
-        })
-        .catch((error) => {
-          return Promise.resolve({
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: error.message,
-            error: 'INTERNAL SERVER ERROR',
-          });
+    borrowers.map((borrower) => {
+      const idx = billing.borrowers.findIndex(
+        (obj) => obj.borrower == borrower.borrower,
+      );
+      if (idx != -1) {
+        billing.borrowers[idx].amount = borrower.amount;
+      } else {
+        billing.borrowers.push({
+          borrower: borrower.borrower,
+          amount: borrower.amount,
+          status: BillStatus[0],
         });
-    }
+      }
+    });
+    return await this.billModel
+      .findByIdAndUpdate(
+        { _id: _id },
+        {
+          $set: {
+            summary: updateBillReqDto.summary,
+            date: updateBillReqDto.date,
+            lender: updateBillReqDto.lender,
+            description: updateBillReqDto.description,
+            borrowers: billing.borrowers,
+            updatedBy: updateBillReqDto.updatedBy,
+          },
+        },
+      )
+      .then(async (res) => {
+        if (res) {
+          const data = await this.billModel.findById({ _id: _id });
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Update bill ${_id} successfully`,
+            data: data,
+          });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `Billing #${_id} not found`,
+            error: 'NOT FOUND',
+          });
+        }
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          error: 'INTERNAL SERVER ERROR',
+        });
+      });
   }
   async updateStt(
     updateBillSttReqDto: UpdateBillSttReqDto,
@@ -254,7 +238,10 @@ export class BillCrudService implements OnModuleInit {
           }
         }
         return await this.billModel
-          .updateOne({ _id: _id }, { $set: { borrowers: billing.borrowers } })
+          .updateOne(
+            { _id: _id },
+            { $set: { borrowers: billing.borrowers, updatedBy: updatedBy } },
+          )
           .then(() => {
             return Promise.resolve({
               statusCode: HttpStatus.OK,

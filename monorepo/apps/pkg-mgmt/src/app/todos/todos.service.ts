@@ -13,6 +13,7 @@ import {
   GetGrDto_Todos,
   GetTodosResDto,
   RmTodosReqDto,
+  State,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
   UpdateTodosStateReqDto,
@@ -29,12 +30,12 @@ import {
 import mongoose, { Types } from 'mongoose';
 import { firstValueFrom, timeout } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
-import { BillCrudService } from '../bill-crud/bill-crud.service';
+import { BillService } from '../bill/bill.service';
 
 @Injectable()
-export class TodosCrudService implements OnModuleInit {
+export class TodosService implements OnModuleInit {
   constructor(
-    private readonly billCrudService: BillCrudService,
+    private readonly billService: BillService,
     @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(TodoList.name)
     private todosModel: SoftDeleteModel<TodoListDocument>,
@@ -47,7 +48,7 @@ export class TodosCrudService implements OnModuleInit {
   }
   async create(createTodosReqDto: CreateTodosReqDto): Promise<BaseResDto> {
     const { _id, todos, createdBy } = createTodosReqDto;
-    const isAuthor = await this.billCrudService.isGrU(_id, [createdBy]);
+    const isAuthor = await this.billService.isGrU(_id, [createdBy]);
     if (!isAuthor) {
       return Promise.resolve({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -74,20 +75,13 @@ export class TodosCrudService implements OnModuleInit {
         return await this.grModel
           .findByIdAndUpdate({ _id: _id }, { $push: { todos: saveTodos } })
           .then((res) => {
-            if (res) {
-              return Promise.resolve({
-                statusCode: HttpStatus.CREATED,
-                message: `Created todos of group ${_id} successfully`,
-                data: saveTodos,
-              });
-            } else {
-              return Promise.resolve({
-                statusCode: HttpStatus.NOT_FOUND,
-                error: 'NOT FOUND',
-                message: `Group #${_id} not found`,
-                data: undefined,
-              });
-            }
+            return {
+              statusCode: res ? HttpStatus.CREATED : HttpStatus.NOT_FOUND,
+              message: res
+                ? `Created todos of group ${_id} successfully`
+                : `Group #${_id} not found`,
+              data: saveTodos,
+            };
           })
           .catch((error) => {
             return Promise.resolve({
@@ -128,7 +122,7 @@ export class TodosCrudService implements OnModuleInit {
   ): Promise<GetGrDto_Todos> {
     if (
       owner != undefined &&
-      model.state == 'Private' &&
+      model.state == State[0] &&
       model.createdBy != owner
     ) {
       return undefined;
@@ -156,7 +150,7 @@ export class TodosCrudService implements OnModuleInit {
   }
   async update(updateTodosReqDto: UpdateTodosReqDto): Promise<BaseResDto> {
     const { _id } = updateTodosReqDto;
-    console.log(`Updaate todos #${_id}`);
+    console.log(`Update todos #${_id}`);
     return await this.todosModel
       .findByIdAndUpdate(
         { _id: _id },
@@ -167,19 +161,23 @@ export class TodosCrudService implements OnModuleInit {
           },
         },
       )
-      .then((res) => {
+      .then(async (res) => {
         return {
           statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
           message: res
             ? `Update todos #${_id} successfully`
             : `Todos #${_id} not found`,
+          data: res
+            ? await this.todosModel
+                .findById(_id)
+                .populate({ path: 'todos', model: 'Todo' })
+            : null,
         };
       })
       .catch((error) => {
         return Promise.resolve({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
-          error: 'INTERNAL SERVER ERROR',
         });
       });
   }
@@ -187,13 +185,12 @@ export class TodosCrudService implements OnModuleInit {
     updateTodosStateReqDto: UpdateTodosStateReqDto,
   ): Promise<BaseResDto> {
     const { _id } = updateTodosStateReqDto;
-    console.log(`Updaate todos #${_id}'s state`);
+    console.log(`Update todos #${_id}'s state`);
     const todosList = await this.todosModel.findById(_id);
     if (!todosList) {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         message: `Todos #${_id} not found`,
-        error: 'NOT FOUND',
       };
     }
     if (todosList.createdBy == updateTodosStateReqDto.createdBy) {
@@ -217,7 +214,6 @@ export class TodosCrudService implements OnModuleInit {
           return Promise.resolve({
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: error.message,
-            error: 'INTERNAL SERVER ERROR',
           });
         });
     } else {
@@ -308,21 +304,17 @@ export class TodosCrudService implements OnModuleInit {
           },
         )
         .then(async (res) => {
-          if (res) {
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Added todos to list ${_id} successfully`,
-              data: await this.todosModel
-                .findById(_id)
-                .populate({ path: 'todos', model: 'Todo' }),
-            });
-          } else {
-            return Promise.resolve({
-              statusCode: HttpStatus.NOT_FOUND,
-              message: `Todos list #${_id} not found`,
-              data: null,
-            });
-          }
+          return {
+            statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+            message: res
+              ? `Added todos to list ${_id} successfully`
+              : `Todos list #${_id} not found`,
+            data: res
+              ? await this.todosModel
+                  .findById(_id)
+                  .populate({ path: 'todos', model: 'Todo' })
+              : null,
+          };
         })
         .catch((error) => {
           return Promise.resolve({

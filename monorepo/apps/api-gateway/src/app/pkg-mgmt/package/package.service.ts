@@ -41,11 +41,7 @@ export class PackageService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.CREATED) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
 
@@ -64,11 +60,7 @@ export class PackageService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async update(updatePkgReqDto: UpdatePkgReqDto): Promise<BaseResDto> {
@@ -79,11 +71,7 @@ export class PackageService implements OnModuleInit {
       ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
@@ -91,11 +79,7 @@ export class PackageService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.DELETE, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
   async restore(id: Types.ObjectId): Promise<BaseResDto> {
@@ -103,11 +87,7 @@ export class PackageService implements OnModuleInit {
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.PACKAGE.RESTORE, id),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) return res;
-      else
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+      else throw new HttpException(res.message, res.statusCode);
     });
   }
 }

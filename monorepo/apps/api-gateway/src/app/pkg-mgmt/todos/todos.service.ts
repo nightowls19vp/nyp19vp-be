@@ -11,8 +11,11 @@ import {
   AddTodosReqDto,
   BaseResDto,
   CreateTodosReqDto,
+  GetGrByExReqDto,
   GetTodosResDto,
+  ProjectionParams,
   RmTodosReqDto,
+  State,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
   UpdateTodosStateReqDto,
@@ -20,11 +23,13 @@ import {
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { SocketGateway } from '../../socket/socket.gateway';
 
 @Injectable()
 export class TodosService implements OnModuleInit {
   constructor(
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
+    private readonly socketGateway: SocketGateway,
   ) {}
   onModuleInit() {
     const todosTopics = Object.values(kafkaTopic.PKG_MGMT.EXTENSION.TODOS);
@@ -32,6 +37,13 @@ export class TodosService implements OnModuleInit {
     for (const topic of todosTopics) {
       this.packageMgmtClient.subscribeToResponseOf(topic);
     }
+
+    this.packageMgmtClient.subscribeToResponseOf(
+      kafkaTopic.PKG_MGMT.GROUP.GET_BY_EXTENSION,
+    );
+    this.packageMgmtClient.subscribeToResponseOf(
+      kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+    );
   }
   async create(createTodosReqDto: CreateTodosReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
@@ -46,14 +58,31 @@ export class TodosService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.CREATED) {
+        if (createTodosReqDto.state == State[1]) {
+          const projectionParams: ProjectionParams = {
+            _id: createTodosReqDto._id,
+            proj: { members: true },
+          };
+          const members = await firstValueFrom(
+            this.packageMgmtClient.send(
+              kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+              projectionParams,
+            ),
+          );
+          const noti = members.group.members.map(async (member) => {
+            await this.socketGateway.handleEvent(
+              'createdTodos',
+              member.user._id,
+              res.data,
+            );
+          });
+          await Promise.all(noti);
+        }
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -71,10 +100,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -91,14 +117,31 @@ export class TodosService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
+        if (res.data.state == State[1]) {
+          const getGrByExReqDto: GetGrByExReqDto = {
+            _id: res.data._id,
+            extension: 'todos',
+          };
+          const members = await firstValueFrom(
+            this.packageMgmtClient.send(
+              kafkaTopic.PKG_MGMT.GROUP.GET_BY_EXTENSION,
+              getGrByExReqDto,
+            ),
+          );
+          const noti = members.group.members.map(async (member) => {
+            await this.socketGateway.handleEvent(
+              'updatedTodos',
+              member.user._id,
+              res.data,
+            );
+          });
+          await Promise.all(noti);
+        }
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -117,14 +160,31 @@ export class TodosService implements OnModuleInit {
             throw new RequestTimeoutException();
           }),
         ),
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
+        if (res.data.state == State[1]) {
+          const getGrByExReqDto: GetGrByExReqDto = {
+            _id: res.data._id,
+            extension: 'todos',
+          };
+          const members = await firstValueFrom(
+            this.packageMgmtClient.send(
+              kafkaTopic.PKG_MGMT.GROUP.GET_BY_EXTENSION,
+              getGrByExReqDto,
+            ),
+          );
+          const noti = members.group.members.map(async (member) => {
+            await this.socketGateway.handleEvent(
+              'updatedTodos',
+              member.user._id,
+              res.data,
+            );
+          });
+          await Promise.all(noti);
+        }
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -145,10 +205,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -166,10 +223,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -187,10 +241,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -211,10 +262,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }
@@ -235,10 +283,7 @@ export class TodosService implements OnModuleInit {
       if (res.statusCode == HttpStatus.OK) {
         return res;
       } else {
-        throw new HttpException(res.message, res.statusCode, {
-          cause: new Error(res.error),
-          description: res.error,
-        });
+        throw new HttpException(res.message, res.statusCode);
       }
     });
   }

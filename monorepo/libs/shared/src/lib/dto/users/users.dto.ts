@@ -17,7 +17,7 @@ import {
 } from 'class-validator';
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
-import { PackageDto } from '../pkg-mgmt/pkg-crud.dto';
+import { PackageDto } from '../pkg-mgmt/package.dto';
 
 class UserSetting {
   @ApiProperty({
@@ -49,7 +49,7 @@ class UserSetting {
   newsNoti: boolean;
 }
 
-export class UserInfo {
+export class UserInfo extends IdDto {
   @ApiProperty({
     description: 'name of user, must be an ascii string',
     type: String,
@@ -196,7 +196,7 @@ export class GetUserSettingResDto extends IntersectionType(
   UserSettingDto,
 ) {}
 
-export class CreateUserReqDto extends UserInfo {}
+export class CreateUserReqDto extends OmitType(UserInfo, ['_id']) {}
 
 export class UpdateUserReqDto extends IntersectionType(
   IdDto,

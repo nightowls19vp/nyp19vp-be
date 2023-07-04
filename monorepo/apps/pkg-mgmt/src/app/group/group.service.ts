@@ -30,6 +30,9 @@ import {
   GetGrDto_Bill,
   ProjectionParams,
   GetGrDto_Todos,
+  GetGrByExReqDto,
+  GetGrDto_Task,
+  PkgStatus,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -45,29 +48,33 @@ import { v4 } from 'uuid';
 import { ClientKafka } from '@nestjs/microservices';
 import { firstValueFrom, timeout } from 'rxjs';
 import { Bill, BillDocument } from '../../schemas/billing.schema';
-import { BillCrudService } from '../bill-crud/bill-crud.service';
-import { TodosCrudService } from '../todos-crud/todos-crud.service';
+import { BillService } from '../bill/bill.service';
+import { TodosService } from '../todos/todos.service';
 import {
   Todo,
   TodoDocument,
   TodoList,
   TodoListDocument,
 } from '../../schemas/todos.schema';
+import { TaskService } from '../task/task.service';
+import { Task, TaskDocument } from '../../schemas/task.schema';
 
 @Injectable()
-export class GrCrudService implements OnModuleInit {
+export class GroupService implements OnModuleInit {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
     @Inject('PROD_MGMT_SERVICE') private readonly prodClient: ClientKafka,
-    @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
     @InjectModel(Package.name)
     private pkgModel: SoftDeleteModel<PackageDocument>,
-    @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
     @InjectModel(TodoList.name)
     private todosModel: SoftDeleteModel<TodoListDocument>,
+    @InjectModel(Group.name) private grModel: SoftDeleteModel<GroupDocument>,
+    @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
     @InjectModel(Todo.name) private todoModel: SoftDeleteModel<TodoDocument>,
-    private billCrudService: BillCrudService,
-    private readonly todosCrudService: TodosCrudService,
+    @InjectModel(Task.name) private taskModel: SoftDeleteModel<TaskDocument>,
+    private readonly billService: BillService,
+    private readonly todosService: TodosService,
+    private readonly taskService: TaskService,
   ) {}
   async onModuleInit() {
     this.prodClient.subscribeToResponseOf(kafkaTopic.PROD_MGMT.init);
@@ -97,7 +104,7 @@ export class GrCrudService implements OnModuleInit {
                   duration: elem.duration,
                   noOfMember: elem.noOfMember,
                 },
-                status: 'Not Activated',
+                status: PkgStatus[0],
               },
             ],
           });
@@ -156,6 +163,8 @@ export class GrCrudService implements OnModuleInit {
               path: 'todos',
               populate: { path: 'todos', model: 'Todo' },
             });
+          if (proj.task)
+            res = await res.populate({ path: 'task', model: 'Task' });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get group #${_id} successfully`,
@@ -216,6 +225,7 @@ export class GrCrudService implements OnModuleInit {
     const query = { user: user };
     role != undefined ? (query['role'] = role) : null;
     const documentSkip = page == 0 ? 0 : page * limit;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pipeline: any[] = [
       { $match: { members: { $elemMatch: query } } },
       { $skip: documentSkip },
@@ -244,6 +254,17 @@ export class GrCrudService implements OnModuleInit {
         },
       };
       pipeline.push(todosLookup);
+    }
+    if (proj.task) {
+      const taskLookup = {
+        $lookup: {
+          from: this.taskModel.collection.name,
+          localField: 'task',
+          foreignField: '_id',
+          as: 'task',
+        },
+      };
+      pipeline.push(taskLookup);
     }
     return pipeline;
   }
@@ -503,14 +524,14 @@ export class GrCrudService implements OnModuleInit {
       {
         _id: _id,
         packages: {
-          $elemMatch: { status: 'Active' },
+          $elemMatch: { status: PkgStatus[1] },
         },
       },
       { packages: 1 },
     );
     if (grPkgs) {
       const notAcitivatedPkg = grPkgs.packages.filter(
-        (elem) => elem.status == 'Not Activated' || elem.status == 'Active',
+        (elem) => elem.status == PkgStatus[0] || elem.status == PkgStatus[1],
       );
       const endDateArray = notAcitivatedPkg.map((x) => x.endDate);
       const start: Date = maxDate(endDateArray);
@@ -629,7 +650,7 @@ export class GrCrudService implements OnModuleInit {
     const { _id, user } = activateGrPkgReqDto;
     const activatedPkg = await this.grModel.findOne({
       _id: _id,
-      packages: { $elemMatch: { status: 'Active' } },
+      packages: { $elemMatch: { status: PkgStatus[1] } },
     });
     if (!activatedPkg) {
       const start: Date = new Date();
@@ -644,7 +665,7 @@ export class GrCrudService implements OnModuleInit {
             package: {
               $elemMatch: {
                 package: activateGrPkgReqDto.package,
-                status: 'Not Activated',
+                status: PkgStatus[0],
               },
             },
             members: { $elemMatch: { user: user, role: 'Super User' } },
@@ -709,6 +730,20 @@ export class GrCrudService implements OnModuleInit {
     if (isSU) return true;
     return false;
   }
+  async findByExtension(
+    getGrByExReqDto: GetGrByExReqDto,
+  ): Promise<GetGrResDto> {
+    const { _id, extension } = getGrByExReqDto;
+    console.log(`Get group by extension #${_id}`);
+    const query = {};
+    query[extension] = { $elemMatch: _id };
+    const group = await this.grModel.findOne(query).exec();
+    const projectionParams: ProjectionParams = {
+      _id: group._id,
+      proj: { members: true },
+    };
+    return await this.findById(projectionParams);
+  }
   private async paginate(params: PaginationParams, query): Promise<Pagination> {
     const count: number = await this.grModel.count(query);
     const pagination: Pagination = {
@@ -740,7 +775,7 @@ export class GrCrudService implements OnModuleInit {
           status:
             elem.startDate && elem.endDate
               ? setStatus(elem.startDate, elem.endDate)
-              : 'Not activated',
+              : PkgStatus[0],
         };
         return packages;
       });
@@ -773,7 +808,7 @@ export class GrCrudService implements OnModuleInit {
   async mapGrModelToGetGrDto_Bill(model): Promise<GetGrDto_Bill[]> {
     if (model.billing) {
       const result = model.billing.map(async (bill) => {
-        return await this.billCrudService.mapBillModelToGetGrDto_Bill(bill);
+        return await this.billService.mapBillModelToGetGrDto_Bill(bill);
       });
       return await Promise.all(result);
     }
@@ -786,10 +821,22 @@ export class GrCrudService implements OnModuleInit {
     if (model.todos) {
       const result = model.todos.map(async (todo) => {
         console.log(todo);
-        return await this.todosCrudService.mapTodosModelToGetGrDto_Todos(
+        return await this.todosService.mapTodosModelToGetGrDto_Todos(
           todo,
           owner,
         );
+      });
+      return await Promise.all(result);
+    }
+    return undefined;
+  }
+  async mapGrModelToGetGrDto_Task(
+    model,
+    owner?: string,
+  ): Promise<GetGrDto_Task[]> {
+    if (model.task) {
+      const result = model.task.map(async (task) => {
+        return await this.taskService.mapTaskModelToGetGrDto_Task(task, owner);
       });
       return await Promise.all(result);
     }
@@ -803,6 +850,7 @@ export class GrCrudService implements OnModuleInit {
       channel: model.channel,
       billing: await this.mapGrModelToGetGrDto_Bill(model),
       todos: await this.mapGrModelToGetGrDto_Todos(model, owner),
+      task: await this.mapGrModelToGetGrDto_Task(model, owner),
       packages: await this.mapGrModelToGetGrDto_Pkg(model),
       members: await this.mapGrModelToGetGrDto_Memb(model),
     };
@@ -811,9 +859,9 @@ export class GrCrudService implements OnModuleInit {
 }
 const setStatus = (startDate: Date, endDate: Date): string => {
   const now = new Date();
-  if (startDate > now) return 'Not Activated';
-  else if (now < endDate) return 'Active';
-  else return 'Expired';
+  if (startDate > now) return PkgStatus[0];
+  else if (now < endDate) return PkgStatus[1];
+  else return PkgStatus[2];
 };
 const addDays = (date: Date, days: number): Date => {
   const result = new Date(date);

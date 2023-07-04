@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BillStatus } from '@nyp19vp-be/shared';
 import { HydratedDocument } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
@@ -14,7 +15,7 @@ class Borrower {
   @Prop({
     type: String,
     required: true,
-    enum: ['APPROVED', 'PENDING', 'CANCELED'],
+    enum: BillStatus,
   })
   status: string;
 }

@@ -1,23 +1,30 @@
 import { Module } from '@nestjs/common';
-import { TodosCrudService } from './todos-crud.service';
-import { TodosCrudController } from './todos-crud.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { GroupService } from './group.service';
+import { GroupController } from './group.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Group, GroupSchema } from '../../schemas/group.schema';
+import { Package, PackageSchema } from '../../schemas/package.schema';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { Bill, BillSchema } from '../../schemas/billing.schema';
+import { BillModule } from '../bill/bill.module';
+import { TodosModule } from '../todos/todos.module';
 import {
   Todo,
   TodoList,
   TodoListSchema,
   TodoSchema,
 } from '../../schemas/todos.schema';
-import { BillCrudModule } from '../bill-crud/bill-crud.module';
-
+import { TaskModule } from '../task/task.module';
+import { Task, TaskSchema } from '../../schemas/task.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Group.name, schema: GroupSchema },
+      { name: Bill.name, schema: BillSchema },
+      { name: Package.name, schema: PackageSchema },
       { name: TodoList.name, schema: TodoListSchema },
       { name: Todo.name, schema: TodoSchema },
+      { name: Task.name, schema: TaskSchema },
     ]),
     ClientsModule.register([
       {
@@ -25,11 +32,11 @@ import { BillCrudModule } from '../bill-crud/bill-crud.module';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'users' + 'todo-crud' + 'users',
+            clientId: 'users' + 'gr-crud' + 'users',
             brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
-            groupId: 'users-consumer' + 'todo-crud' + 'users',
+            groupId: 'users-consumer' + 'gr-crud' + 'users',
           },
         },
       },
@@ -47,10 +54,12 @@ import { BillCrudModule } from '../bill-crud/bill-crud.module';
         },
       },
     ]),
-    BillCrudModule,
+    BillModule,
+    TodosModule,
+    TaskModule,
   ],
-  controllers: [TodosCrudController],
-  providers: [TodosCrudService],
-  exports: [TodosCrudService],
+  controllers: [GroupController],
+  providers: [GroupService],
+  exports: [GroupService],
 })
-export class TodosCrudModule {}
+export class GroupModule {}

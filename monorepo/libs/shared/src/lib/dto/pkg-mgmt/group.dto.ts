@@ -22,10 +22,17 @@ import {
 } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { ObjectId } from 'mongodb';
-import { Items, UserInfo } from '../users/users-crud.dto';
-import { PackageDto } from './pkg-crud.dto';
-import { GetGrDto_Todos } from './todos-crud.dto';
-import { GetGrDto_Bill } from './bill-crud.dto';
+import { Items, UserInfo } from '../users/users.dto';
+import { PackageDto } from './package.dto';
+import { GetGrDto_Todos } from './todos.dto';
+import { GetGrDto_Bill } from './bill.dto';
+import { GetGrDto_Task } from './task.dto';
+
+export enum PkgStatus {
+  'Not Activated',
+  'Active',
+  'Expired',
+}
 
 class MemberDto {
   @ApiProperty({
@@ -84,10 +91,10 @@ export class GrPkgDto {
 
   @ApiProperty({
     type: String,
-    enum: ['Active', 'Expired', 'Not Activated'],
+    enum: PkgStatus,
     required: true,
   })
-  @IsEnum(['Active', 'Expired', 'Not Activated'])
+  @IsEnum(PkgStatus)
   status: string;
 }
 
@@ -333,6 +340,7 @@ export class GetGrDto extends IdDto {
   channel?: string;
   billing?: GetGrDto_Bill[];
   todos?: GetGrDto_Todos[];
+  task?: GetGrDto_Task[];
   packages?: GetGrDto_Pkg[];
   members?: GetGrDto_Memb[];
 }
@@ -349,4 +357,9 @@ export class GetGrsResDto extends BaseResDto {
   groups: GetGrDto[];
 
   pagination: Pagination;
+}
+
+export class GetGrByExReqDto extends IdDto {
+  @IsEnum(['todos', 'billing', 'task'])
+  extension: string;
 }
