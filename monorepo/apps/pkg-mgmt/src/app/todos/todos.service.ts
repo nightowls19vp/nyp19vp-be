@@ -13,6 +13,7 @@ import {
   GetGrDto_Todos,
   GetTodosResDto,
   RmTodosReqDto,
+  State,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
   UpdateTodosStateReqDto,
@@ -74,20 +75,13 @@ export class TodosService implements OnModuleInit {
         return await this.grModel
           .findByIdAndUpdate({ _id: _id }, { $push: { todos: saveTodos } })
           .then((res) => {
-            if (res) {
-              return Promise.resolve({
-                statusCode: HttpStatus.CREATED,
-                message: `Created todos of group ${_id} successfully`,
-                data: saveTodos,
-              });
-            } else {
-              return Promise.resolve({
-                statusCode: HttpStatus.NOT_FOUND,
-                error: 'NOT FOUND',
-                message: `Group #${_id} not found`,
-                data: undefined,
-              });
-            }
+            return {
+              statusCode: res ? HttpStatus.CREATED : HttpStatus.NOT_FOUND,
+              message: res
+                ? `Created todos of group ${_id} successfully`
+                : `Group #${_id} not found`,
+              data: saveTodos,
+            };
           })
           .catch((error) => {
             return Promise.resolve({
@@ -128,7 +122,7 @@ export class TodosService implements OnModuleInit {
   ): Promise<GetGrDto_Todos> {
     if (
       owner != undefined &&
-      model.state == 'Private' &&
+      model.state == State[0] &&
       model.createdBy != owner
     ) {
       return undefined;
@@ -184,7 +178,6 @@ export class TodosService implements OnModuleInit {
         return Promise.resolve({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message,
-          error: 'INTERNAL SERVER ERROR',
         });
       });
   }
@@ -198,7 +191,6 @@ export class TodosService implements OnModuleInit {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         message: `Todos #${_id} not found`,
-        error: 'NOT FOUND',
       };
     }
     if (todosList.createdBy == updateTodosStateReqDto.createdBy) {
@@ -222,7 +214,6 @@ export class TodosService implements OnModuleInit {
           return Promise.resolve({
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: error.message,
-            error: 'INTERNAL SERVER ERROR',
           });
         });
     } else {
@@ -313,21 +304,17 @@ export class TodosService implements OnModuleInit {
           },
         )
         .then(async (res) => {
-          if (res) {
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Added todos to list ${_id} successfully`,
-              data: await this.todosModel
-                .findById(_id)
-                .populate({ path: 'todos', model: 'Todo' }),
-            });
-          } else {
-            return Promise.resolve({
-              statusCode: HttpStatus.NOT_FOUND,
-              message: `Todos list #${_id} not found`,
-              data: null,
-            });
-          }
+          return {
+            statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+            message: res
+              ? `Added todos to list ${_id} successfully`
+              : `Todos list #${_id} not found`,
+            data: res
+              ? await this.todosModel
+                  .findById(_id)
+                  .populate({ path: 'todos', model: 'Todo' })
+              : null,
+          };
         })
         .catch((error) => {
           return Promise.resolve({

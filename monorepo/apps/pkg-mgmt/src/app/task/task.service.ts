@@ -4,9 +4,10 @@ import {
   CreateTaskReqDto,
   GetGrDto_Task,
   GetTaskResDto,
+  State,
+  TimeUnit,
   UpdateTaskReqDto,
   UpdateTaskStateReqDto,
-  WeekDays,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { InjectModel } from '@nestjs/mongoose';
@@ -55,15 +56,17 @@ export class TaskService implements OnModuleInit {
         isRepeated: createTaskReqDto.isRepeated,
         recurrence: isRepeated
           ? {
-              times: recurrence.times,
+              times: recurrence.unit == TimeUnit[3] ? 1 : recurrence.times,
               unit: recurrence.unit,
               repeatOn:
-                recurrence.unit == 'Week' ? recurrence.repeatOn : undefined,
+                recurrence.unit == TimeUnit[1]
+                  ? recurrence.repeatOn
+                  : undefined,
               ends: recurrence.ends,
             }
           : undefined,
         members:
-          createTaskReqDto.state == 'Public'
+          createTaskReqDto.state == State[1]
             ? createTaskReqDto.members
             : undefined,
         state: createTaskReqDto.state,
@@ -120,7 +123,7 @@ export class TaskService implements OnModuleInit {
   ): Promise<GetGrDto_Task> {
     if (
       owner != undefined &&
-      model.state == 'Private' &&
+      model.state == State[0] &&
       model.createdBy != owner
     ) {
       return undefined;
@@ -129,7 +132,7 @@ export class TaskService implements OnModuleInit {
         ? [model.createdBy, model.updatedBy]
         : [model.createdBy];
       const list_id =
-        model.state == 'Public' && model.members
+        model.state == State[1] && model.members
           ? model.members.concat(list_others)
           : list_others;
       const list_user = await firstValueFrom(
@@ -224,7 +227,7 @@ export class TaskService implements OnModuleInit {
           {
             $set: {
               members:
-                updateTaskStateReqDto.state == 'Public'
+                updateTaskStateReqDto.state == State[1]
                   ? updateTaskStateReqDto.members
                   : undefined,
               state: updateTaskStateReqDto.state,
@@ -252,6 +255,31 @@ export class TaskService implements OnModuleInit {
     }
   }
 
+  async updateOccurrence(id: Types.ObjectId): Promise<BaseResDto> {
+    const task = await this.taskModel.findById(id);
+    if (!task) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Task #${id} not found`,
+      };
+    }
+    if (typeof task.recurrence.ends === 'number') task.recurrence.ends--;
+    return await this.taskModel
+      .updateOne({ _id: id }, { $set: { recurrence: task.recurrence } })
+      .then(() => {
+        return {
+          statusCode: HttpStatus.OK,
+          message: `Updated task #${id} occurrences successfully`,
+          data: task,
+        };
+      })
+      .catch((error) => {
+        return {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        };
+      });
+  }
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
     console.log(`Remove task #${id}`);
     return await this.taskModel

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TimeUnit, WeekDays } from '@nyp19vp-be/shared';
+import { State, TimeUnit, WeekDays } from '@nyp19vp-be/shared';
 import mongoose, { HydratedDocument } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
@@ -41,9 +41,9 @@ export class Task {
 
   @Prop({
     type: String,
-    enum: ['Private', 'Public'],
+    enum: State,
     required: true,
-    default: 'Public',
+    default: State[1],
   })
   state: string;
 

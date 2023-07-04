@@ -10,6 +10,7 @@ import {
   UpdateBillReqDto,
   UpdateBillSttReqDto,
   kafkaTopic,
+  BillStatus,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
@@ -57,7 +58,7 @@ export class BillService implements OnModuleInit {
           const newBorrower = {
             borrower: borrower.borrower,
             amount: borrower.amount,
-            status: 'PENDING',
+            status: BillStatus[0],
           };
           return newBorrower;
         }),
@@ -77,18 +78,13 @@ export class BillService implements OnModuleInit {
               { $push: { billing: newBill._id } },
             )
             .then((res) => {
-              if (res) {
-                return Promise.resolve({
-                  statusCode: HttpStatus.CREATED,
-                  message: `Created bill of group ${_id}`,
-                });
-              } else {
-                return Promise.resolve({
-                  statusCode: HttpStatus.NOT_FOUND,
-                  error: 'NOT FOUND',
-                  message: `Group #${_id} not found`,
-                });
-              }
+              return {
+                statusCode: res ? HttpStatus.CREATED : HttpStatus.NOT_FOUND,
+                message: res
+                  ? `Created bill of group ${_id}`
+                  : `Group #${_id} not found`,
+                data: newBill,
+              };
             })
             .catch((error) => {
               return Promise.resolve({
@@ -183,7 +179,7 @@ export class BillService implements OnModuleInit {
         billing.borrowers.push({
           borrower: borrower.borrower,
           amount: borrower.amount,
-          status: 'PENDING',
+          status: BillStatus[0],
         });
       }
     });

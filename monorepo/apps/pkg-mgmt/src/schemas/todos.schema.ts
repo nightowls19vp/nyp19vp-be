@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { State } from '@nyp19vp-be/shared';
 import { HydratedDocument, Types } from 'mongoose';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
@@ -27,9 +28,9 @@ export class TodoList {
 
   @Prop({
     type: String,
-    enum: ['Private', 'Public'],
+    enum: State,
     required: true,
-    default: 'Public',
+    default: State[1],
   })
   state: string;
 

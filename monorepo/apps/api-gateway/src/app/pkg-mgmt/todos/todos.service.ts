@@ -15,6 +15,7 @@ import {
   GetTodosResDto,
   ProjectionParams,
   RmTodosReqDto,
+  State,
   UpdateTodoReqDto,
   UpdateTodosReqDto,
   UpdateTodosStateReqDto,
@@ -59,7 +60,7 @@ export class TodosService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.CREATED) {
-        if (createTodosReqDto.state == 'Public') {
+        if (createTodosReqDto.state == State[1]) {
           const projectionParams: ProjectionParams = {
             _id: createTodosReqDto._id,
             proj: { members: true },
@@ -118,7 +119,7 @@ export class TodosService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
-        if (res.data.state == 'Public') {
+        if (res.data.state == State[1]) {
           const getGrByExReqDto: GetGrByExReqDto = {
             _id: res.data._id,
             extension: 'todos',
@@ -161,7 +162,7 @@ export class TodosService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
-        if (res.data.state == 'Public') {
+        if (res.data.state == State[1]) {
           const getGrByExReqDto: GetGrByExReqDto = {
             _id: res.data._id,
             extension: 'todos',

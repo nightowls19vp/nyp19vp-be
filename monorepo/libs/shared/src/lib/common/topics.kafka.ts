@@ -97,6 +97,7 @@ export const PKG_MGMT = {
       GET_BY_ID: 'getGroupTaskById',
       UPDATE: 'updateGroupTask',
       UPDATE_STATE: 'udpateGroupTaskState',
+      UPDATE_OCCURRENCE: 'updateGroupTaskOccurrences',
       DELETE: 'removeGroupTask',
       RESTORE: 'restoreGroupTask',
     },

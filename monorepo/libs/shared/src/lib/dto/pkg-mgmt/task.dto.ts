@@ -30,15 +30,28 @@ export enum TimeUnit {
   Month,
   Year,
 }
+export enum State {
+  Private,
+  Public,
+}
 
-class RecurrenceDto {
+export class RecurrenceDto {
   @ApiProperty({ type: Number, required: true, minimum: 1, example: 1 })
   times: number;
 
-  @ApiProperty({ type: String, enum: TimeUnit, required: true })
+  @ApiProperty({
+    type: String,
+    enum: TimeUnit,
+    required: true,
+    example: TimeUnit[0],
+  })
   unit: string;
 
-  @ApiProperty({ enum: WeekDays, required: false, example: ['Sun', 'Sat'] })
+  @ApiProperty({
+    enum: WeekDays,
+    required: false,
+    example: [WeekDays[0], WeekDays[6]],
+  })
   @IsEnum(WeekDays, { each: true })
   @IsOptional()
   @IsArray()
@@ -80,11 +93,11 @@ class TaskDto {
   startDate: Date;
 
   @ApiProperty({
-    enum: ['Private', 'Public'],
-    default: 'Public',
-    example: 'Public',
+    enum: State,
+    default: State[1],
+    example: State[1],
   })
-  @IsEnum(['Private', 'Public'])
+  @IsEnum(State)
   state: string;
 
   createdBy: string;

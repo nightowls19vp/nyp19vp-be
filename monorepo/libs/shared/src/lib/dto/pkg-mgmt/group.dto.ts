@@ -28,6 +28,12 @@ import { GetGrDto_Todos } from './todos.dto';
 import { GetGrDto_Bill } from './bill.dto';
 import { GetGrDto_Task } from './task.dto';
 
+export enum PkgStatus {
+  'Not Activated',
+  'Active',
+  'Expired',
+}
+
 class MemberDto {
   @ApiProperty({
     type: String,
@@ -85,10 +91,10 @@ export class GrPkgDto {
 
   @ApiProperty({
     type: String,
-    enum: ['Active', 'Expired', 'Not Activated'],
+    enum: PkgStatus,
     required: true,
   })
-  @IsEnum(['Active', 'Expired', 'Not Activated'])
+  @IsEnum(PkgStatus)
   status: string;
 }
 

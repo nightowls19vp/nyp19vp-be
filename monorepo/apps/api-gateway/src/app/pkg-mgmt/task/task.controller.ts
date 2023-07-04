@@ -10,7 +10,6 @@ import {
   Put,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { CronService } from './cron/cron.service';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../../constants/authentication';
 import { AccessJwtAuthGuard } from '../../auth/guards/jwt.guard';
@@ -18,6 +17,7 @@ import { ATUser } from '../../decorators/at-user.decorator';
 import {
   BaseResDto,
   CreateTaskReqDto,
+  GetTaskResDto,
   ParseObjectIdPipe,
   UpdateTaskReqDto,
   UpdateTaskStateReqDto,
@@ -27,10 +27,7 @@ import { Types } from 'mongoose';
 @ApiTags('Package Management/Task')
 @Controller('pkg-mgmt/task')
 export class TaskController {
-  constructor(
-    private readonly taskService: TaskService,
-    private readonly cronService: CronService,
-  ) {}
+  constructor(private readonly taskService: TaskService) {}
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
@@ -47,7 +44,9 @@ export class TaskController {
   }
 
   @Get(':id')
-  findById(@Param('id', new ParseObjectIdPipe()) id: Types.ObjectId) {
+  findById(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  ): Promise<GetTaskResDto> {
     console.log(`Get task #${id}`);
     return this.taskService.findById(id);
   }

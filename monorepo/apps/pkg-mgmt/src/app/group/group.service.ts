@@ -32,6 +32,7 @@ import {
   GetGrDto_Todos,
   GetGrByExReqDto,
   GetGrDto_Task,
+  PkgStatus,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -103,7 +104,7 @@ export class GroupService implements OnModuleInit {
                   duration: elem.duration,
                   noOfMember: elem.noOfMember,
                 },
-                status: 'Not Activated',
+                status: PkgStatus[0],
               },
             ],
           });
@@ -523,14 +524,14 @@ export class GroupService implements OnModuleInit {
       {
         _id: _id,
         packages: {
-          $elemMatch: { status: 'Active' },
+          $elemMatch: { status: PkgStatus[1] },
         },
       },
       { packages: 1 },
     );
     if (grPkgs) {
       const notAcitivatedPkg = grPkgs.packages.filter(
-        (elem) => elem.status == 'Not Activated' || elem.status == 'Active',
+        (elem) => elem.status == PkgStatus[0] || elem.status == PkgStatus[1],
       );
       const endDateArray = notAcitivatedPkg.map((x) => x.endDate);
       const start: Date = maxDate(endDateArray);
@@ -649,7 +650,7 @@ export class GroupService implements OnModuleInit {
     const { _id, user } = activateGrPkgReqDto;
     const activatedPkg = await this.grModel.findOne({
       _id: _id,
-      packages: { $elemMatch: { status: 'Active' } },
+      packages: { $elemMatch: { status: PkgStatus[1] } },
     });
     if (!activatedPkg) {
       const start: Date = new Date();
@@ -664,7 +665,7 @@ export class GroupService implements OnModuleInit {
             package: {
               $elemMatch: {
                 package: activateGrPkgReqDto.package,
-                status: 'Not Activated',
+                status: PkgStatus[0],
               },
             },
             members: { $elemMatch: { user: user, role: 'Super User' } },
@@ -774,7 +775,7 @@ export class GroupService implements OnModuleInit {
           status:
             elem.startDate && elem.endDate
               ? setStatus(elem.startDate, elem.endDate)
-              : 'Not activated',
+              : PkgStatus[0],
         };
         return packages;
       });
@@ -858,9 +859,9 @@ export class GroupService implements OnModuleInit {
 }
 const setStatus = (startDate: Date, endDate: Date): string => {
   const now = new Date();
-  if (startDate > now) return 'Not Activated';
-  else if (now < endDate) return 'Active';
-  else return 'Expired';
+  if (startDate > now) return PkgStatus[0];
+  else if (now < endDate) return PkgStatus[1];
+  else return PkgStatus[2];
 };
 const addDays = (date: Date, days: number): Date => {
   const result = new Date(date);

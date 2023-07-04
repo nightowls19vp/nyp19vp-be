@@ -10,6 +10,12 @@ import { ObjectId } from 'mongodb';
 import { BaseResDto, IdDto } from '../base.dto';
 import { UserInfo } from '../users/users.dto';
 
+export enum BillStatus {
+  PENDING,
+  APPROVED,
+  CANCELED,
+}
+
 class BorrowerDto {
   @ApiProperty({
     type: String,
@@ -24,7 +30,7 @@ class BorrowerDto {
   amount: number;
 
   @IsOptional()
-  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
+  @IsEnum(BillStatus)
   status?: string;
 }
 
@@ -88,8 +94,8 @@ export class UpdateBillReqDto extends IntersectionType(
 ) {}
 
 class UpdateBorrowSttReqDto extends PickType(BorrowerDto, ['borrower']) {
-  @ApiProperty({ enum: ['APPROVED', 'PENDING', 'CANCELED'] })
-  @IsEnum(['APPROVED', 'PENDING', 'CANCELED'])
+  @ApiProperty({ enum: BillStatus })
+  @IsEnum(BillStatus)
   status: string;
 }
 export class UpdateBillSttReqDto extends IntersectionType(
@@ -97,7 +103,7 @@ export class UpdateBillSttReqDto extends IntersectionType(
   PickType(BillingDto, ['updatedBy']),
 ) {
   @ApiProperty({
-    example: [{ user: '648a7dff13638f64bbf9c156', status: 'PENDING' }],
+    example: [{ user: '648a7dff13638f64bbf9c156', status: BillStatus[0] }],
   })
   @Type(() => UpdateBorrowSttReqDto)
   @ValidateNested({ each: true })

@@ -31,11 +31,16 @@ export class TaskController {
     return this.taskService.update(updateTaskReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE)
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE_STATE)
   updateState(
     @Payload() updateTaskStateReqDto: UpdateTaskStateReqDto,
   ): Promise<BaseResDto> {
     return this.taskService.updateState(updateTaskStateReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE_OCCURRENCE)
+  updateOccurrence(@Payload() id: Types.ObjectId): Promise<BaseResDto> {
+    return this.taskService.updateOccurrence(id);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.TASK.DELETE)

@@ -4,6 +4,7 @@ import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 import { Bill } from './billing.schema';
 import { TodoList } from './todos.schema';
 import { Task } from './task.schema';
+import { PkgStatus } from '@nyp19vp-be/shared';
 
 export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
@@ -30,7 +31,7 @@ class GrPkg {
 
   @Prop({
     type: String,
-    enum: ['Active', 'Expired', 'Not Activated'],
+    enum: PkgStatus,
     required: true,
   })
   status: string;
