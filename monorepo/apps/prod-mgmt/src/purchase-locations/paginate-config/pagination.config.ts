@@ -1,6 +1,7 @@
 import {
-  purchaseLocationsColumns,
   purchaseLocationsFilterableColumns,
+  purchaseLocationsSearchableColumns,
+  purchaseLocationsSortableColumns,
 } from 'libs/shared/src/lib/config';
 import { PaginateConfig } from 'nestjs-paginate';
 
@@ -8,7 +9,7 @@ import { PurchaseLocationEntity } from '../../entities/purchase-location.entity'
 
 export const purchaseLocationsPaginateConfig: PaginateConfig<PurchaseLocationEntity> =
   {
-    sortableColumns: purchaseLocationsColumns as never,
+    sortableColumns: purchaseLocationsSortableColumns as never,
     defaultSortBy: [
       ['timestamp.createdAt', 'ASC'],
       ['name', 'ASC'],
@@ -19,7 +20,7 @@ export const purchaseLocationsPaginateConfig: PaginateConfig<PurchaseLocationEnt
       ['address.addressLine1', 'ASC'],
       ['address.addressLine2', 'ASC'],
     ],
-    searchableColumns: purchaseLocationsColumns as never,
+    searchableColumns: purchaseLocationsSearchableColumns as never,
     filterableColumns: purchaseLocationsFilterableColumns,
     maxLimit: 100,
     defaultLimit: 20,

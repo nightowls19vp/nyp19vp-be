@@ -1,65 +1,47 @@
-# Socket.io
+<!-- Socket.io -->
 
-## Push notification
+# 1. Push notification
 
-# Checkout / Renew successfully
+## 1.1. Checkout / Renew successfully
 
     - Event: zpCallback
 
-## Response
+### 1.1.1. Response
 
-    - Zalopay callback data string;
+- Zalopay callback data string; [ZPDataCallback](/monorepo/libs/shared/src/lib/dto/txn/zalopay.dto.ts)
 
-<a href="/monorepo/libs/shared/src/lib/dto/txn/zalopay.dto.ts" target="_top">ZPDataCallback</a>
+## 1.2. Billing
 
-# Billing
+### 1.2.1. Create Bill
 
-## Create Bill
+- Event: createdBill
 
-    - Event: createdBill
+### 1.2.2. Update Bill
 
-## Update Bill
+- Event: updatedBill
 
-    - Event: updatedBill
+### 1.2.3. Response
 
-## Response
+[Bill](/monorepo/apps/pkg-mgmt/src/schemas/billing.schema.ts)
 
-<a href="/monorepo/apps/pkg-mgmt/src/schemas/billing.schema.ts" target="_top">Bill</a>
+## 1.3. Todos
 
-# Todos
+### 1.3.1. Create Todos
 
-## Create Todos
+- Event: createdTodos
 
-    - Event: createdTodos
+### 1.3.2. Update Todos
 
-## Update Todos
+- Event: updatedTodos
 
-    - Event: updatedTodos
+## 1.4. Response
 
-## Response
+[TodoList](/monorepo/apps/pkg-mgmt/src/schemas/todos.schema.ts)
 
-<a href="/monorepo/apps/pkg-mgmt/src/schemas/todos.schema.ts" target="_top">TodoList</a>
+### 1.4.1. Join Group successfully
 
-# Join Group successfully
+- Event: joinGr
 
-    - Event: joinGr
+### 1.4.2. Response
 
-## Response
-
-<a href="/monorepo/libs/shared/src/lib/dto/pkg-mgmt/group.dto.ts" target="_top">AddGrMbReqDto</a>
-
-```json
-{
-  "_id_": "<GroupId>",
-  "user": "<Id of user who just joined group>",
-  "addedBy": "<Id of user who sent the invitation>"
-}
-```
-
-# Task Reminders
-
-    -Event: taskReminder
-
-## Response
-
-<a href="/monorepo/libs/shared/src/lib/dto/pkg-mgmt/task.dto.ts" target="_top">GetGrDto_Task</a>
+[AddGrMbReqDto](/monorepo/libs/shared/src/lib/dto/pkg-mgmt/group.dto.ts)

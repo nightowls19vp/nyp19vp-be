@@ -7,8 +7,6 @@ import {
   UpdateItemReqDto,
 } from 'libs/shared/src/lib/dto/prod-mgmt/items';
 
-import { RestoreGroupProductReqDto } from 'libs/shared/src/lib/dto/prod-mgmt/products';
-
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { kafkaTopic } from '@nyp19vp-be/shared';

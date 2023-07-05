@@ -4,8 +4,6 @@ import { GroupProductDto } from './group-product.dto';
 import { PurchaseLocationDto } from './purchase-location.dto';
 import { StorageLocationDto } from './storage-location.dto';
 import { TimestampEmbeddedDto } from './timestamp.embedded.dto';
-import { IsDateString, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class ProdMgmtItemDto {
   @ApiProperty({ required: false, readOnly: true })

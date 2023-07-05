@@ -1,6 +1,7 @@
 import {
-  storageLocationsColumns,
   storageLocationsFilterableColumns,
+  storageLocationsSearchableColumns,
+  storageLocationsSortableColumns,
 } from 'libs/shared/src/lib/config';
 import { PaginateConfig } from 'nestjs-paginate';
 
@@ -8,14 +9,14 @@ import { StorageLocationEntity } from '../../entities/storage-location.entity';
 
 export const storageLocationsPaginateConfig: PaginateConfig<StorageLocationEntity> =
   {
-    sortableColumns: storageLocationsColumns as never,
+    sortableColumns: storageLocationsSortableColumns as never,
     defaultSortBy: [
       ['timestamp.createdAt', 'ASC'],
       ['name', 'ASC'],
       ['addedBy', 'ASC'],
       ['description', 'ASC'],
     ],
-    searchableColumns: storageLocationsColumns as never,
+    searchableColumns: storageLocationsSearchableColumns as never,
     filterableColumns: storageLocationsFilterableColumns,
     maxLimit: 100,
     defaultLimit: 20,

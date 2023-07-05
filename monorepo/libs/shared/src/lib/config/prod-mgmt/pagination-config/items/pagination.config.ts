@@ -1,9 +1,13 @@
 import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
 import { FilterOperator } from 'nestjs-paginate';
 
-export const itemsColumns = [
+const columns = [
   // ItemEntity
   'id',
+  'addedBy',
+  'bestBefore',
+  'quantity',
+  'unit',
   'timestamp.createdAt',
   'timestamp.updatedAt',
   'timestamp.deletedAt',
@@ -18,28 +22,24 @@ export const itemsColumns = [
   'groupProduct.price',
   'groupProduct.region',
 
+  // PurchaseLocationEntity
   'purchaseLocation.id',
 
+  // StorageLocationEntity
   'storageLocation.id',
 ];
 
 // map array of strings to object with keys of strings and values of `true`
 // but, for `purchaseLocation.id` and `storageLocation.id`, the values is `FilterOperator.EQ`
 export const itemsFilterableColumns: IPaginateFilterableColumns = {
-  ...itemsColumns.reduce((acc, val) => ({ ...acc, [val]: true }), {}),
+  ...columns.reduce((acc, val) => ({ ...acc, [val]: true }), {}),
   'purchaseLocation.id': [FilterOperator.EQ],
   'storageLocation.id': [FilterOperator.EQ],
 };
 
-export const itemsSortableColumns: string[] = itemsColumns.map(
-  (val) => `${val}`,
-);
+export const itemsSortableColumns: string[] = [...columns];
 
-export const itemsSearchableColumns: string[] = itemsColumns
-  .filter(
-    (val) =>
-      !val.includes('timestamp.') ||
-      !val.startsWith('id') ||
-      !val.endsWith('id'),
-  )
-  .map((val) => `${val}`);
+export const itemsSearchableColumns: string[] = columns.filter(
+  (col) =>
+    !col.includes('timestamp.') && !col.startsWith('id') && !col.endsWith('id'),
+);

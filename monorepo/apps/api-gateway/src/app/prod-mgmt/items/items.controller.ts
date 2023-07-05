@@ -3,6 +3,7 @@ import {
   itemsSearchableColumns,
   itemsSortableColumns,
 } from 'libs/shared/src/lib/config';
+import { ProdMgmtItemDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/item.dto';
 import {
   CreateItemReqDto,
   CreateItemResDto,
@@ -40,7 +41,6 @@ import {
 import { PaginateQueryOptions } from '@nyp19vp-be/shared';
 
 import { ItemsService } from './items.service';
-import { ProdMgmtItemDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/item.dto';
 
 @ApiTags('route: prod-mgmt', 'route: prod-mgmt/items')
 @Controller('prod-mgmt/items')
@@ -111,21 +111,15 @@ export class ItemsController {
     itemsFilterableColumns,
   )
   @ApiQuery({
-    name: 'groupId',
-    description: 'The group id',
-    type: String,
-    required: true,
-  })
-  @ApiQuery({
     name: 'groupProductId',
     description:
       'The group product id, pass if you want list all items of a group product',
     type: String,
     required: false,
   })
-  @Get()
+  @Get(':groupId')
   getItems(
-    @Query('groupId') groupId: string,
+    @Param('groupId') groupId: string,
     @Query('groupProductId') groupProductId: string,
     @Paginate() query: PaginateQuery,
   ): Promise<GetItemsPaginatedResDto> {

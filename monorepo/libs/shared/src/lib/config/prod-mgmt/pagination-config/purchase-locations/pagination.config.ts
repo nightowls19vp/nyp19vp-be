@@ -1,6 +1,6 @@
 import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
 
-export const purchaseLocationsColumns = [
+const columns = [
   'id',
   'name',
   'addedBy',
@@ -17,10 +17,13 @@ export const purchaseLocationsColumns = [
 
 // map array of strings to object with keys of strings and values of `true`
 export const purchaseLocationsFilterableColumns: IPaginateFilterableColumns =
-  purchaseLocationsColumns.reduce((acc, val) => ({ ...acc, [val]: true }), {});
+  columns.reduce((acc, val) => ({ ...acc, [val]: true }), {});
 
-export const purchaseLocationsSortableColumns: string[] =
-  purchaseLocationsColumns.map((val) => `${val}`);
+export const purchaseLocationsSortableColumns: string[] = [...columns];
 
-export const purchaseLocationsSearchableColumns: string[] =
-  purchaseLocationsColumns.map((val) => `${val}`);
+export const purchaseLocationsSearchableColumns: string[] = [...columns].filter(
+  (col) =>
+    !col.includes('timestamp.') &&
+    !col.startsWith('id') &&
+    !col.endsWith('.id'),
+);

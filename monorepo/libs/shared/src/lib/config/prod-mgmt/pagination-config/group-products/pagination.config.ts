@@ -1,20 +1,6 @@
 import { IPaginateFilterableColumns } from 'libs/shared/src/lib/common/nest-paginate-decorators/interfaces/filter.interface';
 
-export const groupProductsFilteredColumns: IPaginateFilterableColumns = {
-  ['id']: true,
-  ['barcode']: true,
-  ['name']: true,
-  ['category']: true,
-  ['brand']: true,
-  ['description']: true,
-  ['price']: true,
-  ['region']: true,
-  ['timestamp.createdAt']: true,
-  ['timestamp.updatedAt']: true,
-  ['timestamp.deletedAt']: true,
-};
-
-export const groupProductColumns = [
+const columns = [
   'id',
   'barcode',
   'name',
@@ -27,10 +13,18 @@ export const groupProductColumns = [
   'timestamp.updatedAt',
   'timestamp.deletedAt',
 ];
-export const groupProductsSortableColumns: string[] = groupProductColumns.map(
-  (val) => `${val}`,
-);
 
-export const groupProductsSearchableColumns: string[] = groupProductColumns.map(
-  (val) => `${val}`,
+export const groupProductsFilteredColumns: IPaginateFilterableColumns =
+  columns.reduce((acc, col) => {
+    acc[col] = true;
+    return acc;
+  }, {});
+
+export const groupProductsSortableColumns: string[] = [...columns];
+
+export const groupProductsSearchableColumns: string[] = [...columns].filter(
+  (col) =>
+    !col.includes('timestamp.') &&
+    !col.startsWith('id') &&
+    !col.endsWith('.id'),
 );

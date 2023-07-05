@@ -1,13 +1,14 @@
 import {
-  groupProductColumns,
   groupProductsFilteredColumns,
+  groupProductsSearchableColumns,
+  groupProductsSortableColumns,
 } from 'libs/shared/src/lib/config/prod-mgmt/pagination-config/group-products/pagination.config';
 import { PaginateConfig } from 'nestjs-paginate';
 
 import { GroupProductEntity } from '../../entities/group-product.entity';
 
 export const groupProductsPaginateConfig: PaginateConfig<GroupProductEntity> = {
-  sortableColumns: groupProductColumns as never,
+  sortableColumns: groupProductsSortableColumns as never,
   defaultSortBy: [
     ['timestamp.createdAt', 'ASC'],
     ['category', 'ASC'],
@@ -17,7 +18,7 @@ export const groupProductsPaginateConfig: PaginateConfig<GroupProductEntity> = {
     ['name', 'ASC'],
     ['price', 'ASC'],
   ],
-  searchableColumns: groupProductColumns as never,
+  searchableColumns: groupProductsSearchableColumns as never,
   filterableColumns: groupProductsFilteredColumns,
   maxLimit: 100,
   defaultLimit: 20,
