@@ -19,7 +19,7 @@ export class GroupProductEntity {
     name: 'id',
     type: 'uuid',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     generated: 'uuid',
     primaryKeyConstraintName: 'PK_group_products_id',
   })
@@ -28,7 +28,7 @@ export class GroupProductEntity {
   @Column({
     name: 'name',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     default: '',
   })
   name: string;
@@ -36,7 +36,7 @@ export class GroupProductEntity {
   @Column({
     name: 'image',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     nullable: false,
     default:
       'https://res.cloudinary.com/nightowls19vp/image/upload/v1687419179/default.png',
@@ -46,7 +46,7 @@ export class GroupProductEntity {
   @Column({
     name: 'barcode',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     unique: false,
     nullable: true,
     default: null,
@@ -63,7 +63,7 @@ export class GroupProductEntity {
   @Column({
     name: 'region',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     nullable: true,
     default: null,
   })
@@ -72,7 +72,7 @@ export class GroupProductEntity {
   @Column({
     name: 'brand',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     nullable: true,
     default: null,
   })
@@ -81,7 +81,7 @@ export class GroupProductEntity {
   @Column({
     name: 'category',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     nullable: true,
     default: null,
   })
@@ -91,7 +91,7 @@ export class GroupProductEntity {
     name: 'description',
     type: 'text',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
     nullable: true,
     default: null,
   })

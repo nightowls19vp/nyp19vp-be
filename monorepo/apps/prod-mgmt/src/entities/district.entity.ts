@@ -22,7 +22,7 @@ export class DistrictEntity {
     type: 'varchar',
     length: 255,
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
   })
   name: string;
 
@@ -30,7 +30,7 @@ export class DistrictEntity {
     type: 'varchar',
     length: 255,
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
   })
   division_type: string;
 
@@ -38,7 +38,7 @@ export class DistrictEntity {
     type: 'varchar',
     length: 255,
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
+    collation: 'utf8mb4_0900_ai_ci',
   })
   codename: string;
 
