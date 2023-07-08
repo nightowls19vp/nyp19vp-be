@@ -134,6 +134,7 @@ export class BillService implements OnModuleInit {
         .pipe(timeout(5000)),
     );
     const newBorrowers = [];
+    let total = 0;
     for (let i = 0; i < list_borrower.length; i++) {
       const user = list_user.find((elem) => elem._id == list_borrower[i]);
       const borrow = {
@@ -142,13 +143,20 @@ export class BillService implements OnModuleInit {
         status: model.borrowers[i].status,
       };
       newBorrowers.push(borrow);
+      total += model.borrowers[i].amount;
     }
+    const list_status = model.borrowers.map((borrower) => {
+      return borrower.status;
+    });
+    list_status.push(BillStatus[2]);
     const getGrDto_Bill: GetGrDto_Bill = {
       _id: model._id,
       summary: model.summary,
       date: model.date,
       lender: list_user.find((elem) => elem._id == model.lender),
       borrowers: newBorrowers,
+      total: total,
+      status: setStatus(list_status),
       description: model.description,
       createdBy: list_user.find((elem) => elem._id == model.createdBy),
       updatedBy: model.updatedBy
@@ -324,3 +332,12 @@ export class BillService implements OnModuleInit {
     return true;
   }
 }
+const setStatus = (borrowers: string[]): string => {
+  let isApproved = false;
+  for (const status of borrowers) {
+    if (status === BillStatus[0]) return BillStatus[0];
+    if (status === BillStatus[1]) isApproved = true;
+  }
+  if (isApproved) return BillStatus[1];
+  return BillStatus[2];
+};

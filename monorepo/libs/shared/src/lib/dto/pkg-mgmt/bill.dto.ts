@@ -76,6 +76,9 @@ export class GetGrDto_Bill extends IntersectionType(
   OmitType(BillingDto, ['lender', 'borrowers', 'createdBy', 'updatedBy']),
 ) {
   lender: UserInfo;
+  total: number;
+  @IsEnum(BillStatus)
+  status: string;
   borrowers: UserInfo[];
   createdBy: UserInfo;
   updatedBy: UserInfo;
