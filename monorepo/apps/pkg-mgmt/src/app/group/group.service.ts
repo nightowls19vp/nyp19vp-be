@@ -239,6 +239,7 @@ export class GroupService implements OnModuleInit {
           from: this.billModel.collection.name,
           localField: 'billing',
           foreignField: '_id',
+          pipeline: [{ $match: { $expr: { $eq: ['$deleted', false] } } }],
           as: 'billing',
         },
       };
@@ -250,6 +251,7 @@ export class GroupService implements OnModuleInit {
           from: this.todosModel.collection.name,
           localField: 'todos',
           foreignField: '_id',
+          pipeline: [{ $match: { $expr: { $eq: ['$deleted', false] } } }],
           as: 'todos',
         },
       };
@@ -261,6 +263,7 @@ export class GroupService implements OnModuleInit {
           from: this.taskModel.collection.name,
           localField: 'task',
           foreignField: '_id',
+          pipeline: [{ $match: { $expr: { $eq: ['$deleted', false] } } }],
           as: 'task',
         },
       };

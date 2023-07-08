@@ -34,14 +34,20 @@
 
 - Event: updatedTodos
 
-## 1.4. Response
+### 1.3.3. Response
 
 [TodoList](/monorepo/apps/pkg-mgmt/src/schemas/todos.schema.ts)
 
-### 1.4.1. Join Group successfully
+## 1.4. Join Group successfully
 
 - Event: joinGr
 
-### 1.4.2. Response
+### 1.4.1. Response
 
 [AddGrMbReqDto](/monorepo/libs/shared/src/lib/dto/pkg-mgmt/group.dto.ts)
+
+## 1.5. Task Reminders
+
+-Event: taskReminder
+
+<a href="/monorepo/libs/shared/src/lib/dto/pkg-mgmt/task.dto.ts" target="_top">GetGrDto_Task</a>
