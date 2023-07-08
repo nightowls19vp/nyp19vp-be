@@ -60,6 +60,10 @@ export class BillingDto {
   createdBy: string;
 
   updatedBy: string;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
 export class CreateBillReqDto extends IntersectionType(

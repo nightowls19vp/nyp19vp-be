@@ -143,7 +143,7 @@ export class BillService implements OnModuleInit {
         status: model.borrowers[i].status,
       };
       newBorrowers.push(borrow);
-      total += model.borrowers[i].amount;
+      total += +model.borrowers[i].amount;
     }
     const list_status = model.borrowers.map((borrower) => {
       return borrower.status;
@@ -162,6 +162,8 @@ export class BillService implements OnModuleInit {
       updatedBy: model.updatedBy
         ? list_user.find((elem) => elem._id == model.updatedBy)
         : undefined,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
     };
     return getGrDto_Bill;
   }
