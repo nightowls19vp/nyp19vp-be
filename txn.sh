@@ -1,6 +1,6 @@
 #! /bin/bash
 
 cd monorepo \
-&& npx nx build users \
-&& cp .env* "./dist/apps/users" \
-&& node ./dist/apps/users/main.js
+&& npx nx build txn \
+&& cp .env* "./dist/apps/txn" \
+&& node ./dist/apps/txn/main.js
