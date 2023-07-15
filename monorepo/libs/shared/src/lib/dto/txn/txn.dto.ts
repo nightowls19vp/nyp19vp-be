@@ -54,7 +54,7 @@ class PaymentMethodDto {
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()
-  detail_info?: string;
+  embed_data?: string;
 }
 
 export class CreateTransReqDto {

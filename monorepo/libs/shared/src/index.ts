@@ -58,3 +58,5 @@ export * from './lib/properties/base.properties';
 export * from './lib/properties/users/users.properties';
 
 export * from './lib/properties/pkg-mgmt/pkg-mgmt.properties';
+
+export * from './lib/properties/txn/txn.properties';

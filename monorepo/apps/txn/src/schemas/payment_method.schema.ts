@@ -1,9 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-
-export type MethodDocument = HydratedDocument<Method>;
-
-@Schema()
+import { Prop } from '@nestjs/mongoose';
 export class Method {
   @Prop({
     type: String,
@@ -20,5 +15,3 @@ export class Method {
   @Prop({ type: Object, required: false })
   embed_data: string;
 }
-
-export const MethodSchema = SchemaFactory.createForClass(Method);

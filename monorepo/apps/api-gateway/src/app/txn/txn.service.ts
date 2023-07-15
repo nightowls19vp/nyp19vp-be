@@ -1,5 +1,12 @@
-import { Inject, Injectable, RequestTimeoutException } from '@nestjs/common';
 import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
+import {
+  BaseResDto,
   CreateTransReqDto,
   VNPIpnUrlReqDto,
   ZPCallbackReqDto,
@@ -10,6 +17,10 @@ import { createHmac } from 'crypto';
 import { ClientKafka } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { SocketGateway } from '../socket/socket.gateway';
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class TxnService {
@@ -83,6 +94,29 @@ export class TxnService {
             throw new RequestTimeoutException();
           }),
         ),
+    );
+  }
+  async findByUser(user_id: string): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.txnClient.send(kafkaTopic.TXN.GET_BY_USER, user_id).pipe(
+        timeout(3000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        }),
+      ),
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode);
+      }
+    });
+  }
+  async find(
+    collectionDto: CollectionDto,
+  ): Promise<CollectionResponse<CreateTransReqDto>> {
+    return await firstValueFrom(
+      this.txnClient.send(kafkaTopic.TXN.GET, collectionDto),
     );
   }
 }

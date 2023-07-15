@@ -1,9 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Prop } from '@nestjs/mongoose';
 
-export type UserSettingDocument = HydratedDocument<UserSetting>;
-
-@Schema()
 export class UserSetting {
   @Prop({ type: Boolean, default: true })
   stockNoti: boolean;
@@ -17,5 +13,3 @@ export class UserSetting {
   @Prop({ type: Boolean, default: true })
   newsNoti: boolean;
 }
-
-export const UserSettingSchema = SchemaFactory.createForClass(UserSetting);

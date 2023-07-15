@@ -10,6 +10,10 @@ import {
   ZPDataCallback,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
+import {
+  CollectionDto,
+  CollectionResponse,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 @Controller()
 export class TxnCrudController {
   constructor(private readonly txnCrudService: TxnCrudService) {}
@@ -47,5 +51,17 @@ export class TxnCrudController {
     @Payload() vnpIpnUrlReqDto: VNPIpnUrlReqDto,
   ): Promise<BaseResDto> {
     return await this.txnCrudService.vnpCallback(vnpIpnUrlReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.TXN.GET_BY_USER)
+  async findByUser(@Payload() user_id: string): Promise<BaseResDto> {
+    return await this.txnCrudService.findByUser(user_id);
+  }
+
+  @MessagePattern(kafkaTopic.TXN.GET)
+  async find(
+    @Payload() collectionDto: CollectionDto,
+  ): Promise<CollectionResponse<CreateTransReqDto>> {
+    return await this.txnCrudService.find(collectionDto);
   }
 }

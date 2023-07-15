@@ -111,6 +111,8 @@ export const TXN = {
   VNP_CREATE_ORD: 'vnpayCreateOrder',
   VNP_CALLBACK: 'vnpayReturnUrl',
   VNP_IPN: 'vnpayIpnUrl',
+  GET_BY_USER: 'GetTransactionsByUserId',
+  GET: 'GetAllTransactions',
 };
 
 export const COMM = {

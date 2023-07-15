@@ -38,6 +38,11 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import * as MOP from '../../core/constants/payment_method.constants';
 import { SoftDeleteModel } from 'mongoose-delete';
 import moment from 'moment-timezone';
+import {
+  CollectionDto,
+  CollectionResponse,
+  DocumentCollector,
+} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class TxnCrudService implements OnModuleInit {
@@ -67,7 +72,43 @@ export class TxnCrudService implements OnModuleInit {
     }
     await Promise.all([this.usersClient.connect()]);
   }
-
+  async findByUser(user_id: string): Promise<BaseResDto> {
+    console.log('Get transactions by user', user_id);
+    return this.transModel
+      .find({ user: user_id })
+      .then((res) => {
+        return {
+          statusCode: HttpStatus.OK,
+          message: `Get transactions by user #${user_id}`,
+          data: res,
+        };
+      })
+      .catch((error) => {
+        return Promise.resolve({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        });
+      });
+  }
+  async find(
+    collectionDto: CollectionDto,
+  ): Promise<CollectionResponse<CreateTransReqDto>> {
+    console.log(`txn-svc#get-all-transactions`);
+    const collector = new DocumentCollector<TransactionDocument>(
+      this.transModel,
+    );
+    return await collector
+      .find(collectionDto)
+      .then((res) => {
+        return Promise.resolve({
+          data: res.data,
+          pagination: res.pagination,
+        });
+      })
+      .catch((err) => {
+        throw err;
+      });
+  }
   async zpCheckout(checkoutReqDto: CheckoutReqDto): Promise<ZPCheckoutResDto> {
     const { _id, cart, group } = checkoutReqDto;
     console.log(`Checkout #${_id}`, cart);
@@ -231,7 +272,7 @@ export class TxnCrudService implements OnModuleInit {
         type: MOP.PAYMENT_METHOD.EWALLET,
         name: MOP.EWALLET.ZALOPAY,
         trans_id: zpDataCallback.zp_trans_id,
-        detail_info: {
+        embed_data: {
           channel: MOP.ZALOPAY[zpDataCallback.channel],
           zp_user_id: zpDataCallback.merchant_user_id,
           user_fee_amount: zpDataCallback.user_fee_amount,
@@ -415,7 +456,7 @@ export class TxnCrudService implements OnModuleInit {
             type: MOP.PAYMENT_METHOD.EWALLET,
             name: MOP.EWALLET.VNPAY,
             trans_id: trans_id,
-            detail_info: {
+            embed_data: {
               bankCode: vnpIpnUrlReqDto.vnp_BankCode,
               bankTransNo: vnpIpnUrlReqDto.vnp_BankTranNo,
               cardType: vnpIpnUrlReqDto.vnp_CardType,
