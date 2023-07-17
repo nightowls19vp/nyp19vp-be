@@ -763,12 +763,9 @@ export class GroupService implements OnModuleInit {
   async mapGrModelToGetGrDto_Pkg(model): Promise<GetGrDto_Pkg[]> {
     if (model.packages) {
       const result = model.packages.map(async (elem) => {
-        const pkg: PackageDto = await this.pkgModel.findById(
-          {
-            _id: elem.package._id,
-          },
-          { name: 1, duration: 1, price: 1, noOfMember: 1, description: 1 },
-        );
+        const pkg: PackageDto = await this.pkgModel.findById({
+          _id: elem.package._id,
+        });
         pkg.duration = elem.package.duration;
         pkg.noOfMember = elem.package.noOfMember;
         const packages: GetGrDto_Pkg = {
@@ -779,6 +776,8 @@ export class GroupService implements OnModuleInit {
             elem.startDate && elem.endDate
               ? setStatus(elem.startDate, elem.endDate)
               : PkgStatus[0],
+          createdAt: elem.createdAt,
+          updatedAt: elem.updatedAt,
         };
         return packages;
       });

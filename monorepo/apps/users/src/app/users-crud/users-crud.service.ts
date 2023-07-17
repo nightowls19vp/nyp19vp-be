@@ -127,12 +127,7 @@ export class UsersCrudService implements OnModuleInit {
   }
 
   async findMany(list_id: IdDto[]): Promise<UserInfo[]> {
-    const res = await this.userModel
-      .find(
-        { _id: { $in: list_id } },
-        { name: 1, dob: 1, email: 1, phone: 1, avatar: 1 },
-      )
-      .exec();
+    const res = await this.userModel.find({ _id: { $in: list_id } }).exec();
     return res;
   }
 
