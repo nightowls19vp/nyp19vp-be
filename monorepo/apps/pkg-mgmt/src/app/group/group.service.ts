@@ -776,8 +776,6 @@ export class GroupService implements OnModuleInit {
             elem.startDate && elem.endDate
               ? setStatus(elem.startDate, elem.endDate)
               : PkgStatus[0],
-          createdAt: elem.createdAt,
-          updatedAt: elem.updatedAt,
         };
         return packages;
       });
