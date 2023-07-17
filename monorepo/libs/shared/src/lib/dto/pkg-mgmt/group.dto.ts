@@ -110,7 +110,6 @@ export class GroupDto extends IdDto {
     description: 'Name of group, must be an ascii string',
   })
   @IsString()
-  @IsAscii()
   name: string;
 
   @ApiProperty({
