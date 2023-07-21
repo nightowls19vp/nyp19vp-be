@@ -255,4 +255,19 @@ export class AuthService {
       this.authClient.send(kafkaTopic.AUTH.VALIDATE_TOKEN, token),
     );
   }
+
+  async findAll(req) {
+    const resDto = await firstValueFrom(
+      this.authClient
+        .send(kafkaTopic.AUTH.GET, req)
+        .pipe(timeout(toMs('5s')))
+        .pipe(
+          catchError((error) => {
+            throw error;
+          }),
+        ),
+    );
+
+    return resDto;
+  }
 }

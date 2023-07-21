@@ -132,4 +132,9 @@ export class AuthController implements OnModuleInit {
   ): Promise<ValidateJoinGroupTokenResDto> {
     return this.authService.validateJoinGrToken(reqDto);
   }
+
+  @MessagePattern(kafkaTopic.AUTH.GET)
+  async findAll(@Payload() req): Promise<BaseResDto> {
+    return this.authService.findAll(req);
+  }
 }

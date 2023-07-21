@@ -38,6 +38,8 @@ import { TokenEntity } from '../entities/token.entity';
 import { sendMailWithRetries } from '../utils/mail';
 import { AccountService } from './account.service';
 import ms from 'ms';
+import { error } from 'console';
+import { UserInfo } from './../../../../../libs/shared/src/lib/dto/users/users.dto';
 
 @Injectable()
 export class AuthService {
@@ -471,5 +473,28 @@ export class AuthService {
     }
 
     return result;
+  }
+
+  async findAll(req): Promise<BaseResDto> {
+    try {
+      const listAcc = await this.accountRepo.find();
+      const listUser = await this.accountService.getAllUserInfo();
+      const res = listAcc.map((account) => {
+        const found = listUser.data.find(
+          (ele) => ele._id === account.userInfoId,
+        );
+        account['userInfo'] = found;
+        return account;
+      });
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Get all users successfully',
+        data: res,
+      };
+    } catch (error) {
+      console.error('error', error);
+
+      throw new RpcException(error);
+    }
   }
 }

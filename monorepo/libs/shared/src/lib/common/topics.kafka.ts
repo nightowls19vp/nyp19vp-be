@@ -7,6 +7,7 @@ export const HEALT_CHECK = {
 };
 
 export const AUTH = {
+  GET: 'getAllAuthUsers',
   VALIDATE_USER: 'validate_user',
   VALIDATE_TOKEN: 'validate_token',
   GOOGLE_AUTH: 'google_auth',

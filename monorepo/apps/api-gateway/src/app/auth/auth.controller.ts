@@ -326,4 +326,9 @@ export class AuthController implements OnModuleInit {
   async googleLink() {
     // this route empty
   }
+
+  @Get()
+  async findAll(@Req() req: Request) {
+    return this.authService.findAll(req);
+  }
 }
