@@ -8,7 +8,6 @@ import {
   Delete,
   Query,
   Put,
-  Req,
 } from '@nestjs/common';
 import { PackageService } from './package.service';
 import {
@@ -59,12 +58,6 @@ export class PackageController {
     console.log('get all packages');
     console.log(collectionDto);
     return this.packageService.find(collectionDto);
-  }
-
-  @Get('all')
-  findWithDeleted(@Req() req: Request): Promise<PackageDto[]> {
-    console.log('get all packages with deleted');
-    return this.packageService.findWithDeleted(req);
   }
 
   @Get(':id')

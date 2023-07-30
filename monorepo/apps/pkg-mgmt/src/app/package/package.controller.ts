@@ -32,11 +32,6 @@ export class PackageController {
     return this.packageService.find(collectionDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_DELETED)
-  findWithDeleted(@Payload() req): Promise<PackageDto[]> {
-    return this.packageService.findWithDeleted(req);
-  }
-
   @MessagePattern(kafkaTopic.PKG_MGMT.PACKAGE.GET_BY_ID)
   findById(@Payload() id: Types.ObjectId): Promise<GetPkgResDto> {
     return this.packageService.findById(id);

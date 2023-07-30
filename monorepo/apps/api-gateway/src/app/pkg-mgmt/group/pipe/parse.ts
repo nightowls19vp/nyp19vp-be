@@ -9,10 +9,6 @@ enum Group {
   task,
   packages,
   members,
-  deleted,
-  createdAt,
-  updatedAt,
-  deletedAt,
 }
 
 export class SorterParser {

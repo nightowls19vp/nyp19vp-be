@@ -25,7 +25,14 @@ export class PackageService {
   ) {}
   async create(createPkgReqDto: CreatePkgReqDto): Promise<BaseResDto> {
     console.log('pkg-mgmt-svc#create-package: ', createPkgReqDto);
-    const newPkg = new this.pkgModel({ ...createPkgReqDto });
+    const newPkg = new this.pkgModel({
+      name: createPkgReqDto.name,
+      duration: createPkgReqDto.duration,
+      price: createPkgReqDto.price,
+      noOfMember: createPkgReqDto.noOfMember,
+      description: createPkgReqDto.description,
+      createdBy: createPkgReqDto.createdBy,
+    });
     return await newPkg
       .save()
       .then(() => {
@@ -58,10 +65,6 @@ export class PackageService {
       .catch((err) => {
         throw err;
       });
-  }
-  async findWithDeleted(req): Promise<PackageDto[]> {
-    console.log('pkg-mgmt-svc#get-all-packages with deleted');
-    return await this.pkgModel.findWithDeleted().exec();
   }
 
   async findById(id: Types.ObjectId): Promise<GetPkgResDto> {
@@ -96,7 +99,17 @@ export class PackageService {
     const { _id } = updatePkgReqDto;
     console.log(`pkg-mgmt-svc#update-package #${_id}`);
     return await this.pkgModel
-      .updateOne({ _id: _id }, { ...updatePkgReqDto })
+      .updateOne(
+        { _id: _id },
+        {
+          name: updatePkgReqDto.name,
+          duration: updatePkgReqDto.duration,
+          price: updatePkgReqDto.price,
+          noOfMember: updatePkgReqDto.noOfMember,
+          description: updatePkgReqDto.description,
+          updatedBy: updatePkgReqDto.updatedBy,
+        },
+      )
       .then(async (res) => {
         if (res.matchedCount && res.modifiedCount) {
           const data = await this.pkgModel.findById(_id);

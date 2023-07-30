@@ -84,13 +84,6 @@ export class GroupController {
     return this.groupService.rmPkg(updateGrPkgReqDto);
   }
 
-  @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_DELETED)
-  findWithDeleted(
-    @Payload() paginationParams: PaginationParams,
-  ): Promise<GetGrsResDto> {
-    return this.groupService.findWithDeleted(paginationParams);
-  }
-
   @MessagePattern(kafkaTopic.PKG_MGMT.GROUP.GET_BY_USER)
   findByUser(
     @Payload() paginationParams: PaginationParams,

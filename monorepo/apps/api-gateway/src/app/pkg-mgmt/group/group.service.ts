@@ -228,19 +228,6 @@ export class GroupService implements OnModuleInit {
       else throw new HttpException(res.message, res.statusCode);
     });
   }
-  async findWithDeleted(
-    paginationParams: PaginationParams,
-  ): Promise<GetGrsResDto> {
-    return await firstValueFrom(
-      this.packageMgmtClient.send(
-        kafkaTopic.PKG_MGMT.GROUP.GET_DELETED,
-        JSON.stringify(paginationParams),
-      ),
-    ).then((res) => {
-      if (res.statusCode == HttpStatus.OK) return res;
-      else throw new HttpException(res.message, res.statusCode);
-    });
-  }
   async updateAvatar(
     updateAvatarReqDto: UpdateAvatarReqDto,
   ): Promise<BaseResDto> {

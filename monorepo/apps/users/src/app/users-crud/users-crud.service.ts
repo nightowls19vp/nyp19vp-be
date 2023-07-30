@@ -97,11 +97,6 @@ export class UsersCrudService implements OnModuleInit {
       });
   }
 
-  async getWithDeleted(req): Promise<UserDto[]> {
-    const res = await this.userModel.findWithDeleted().exec();
-    return res;
-  }
-
   async findInfoById(id: Types.ObjectId): Promise<GetUserResDto> {
     console.log(`users-svc#get-user-by-id:`, id);
     return await this.userModel

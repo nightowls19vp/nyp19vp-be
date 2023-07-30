@@ -121,14 +121,19 @@ export class TaskService implements OnModuleInit {
     model,
     owner?: string,
   ): Promise<GetGrDto_Task> {
-    const { updatedBy, createdBy, members, ...rest } = model;
-    if (owner != undefined && model.state == State[0] && createdBy != owner) {
+    if (
+      owner != undefined &&
+      model.state == State[0] &&
+      model.createdBy != owner
+    ) {
       return undefined;
     } else {
-      const list_others = updatedBy ? [createdBy, updatedBy] : [createdBy];
+      const list_others = model.updatedBy
+        ? [model.createdBy, model.updatedBy]
+        : [model.createdBy];
       const list_id =
-        model.state == State[1] && members
-          ? members.concat(list_others)
+        model.state == State[1] && model.members
+          ? model.members.concat(list_others)
           : list_others;
       const list_user = await firstValueFrom(
         this.usersClient
@@ -136,18 +141,24 @@ export class TaskService implements OnModuleInit {
           .pipe(timeout(5000)),
       );
       const newMembers = [];
-      if (members) {
-        for (let i = 0; i < members.length; i++) {
-          const user = list_user.find((elem) => elem._id == members[i]);
+      if (model.members) {
+        for (let i = 0; i < model.members.length; i++) {
+          const user = list_user.find((elem) => elem._id == model.members[i]);
           newMembers.push(user);
         }
       }
       const result: GetGrDto_Task = {
-        ...rest,
+        _id: model._id,
+        summary: model.summary,
+        description: model.description,
+        isRepeated: model.isRepeated,
+        recurrence: model.recurrence,
         members: newMembers,
-        createdBy: list_user.find((elem) => elem._id == createdBy),
-        updatedBy: updatedBy
-          ? list_user.find((elem) => elem._id == updatedBy)
+        startDate: model.startDate,
+        state: model.state,
+        createdBy: list_user.find((elem) => elem._id == model.createdBy),
+        updatedBy: model.updatedBy
+          ? list_user.find((elem) => elem._id == model.updatedBy)
           : undefined,
       };
       return result;

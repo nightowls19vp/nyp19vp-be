@@ -187,45 +187,12 @@ export class GroupService implements OnModuleInit {
         });
       });
   }
-  async findWithDeleted(
-    paginationParams: PaginationParams,
-  ): Promise<GetGrsResDto> {
-    console.log(`pkg-mgmt-svc#get-all-groups-with-deleted`);
-    const pagination = await this.paginate(paginationParams, {}, true);
-    return await this.grModel
-      .aggregateWithDeleted(this.aggregatePipeline(paginationParams))
-      .then(async (res) => {
-        const groups: GetGrDto[] = await Promise.all(
-          res.map(async (gr) => {
-            await this.todoModel.populate(gr.todos, {
-              path: 'todos',
-            });
-
-            return await this.mapGrModelToGetGrDto(gr);
-          }),
-        );
-        return Promise.resolve({
-          statusCode: HttpStatus.OK,
-          message: `get all groups with deleted successfully`,
-          groups: groups,
-          pagination: pagination,
-        });
-      })
-      .catch((error) => {
-        return Promise.resolve({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message,
-          groups: null,
-          pagination: pagination,
-        });
-      });
-  }
   async findByUser(paginationParams: PaginationParams): Promise<GetGrsResDto> {
     const { user, role } = paginationParams;
     console.log(`pkg-mgmt-svc#get-groups-user-id #${user}`);
     const query = { user: user };
     role != undefined ? (query['role'] = role) : null;
-    const pagination = await this.paginate(paginationParams, query, false);
+    const pagination = await this.paginate(paginationParams, query);
     return await this.grModel
       .aggregate(this.aggregatePipeline(paginationParams))
       .then(async (res) => {
@@ -255,8 +222,7 @@ export class GroupService implements OnModuleInit {
   }
   private aggregatePipeline(paginationParams: PaginationParams) {
     const { user, role, sorter, limit, page, proj } = paginationParams;
-    const query = {};
-    user != undefined ? (query['user'] = user) : null;
+    const query = { user: user };
     role != undefined ? (query['role'] = role) : null;
     const documentSkip = page == 0 ? 0 : page * limit;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -340,15 +306,13 @@ export class GroupService implements OnModuleInit {
       .deleteById(id)
       .then(async (res) => {
         if (res) {
-          const data = await this.grModel
-            .findOneWithDeleted({ _id: id })
-            .populate({
-              path: 'packages',
-              populate: {
-                path: 'package',
-                model: 'Package',
-              },
-            });
+          const data = await this.grModel.findById(id).populate({
+            path: 'packages',
+            populate: {
+              path: 'package',
+              model: 'Package',
+            },
+          });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `delete group #${id} successfully`,
@@ -635,6 +599,7 @@ export class GroupService implements OnModuleInit {
       .findByIdAndUpdate({ _id: _id }, { avatar: avatar })
       .then(async (res) => {
         const data = await this.grModel.findById(_id, { avatar: 1 });
+        console.log(data);
         if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
@@ -662,6 +627,7 @@ export class GroupService implements OnModuleInit {
       .findByIdAndUpdate({ _id: _id }, { channel: channel })
       .then(async (res) => {
         const data = await this.grModel.findById(_id, { channel: 1 });
+        console.log(data);
         if (res)
           return Promise.resolve({
             statusCode: HttpStatus.OK,
@@ -781,18 +747,8 @@ export class GroupService implements OnModuleInit {
     };
     return await this.findById(projectionParams);
   }
-  private async paginate(
-    params: PaginationParams,
-    query,
-    deleted: boolean,
-  ): Promise<Pagination> {
-    let count: number;
-    if (deleted) {
-      count = await this.grModel.countWithDeleted(query);
-    } else {
-      count = await this.grModel.count(query);
-    }
-
+  private async paginate(params: PaginationParams, query): Promise<Pagination> {
+    const count: number = await this.grModel.count(query);
     const pagination: Pagination = {
       total: count,
       page: params.page,
@@ -807,7 +763,7 @@ export class GroupService implements OnModuleInit {
   async mapGrModelToGetGrDto_Pkg(model): Promise<GetGrDto_Pkg[]> {
     if (model.packages) {
       const result = model.packages.map(async (elem) => {
-        const pkg: PackageDto = await this.pkgModel.findOneWithDeleted({
+        const pkg: PackageDto = await this.pkgModel.findById({
           _id: elem.package._id,
         });
         pkg.duration = elem.package.duration;
@@ -864,6 +820,7 @@ export class GroupService implements OnModuleInit {
   ): Promise<GetGrDto_Todos[]> {
     if (model.todos) {
       const result = model.todos.map(async (todo) => {
+        console.log(todo);
         return await this.todosService.mapTodosModelToGetGrDto_Todos(
           todo,
           owner,
@@ -886,9 +843,11 @@ export class GroupService implements OnModuleInit {
     return undefined;
   }
   async mapGrModelToGetGrDto(model, owner?: string): Promise<GetGrDto> {
-    const { billing, todos, task, packages, members, ...rest } = model;
     const result: GetGrDto = {
-      ...rest,
+      _id: model._id,
+      name: model.name,
+      avatar: model.avatar,
+      channel: model.channel,
       billing: await this.mapGrModelToGetGrDto_Bill(model),
       todos: await this.mapGrModelToGetGrDto_Todos(model, owner),
       task: await this.mapGrModelToGetGrDto_Task(model, owner),

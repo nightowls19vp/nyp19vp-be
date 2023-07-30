@@ -270,7 +270,7 @@ export class ProjectionParams extends IdDto {
 
 export class PaginationParams extends OmitType(ProjectionParams, ['_id']) {
   @Transform((v: TransformFnParams) => new ObjectId(v.value))
-  user?: string;
+  user: string;
 
   @ApiPropertyOptional({
     description: 'Role of user',
@@ -342,10 +342,6 @@ export class GetGrDto extends IdDto {
   task?: GetGrDto_Task[];
   packages?: GetGrDto_Pkg[];
   members?: GetGrDto_Memb[];
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  deleted?: boolean;
 }
 
 export class GetGrResDto extends BaseResDto {

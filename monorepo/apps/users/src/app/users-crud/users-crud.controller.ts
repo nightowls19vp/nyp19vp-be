@@ -42,11 +42,6 @@ export class UsersCrudController {
     return this.usersCrudService.findAll(collectionDto);
   }
 
-  @MessagePattern(kafkaTopic.USERS.GET_DELETED)
-  getWithDeleted(@Payload() req): Promise<UserDto[]> {
-    return this.usersCrudService.getWithDeleted(req);
-  }
-
   @MessagePattern(kafkaTopic.USERS.GET_BY_ID)
   findInfoById(@Payload() id: Types.ObjectId): Promise<GetUserResDto> {
     return this.usersCrudService.findInfoById(id);
