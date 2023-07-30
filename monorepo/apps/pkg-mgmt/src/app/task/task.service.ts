@@ -143,8 +143,14 @@ export class TaskService implements OnModuleInit {
         }
       }
       const result: GetGrDto_Task = {
-        ...rest,
+        _id: model._id,
+        summary: model.summary,
+        description: model.description,
+        isRepeated: model.isRepeated,
+        recurrence: model.recurrence,
         members: newMembers,
+        startDate: model.startDate,
+        state: model.state,
         createdBy: list_user.find((elem) => elem._id == createdBy),
         updatedBy: updatedBy
           ? list_user.find((elem) => elem._id == updatedBy)

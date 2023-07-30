@@ -151,15 +151,20 @@ export class BillService implements OnModuleInit {
     });
     list_status.push(BillStatus[2]);
     const getGrDto_Bill: GetGrDto_Bill = {
-      ...rest,
+      _id: model._id,
+      summary: model.summary,
+      date: model.date,
       lender: list_user.find((elem) => elem._id == lender),
       borrowers: newBorrowers,
       total: total,
       status: setStatus(list_status),
+      description: model.description,
       createdBy: list_user.find((elem) => elem._id == createdBy),
       updatedBy: updatedBy
         ? list_user.find((elem) => elem._id == updatedBy)
         : undefined,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
     };
     return getGrDto_Bill;
   }

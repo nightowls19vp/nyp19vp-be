@@ -886,14 +886,20 @@ export class GroupService implements OnModuleInit {
     return undefined;
   }
   async mapGrModelToGetGrDto(model, owner?: string): Promise<GetGrDto> {
-    const { billing, todos, task, packages, members, ...rest } = model;
     const result: GetGrDto = {
-      ...rest,
+      _id: model._id,
+      name: model.name,
+      avatar: model.avatar,
+      channel: model.channel,
       billing: await this.mapGrModelToGetGrDto_Bill(model),
       todos: await this.mapGrModelToGetGrDto_Todos(model, owner),
       task: await this.mapGrModelToGetGrDto_Task(model, owner),
       packages: await this.mapGrModelToGetGrDto_Pkg(model),
       members: await this.mapGrModelToGetGrDto_Memb(model),
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      deleted: model.deleted,
+      deletedAt: model.deletedAt,
     };
     return result;
   }

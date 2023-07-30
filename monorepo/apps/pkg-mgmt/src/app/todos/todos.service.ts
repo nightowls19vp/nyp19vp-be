@@ -131,7 +131,10 @@ export class TodosService implements OnModuleInit {
           .pipe(timeout(5000)),
       );
       const result: GetGrDto_Todos = {
-        ...rest,
+        _id: model._id,
+        summary: model.summary,
+        todos: model.todos,
+        state: model.state,
         createdBy: list_user.find((elem) => elem._id == createdBy),
         updatedBy: updatedBy
           ? list_user.find((elem) => elem._id == updatedBy)
