@@ -478,11 +478,9 @@ export class AuthService {
   async findAll(req): Promise<BaseResDto> {
     try {
       const listAcc = await this.accountRepo.find();
-      const listUser = await this.accountService.getAllUserInfo();
+      const listUser = await this.accountService.getAllUserInfo(req);
       const res = listAcc.map((account) => {
-        const found = listUser.data.find(
-          (ele) => ele._id === account.userInfoId,
-        );
+        const found = listUser.find((ele) => ele._id === account.userInfoId);
         account['userInfo'] = found;
         return account;
       });

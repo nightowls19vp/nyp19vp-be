@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   Delete,
+  Req,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -79,6 +80,14 @@ export class GroupController {
   ): Promise<CollectionResponse<GroupDto>> {
     console.log('Get all groups');
     return this.groupService.find(collectionDto);
+  }
+
+  @Get('all')
+  findWithDeleted(
+    @Query(new GrsValidationPipe()) paginationParams: PaginationParams,
+  ): Promise<GetGrsResDto> {
+    console.log('Get all groups with deleted');
+    return this.groupService.findWithDeleted(paginationParams);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)

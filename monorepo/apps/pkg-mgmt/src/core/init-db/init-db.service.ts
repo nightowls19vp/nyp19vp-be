@@ -21,6 +21,8 @@ export class InitDbService {
         duration: 1,
         price: 70000,
         noOfMember: 2,
+        editableDuration: false,
+        editableNoOfMember: true,
         description:
           'Essentiels management\nGroup Chat\nGroup Call\nSpending management',
         coefficient: 20000,
@@ -31,6 +33,8 @@ export class InitDbService {
         duration: 12,
         price: 300000,
         noOfMember: 4,
+        editableDuration: false,
+        editableNoOfMember: false,
         description:
           'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
       });
@@ -40,6 +44,8 @@ export class InitDbService {
         duration: 12,
         price: 357000,
         noOfMember: 2,
+        editableDuration: false,
+        editableNoOfMember: true,
         description:
           'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
         coefficient: 20000,
@@ -50,6 +56,8 @@ export class InitDbService {
         duration: 1,
         price: 70000,
         noOfMember: 2,
+        editableDuration: true,
+        editableNoOfMember: true,
         description:
           'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
         coefficient: 20000,

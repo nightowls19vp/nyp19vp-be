@@ -5,8 +5,8 @@ import {
   OnModuleInit,
   Inject,
   Get,
-  UseGuards,
   Query,
+  Param,
 } from '@nestjs/common';
 import { TxnService } from './txn.service';
 import {
@@ -18,10 +18,7 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
-import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
-import { ATUser } from '../decorators/at-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 import {
   CollectionDto,
   CollectionResponse,
@@ -69,13 +66,10 @@ export class TxnController implements OnModuleInit {
     return this.txnService.vnpCallback(vnpIpnUrlReqDto);
   }
 
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
-  @Get('user')
-  findByUser(@ATUser() user: unknown): Promise<BaseResDto> {
-    const user_id: string = user?.['userInfo']?.['_id'];
-    console.log('Get transactions by user', user_id);
-    return this.txnService.findByUser(user_id);
+  @Get(':userId')
+  findByUser(@Param('userId') userId: string): Promise<BaseResDto> {
+    console.log('Get transactions by user', userId);
+    return this.txnService.findByUser(userId);
   }
 
   @Get()

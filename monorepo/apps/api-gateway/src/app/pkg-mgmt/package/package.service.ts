@@ -8,6 +8,7 @@ import {
   Inject,
   Injectable,
   OnModuleInit,
+  RequestTimeoutException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import {
@@ -19,7 +20,7 @@ import {
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class PackageService implements OnModuleInit {
@@ -53,6 +54,18 @@ export class PackageService implements OnModuleInit {
         kafkaTopic.PKG_MGMT.PACKAGE.GET,
         collectionDto,
       ),
+    );
+  }
+  async findWithDeleted(req): Promise<PackageDto[]> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_DELETED, req)
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
     );
   }
   async findById(id: Types.ObjectId): Promise<GetPkgResDto> {

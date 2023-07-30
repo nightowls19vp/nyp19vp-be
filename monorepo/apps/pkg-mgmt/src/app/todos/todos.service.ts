@@ -120,29 +120,21 @@ export class TodosService implements OnModuleInit {
     model,
     owner?: string,
   ): Promise<GetGrDto_Todos> {
-    if (
-      owner != undefined &&
-      model.state == State[0] &&
-      model.createdBy != owner
-    ) {
+    const { updatedBy, createdBy, ...rest } = model;
+    if (owner != undefined && model.state == State[0] && createdBy != owner) {
       return undefined;
     } else {
-      const list_others = model.updatedBy
-        ? [model.createdBy, model.updatedBy]
-        : [model.createdBy];
+      const list_others = updatedBy ? [createdBy, updatedBy] : [createdBy];
       const list_user = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.GET_MANY, list_others)
           .pipe(timeout(5000)),
       );
       const result: GetGrDto_Todos = {
-        _id: model._id,
-        summary: model.summary,
-        todos: model.todos,
-        state: model.state,
-        createdBy: list_user.find((elem) => elem._id == model.createdBy),
-        updatedBy: model.updatedBy
-          ? list_user.find((elem) => elem._id == model.updatedBy)
+        ...rest,
+        createdBy: list_user.find((elem) => elem._id == createdBy),
+        updatedBy: updatedBy
+          ? list_user.find((elem) => elem._id == updatedBy)
           : undefined,
       };
       return result;

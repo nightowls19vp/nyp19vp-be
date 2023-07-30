@@ -18,6 +18,12 @@ export class Package {
   @Prop({ type: Number, required: true, minimum: 1 })
   noOfMember: number;
 
+  @Prop({ type: Boolean, required: false, default: false })
+  editableDuration: boolean;
+
+  @Prop({ type: Boolean, required: false, default: false })
+  editableNoOfMember: boolean;
+
   @Prop({ type: String, maxlength: 1000, required: false })
   description: string;
 
