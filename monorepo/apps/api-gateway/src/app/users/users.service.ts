@@ -248,7 +248,13 @@ export class UsersService {
           throw new RequestTimeoutException();
         }),
       ),
-    );
+    ).then((res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode);
+      }
+    });
   }
   async renewPkg(
     renewGrPkgReqDto: RenewGrPkgReqDto,
@@ -269,5 +275,15 @@ export class UsersService {
         throw new HttpException(res.message, res.statusCode);
       }
     });
+  }
+  async getWithDeleted(req): Promise<UserDto[]> {
+    return await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.GET_DELETED, req).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        }),
+      ),
+    );
   }
 }

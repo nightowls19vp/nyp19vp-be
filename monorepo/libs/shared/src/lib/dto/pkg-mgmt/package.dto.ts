@@ -41,6 +41,12 @@ export class PackageDto extends IdDto {
   @IsPositive()
   noOfMember: number;
 
+  @ApiProperty({ required: false, default: false, example: false })
+  editableDuration?: boolean;
+
+  @ApiProperty({ required: false, default: false, example: false })
+  editableNoOfMember?: boolean;
+
   @ApiProperty({
     type: String,
     minLength: 3,

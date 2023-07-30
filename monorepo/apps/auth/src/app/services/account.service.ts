@@ -30,10 +30,6 @@ import { SocialAccountEntity } from '../entities/social-media-account.entity';
 import { AuthService } from './auth.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { sendMailWithRetries } from '../utils/mail';
-import {
-  CollectionDto,
-  CollectionResponse,
-} from '@forlagshuset/nestjs-mongoose-paginate';
 
 @Injectable()
 export class AccountService {
@@ -414,11 +410,10 @@ export class AccountService {
       };
     }
   }
-  async getAllUserInfo(): Promise<CollectionResponse<UserDto>> {
-    const collectionDto: CollectionDto = {};
+  async getAllUserInfo(req): Promise<UserDto[]> {
     return await firstValueFrom(
       this.usersClient
-        .send(kafkaTopic.USERS.GET, collectionDto)
+        .send(kafkaTopic.USERS.GET_DELETED, req)
         .pipe(timeout(7000)),
     );
   }

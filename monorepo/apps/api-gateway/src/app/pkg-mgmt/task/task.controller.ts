@@ -43,6 +43,7 @@ export class TaskController {
     return this.taskService.create(createTaskReqDto);
   }
 
+  @ApiParam({ name: 'id', type: String })
   @Get(':id')
   findById(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,

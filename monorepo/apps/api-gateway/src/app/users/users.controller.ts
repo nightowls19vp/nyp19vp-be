@@ -11,6 +11,7 @@ import {
   Ip,
   Patch,
   Query,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -94,6 +95,11 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getAllUsers(collectionDto);
   }
 
+  @Get('all')
+  getWithDeleted(@Req() req: Request): Promise<UserDto[]> {
+    return this.usersService.getWithDeleted(req);
+  }
+
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Get('search')
@@ -107,8 +113,6 @@ export class UsersController implements OnModuleInit {
   @Get(':id')
   @ApiOkResponse({ description: 'Got user by Id', type: GetUserResDto })
   @ApiParam({ name: 'id', type: String })
-  @ApiNotFoundResponse({ description: 'No user found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   async getUserById(
     @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
   ): Promise<GetUserResDto> {
@@ -145,18 +149,6 @@ export class UsersController implements OnModuleInit {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Delete(':id')
-  @ApiParam({ name: 'id', type: String })
-  @ApiOkResponse({ description: 'Deleted user', type: BaseResDto })
-  async deleteUser(
-    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
-  ): Promise<BaseResDto> {
-    console.log(`delete user #${id}`);
-    return this.usersService.deleteUser(id);
-  }
-
-  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
-  @UseGuards(AccessJwtAuthGuard)
   @Patch(':id')
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({
@@ -168,6 +160,18 @@ export class UsersController implements OnModuleInit {
   ): Promise<BaseResDto> {
     console.log(`restore user #${id}`);
     return this.usersService.restoreUser(id);
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Delete(':id')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({ description: 'Deleted user', type: BaseResDto })
+  async deleteUser(
+    @Param('id', new ParseObjectIdPipe()) id: Types.ObjectId,
+  ): Promise<BaseResDto> {
+    console.log(`delete user #${id}`);
+    return this.usersService.deleteUser(id);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)

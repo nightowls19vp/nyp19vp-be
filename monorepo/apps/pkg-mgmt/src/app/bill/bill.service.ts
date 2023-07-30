@@ -122,9 +122,10 @@ export class BillService implements OnModuleInit {
   }
 
   async mapBillModelToGetGrDto_Bill(model): Promise<GetGrDto_Bill> {
-    const list_others = [model.lender, model.createdBy];
-    model.updatedBy ? list_others.push(model.updatedBy) : null;
-    const list_borrower = model.borrowers.map((borrower) => {
+    const { lender, borrowers, createdBy, updatedBy, ...rest } = model;
+    const list_others = [lender, createdBy];
+    updatedBy ? list_others.push(updatedBy) : null;
+    const list_borrower = borrowers.map((borrower) => {
       return borrower.borrower;
     });
     const list_id = list_borrower.concat(list_others);
@@ -139,31 +140,26 @@ export class BillService implements OnModuleInit {
       const user = list_user.find((elem) => elem._id == list_borrower[i]);
       const borrow = {
         borrower: user,
-        amount: model.borrowers[i].amount,
-        status: model.borrowers[i].status,
+        amount: borrowers[i].amount,
+        status: borrowers[i].status,
       };
       newBorrowers.push(borrow);
-      total += +model.borrowers[i].amount;
+      total += +borrowers[i].amount;
     }
-    const list_status = model.borrowers.map((borrower) => {
+    const list_status = borrowers.map((borrower) => {
       return borrower.status;
     });
     list_status.push(BillStatus[2]);
     const getGrDto_Bill: GetGrDto_Bill = {
-      _id: model._id,
-      summary: model.summary,
-      date: model.date,
-      lender: list_user.find((elem) => elem._id == model.lender),
+      ...rest,
+      lender: list_user.find((elem) => elem._id == lender),
       borrowers: newBorrowers,
       total: total,
       status: setStatus(list_status),
-      description: model.description,
-      createdBy: list_user.find((elem) => elem._id == model.createdBy),
-      updatedBy: model.updatedBy
-        ? list_user.find((elem) => elem._id == model.updatedBy)
+      createdBy: list_user.find((elem) => elem._id == createdBy),
+      updatedBy: updatedBy
+        ? list_user.find((elem) => elem._id == updatedBy)
         : undefined,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
     };
     return getGrDto_Bill;
   }

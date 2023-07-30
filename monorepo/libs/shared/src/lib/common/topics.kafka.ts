@@ -31,6 +31,7 @@ export const USERS = {
   GET_BY_ID: 'getUserById',
   GET_SETTING_BY_ID: 'getUserSettingById',
   GET: 'getAllUsers',
+  GET_DELETED: 'getUsersWithDeleted',
   GET_MANY: 'getManyUsers',
   UPDATE_INFO: 'updateUserInfo',
   UPDATE_SETTING: 'updateUserSetting',
@@ -49,6 +50,7 @@ export const PKG_MGMT = {
   PACKAGE: {
     CREATE: 'createPackage',
     GET: 'getAllPackages',
+    GET_DELETED: 'getPackagesWithDeleted',
     GET_BY_ID: 'getPackageById',
     GET_MANY: 'getManyPackage',
     UPDATE: 'updatePackage',
@@ -58,6 +60,7 @@ export const PKG_MGMT = {
   GROUP: {
     CREATE: 'createGroup',
     GET: 'getAllGroups',
+    GET_DELETED: 'getAllGroupsWithDeleted',
     GET_BY_USER: 'getGroupsByUserId',
     GET_BY_ID: 'getGroupById',
     GET_BY_EXTENSION: 'getGroupsByExtension',
