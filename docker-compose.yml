@@ -46,13 +46,14 @@ services:
     depends_on:
       - zookeeper
 
-  megoo:
-    container_name: megoo
-    image: megoo
+  api-gateway:
+    container_name: api-gateway
+    image: api-gateway
     build:
       context: monorepo
       dockerfile: ./Dockerfile
-    command: ./prod.sh
+    command: node ./dist/apps/api-gateway/main.js
+
     environment:
       NODE_ENV: stage
       ENV_FILE: .env.stage
@@ -67,6 +68,134 @@ services:
     ports:
       - 3000:3000
       - 3001:3001
+    depends_on:
+      - kafka
+
+  auth:
+    container_name: auth
+    image: auth
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/auth/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+    depends_on:
+      - kafka
+
+  comm:
+    container_name: comm
+    image: comm
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/comm/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+    depends_on:
+      - kafka
+
+  pkg_mgmt:
+    container_name: pkg_mgmt
+    image: pkg_mgmt
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/pkg-mgmt/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+    depends_on:
+      - kafka
+
+  prod_mgmt:
+    container_name: prod_mgmt
+    image: prod_mgmt
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/prod-mgmt/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+      DB_PROD_MGMT_PORT: 3306
+      DB_PROD_MGMT_DATABASE: aaklywkt_prod_mgmt
+    depends_on:
+      - kafka
+
+  txn:
+    container_name: txn
+    image: txn
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/txn/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+    depends_on:
+      - kafka
+
+  users:
+    container_name: users
+    image: users
+    build:
+      context: monorepo
+      dockerfile: ./Dockerfile
+    command: node ./dist/apps/users/main.js
+    environment:
+      NODE_ENV: stage
+      ENV_FILE: .env.stage
+      OAUTH2_GOOGLE_CLIENT_SECRET: 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
+      OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+      CLOUDINARY_CLOUD_NAME: nightowls19vp
+      CLOUDINARY_API_KEY: 249351234153949
+      CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
     depends_on:
       - kafka
 
