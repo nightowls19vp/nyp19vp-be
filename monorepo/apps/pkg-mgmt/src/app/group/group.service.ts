@@ -460,15 +460,16 @@ export class GroupService implements OnModuleInit {
       });
   }
   async rmMemb(updateGrMbReqDto: RmGrMbReqDto): Promise<BaseResDto> {
-    const id = updateGrMbReqDto._id;
     const user_id = updateGrMbReqDto.user;
-    console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${id}`);
     const { _id } = updateGrMbReqDto;
+    console.log(`pkg-mgmt-svc#remove-member #${user_id}-from-group #${_id}`);
+
     return await this.grModel
-      .findOne({ _id: _id }, { members: { $elemMatch: { user: user_id } } })
+      .findOne({ _id: _id, members: { $elemMatch: { user: user_id } } })
       .then(async (checkExists) => {
         if (checkExists) {
-          if (checkExists.members.length)
+          console.log(checkExists.members);
+          if (checkExists.members.length > 1)
             if (checkExists.members[0].role != 'Super User') {
               return await this.grModel
                 .updateOne(
@@ -482,7 +483,7 @@ export class GroupService implements OnModuleInit {
                     });
                     return Promise.resolve({
                       statusCode: HttpStatus.OK,
-                      message: `remove member #${user_id} from group #${id} successfully`,
+                      message: `remove member #${user_id} from group #${_id} successfully`,
                       data: data,
                     });
                   }
@@ -494,23 +495,55 @@ export class GroupService implements OnModuleInit {
                   });
                 });
             } else {
+              const membs = checkExists.members.filter(
+                (item) => item.user != user_id,
+              );
+              membs[0].role = 'Super User';
+              return await this.grModel
+                .updateOne({ _id: _id }, { $set: { members: membs } })
+                .then(async (res) => {
+                  if (res.matchedCount && res.modifiedCount) {
+                    const data = await this.grModel.findById(_id, {
+                      members: 1,
+                    });
+                    await this.grModel.updateOne(
+                      { _id: _id },
+                      { $set: { members: data.members } },
+                    );
+
+                    return Promise.resolve({
+                      statusCode: HttpStatus.OK,
+                      message: `remove member #${user_id} from group #${_id} successfully`,
+                      data: data,
+                    });
+                  }
+                })
+                .catch((error) => {
+                  return Promise.resolve({
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: error.message,
+                  });
+                });
+            }
+          else if (checkExists.members.length == 1) {
+            if (checkExists.members[0].role == 'Super User') {
               return Promise.resolve({
                 statusCode: HttpStatus.METHOD_NOT_ALLOWED,
                 message: `Not allowed to remove Super User #${user_id} from group`,
                 error: 'METHOD NOT ALLOWED',
               });
             }
-          else {
+          } else if (checkExists.members.length == 0) {
             return Promise.resolve({
               statusCode: HttpStatus.NOT_FOUND,
-              message: `No member #${user_id} found in group #${id}`,
+              message: `No member #${user_id} found in group #${_id}`,
               error: 'NOT FOUND',
             });
           }
         } else {
           return Promise.resolve({
             statusCode: HttpStatus.NOT_FOUND,
-            message: `No group #${id} found`,
+            message: `No group #${_id} found`,
             error: 'NOT FOUND',
           });
         }
@@ -716,13 +749,8 @@ export class GroupService implements OnModuleInit {
           },
         )
         .then(async (res) => {
-          const data = await this.grModel.findOne(
-            {
-              _id: _id,
-              packages: {
-                $elemMatch: { package: activateGrPkgReqDto.package },
-              },
-            },
+          const data = await this.grModel.findById(
+            { _id: _id },
             { packages: 1 },
           );
           if (res) {
