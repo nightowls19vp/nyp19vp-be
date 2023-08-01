@@ -17,13 +17,14 @@ services:
       KAFKA_RESTART_DELAY: "5"
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: "0"
 
-  nyp19vpbe:
-    container_name: nyp19vpbe
-    image: nyp19vpbe
+  api-gateway:
+    container_name: api-gateway
+    image: api-gateway
     build:
-      context: monorepo
+      context: .
       dockerfile: ./Dockerfile
-    command: npx nx run-many --target=serve --all --maxParallel=100
+    command: ls
+    tty: true
     environment:
       NODE_ENV: stage
       ENV_FILE: .env.stage
@@ -32,9 +33,107 @@ services:
       CLOUDINARY_CLOUD_NAME: nightowls19vp
       CLOUDINARY_API_KEY: 249351234153949
       CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+      GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
       KAFKA_HOST: kafka
       KAFKA_PORT: 29092
     ports:
       - 3000:3000
+      - 3001:3001
     depends_on:
       - kafka
+
+  # auth:
+  #   container_name: auth
+  #   image: auth
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
+
+  # users:
+  #   container_name: users
+  #   image: users
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
+
+  # comm:
+  #   container_name: comm
+  #   image: comm
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
+
+  # pkg-mgmt:
+  #   container_name: pkg-mgmt
+  #   image: pkg-mgmt
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
+
+  # prod-mgmt:
+  #   container_name: prod-mgmt
+  #   image: prod-mgmt
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     GO_UPC_API_KEY: e2794108dccbdff9506de7bddb7f609ab719bd66baba9a7c9cd5177838538316
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
+
+  # txn:
+  #   container_name: txn
+  #   image: txn
+  #   build:
+  #     context: monorepo
+  #     dockerfile: ./Dockerfile
+  #   command: npx nx run-many --target=serve --all --maxParallel=100
+  #   environment:
+  #     NODE_ENV: stage
+  #     ENV_FILE: .env.stage
+  #     OAUTH2_GOOGLE_CLIENT_SECRET: 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
+  #     OAUTH2_GOOGLE_CLIENT_ID: 768201973051-b9supnlu237m58th9c3du0qpp3m13cgl.apps.googleusercontent.com
+  #     CLOUDINARY_CLOUD_NAME: nightowls19vp
+  #     CLOUDINARY_API_KEY: 249351234153949
+  #     CLOUDINARY_API_SECRET: njhqt4KBl2GB-97_grDYiHlNJJw
+  #     KAFKA_HOST: kafka
+  #     KAFKA_PORT: 29092
+  #   depends_on:
+  #     - kafka
