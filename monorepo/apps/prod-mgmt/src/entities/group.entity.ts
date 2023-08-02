@@ -13,7 +13,7 @@ export class GroupEntity {
     name: 'id',
     type: 'uuid',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     generated: 'uuid',
   })
   id: string;

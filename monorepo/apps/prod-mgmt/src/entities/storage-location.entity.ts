@@ -18,7 +18,7 @@ export class StorageLocationEntity {
     name: 'id',
     type: 'uuid',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     generated: 'uuid',
   })
   id: string;
@@ -37,7 +37,7 @@ export class StorageLocationEntity {
     name: 'name',
     unique: false,
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     nullable: false,
     default: null,
   })
@@ -46,7 +46,7 @@ export class StorageLocationEntity {
   @Column({
     name: 'added_by',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     comment: 'user info id - mongo id',
     nullable: true,
     default: null,
@@ -56,7 +56,7 @@ export class StorageLocationEntity {
   @Column({
     name: 'image',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     nullable: false,
     default:
       'https://res.cloudinary.com/nightowls19vp/image/upload/v1687419179/default.png',
@@ -67,7 +67,7 @@ export class StorageLocationEntity {
     name: 'description',
     type: 'text',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     nullable: true,
     default: null,
   })
