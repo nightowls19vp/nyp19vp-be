@@ -59,7 +59,14 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      "*"
+      'http://localhost:3000', // be
+      'http://localhost:3001', // be-backup
+
+      'http://localhost:8000', // fe
+      'http://localhost:8080', // admin-fe
+
+      'https://megoo.netlify.app', // fe deploy
+      'https://admin-megoo.netlify.app', // admin-fe deploy
     ],
     credentials: true,
   });
