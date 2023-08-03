@@ -147,7 +147,7 @@ export class AccountService {
         template: 'welcome.hbs',
         context: {
           name: reqDto.name,
-          link: 'localhost:8080',
+          link: process?.env?.FE_URL || 'http://localhost:8080',
         },
       });
 
