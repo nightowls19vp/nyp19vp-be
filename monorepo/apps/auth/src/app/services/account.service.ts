@@ -31,6 +31,11 @@ import { AuthService } from './auth.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { sendMailWithRetries } from '../utils/mail';
 
+import * as dotenv from 'dotenv';
+import { ENV_FILE } from '@nyp19vp-be/shared';
+dotenv.config({
+  path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
+});
 @Injectable()
 export class AccountService {
   constructor(
@@ -66,7 +71,7 @@ export class AccountService {
       template: 'welcome.hbs',
       context: {
         name: reqDto.name,
-        link: 'http://localhost:8080',
+        link: process?.env?.FE_URL || 'http://localhost:8080',
       },
     });
 
@@ -76,7 +81,7 @@ export class AccountService {
     reqDto.password = hash;
 
     const roleUser = await this.roleRepo.findOneBy({
-      roleName: ERole.user,
+      roleName: reqDto?.roleName || ERole.user,
     });
 
     const account: AccountEntity = this.accountRepo.create({

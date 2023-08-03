@@ -1,9 +1,11 @@
-import { google } from 'googleapis';
 import { Request, Response } from 'express';
+import { google } from 'googleapis';
+import { Profile } from 'passport-google-oauth20';
 
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpException,
   Inject,
@@ -21,6 +23,7 @@ import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountReqDto,
   CreateAccountResDto,
+  ERole,
   GoogleLinkReqDto,
   GoogleSignUpReqDto,
   kafkaTopic,
@@ -43,7 +46,6 @@ import { GoogleAuthGuard } from './guards/google.guard';
 import { AccessJwtAuthGuard, RefreshJwtAuthGuard } from './guards/jwt.guard';
 import { ISocialUser } from './interfaces/social-user.interface';
 import { getRefreshToken } from './utils/get-jwt-token';
-import { Profile } from 'passport-google-oauth20';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -303,6 +305,27 @@ export class AuthController implements OnModuleInit {
   @Post('register')
   register(@Body() reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
     return this.authService.register(reqDto);
+  }
+
+  @Post('register-admin')
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  registerADmin(
+    @Req() req: Request,
+    @Body() reqDto: CreateAccountReqDto,
+  ): Promise<CreateAccountResDto> {
+    // check if user is admin
+    console.log(req.user);
+
+    //todo: check if user is admin
+    if (req?.user?.['auth']?.['role'] !== 'admin') {
+      throw new ForbiddenException();
+    }
+
+    return this.authService.register({
+      ...reqDto,
+      roleName: ERole.admin,
+    });
   }
 
   @Get('validate')
