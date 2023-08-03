@@ -33,17 +33,25 @@ export class SocketGateway
   async handleConnection(client: Socket) {
     const user = this.getUserFromToken(client);
     console.log(user, client.id, 'Connected..............................');
-    await this.commService.createClientSocket(
-      mapToClientSocketReqDto(user, client),
-    );
+    try {
+      await this.commService.createClientSocket(
+        mapToClientSocketReqDto(user, client),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async handleDisconnect(client: Socket) {
     const user = this.getUserFromToken(client);
     console.log(user, client.id, 'Disconnect');
-    await this.commService.removeClientSocket(
-      mapToClientSocketReqDto(user, client),
-    );
+    try {
+      await this.commService.removeClientSocket(
+        mapToClientSocketReqDto(user, client),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   afterInit(server) {

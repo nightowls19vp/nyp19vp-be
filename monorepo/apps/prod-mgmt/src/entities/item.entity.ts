@@ -13,7 +13,7 @@ export class ItemEntity {
     name: 'id',
     type: 'uuid',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     generated: 'uuid',
   })
   id: string;
@@ -59,7 +59,7 @@ export class ItemEntity {
   @Column({
     name: 'added_by',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     comment: 'user info id - mongo id',
   })
   addedBy: string;
@@ -80,7 +80,7 @@ export class ItemEntity {
   @Column({
     name: 'unit',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     nullable: true,
     default: null,
   })
@@ -89,7 +89,7 @@ export class ItemEntity {
   @Column({
     name: 'image',
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci',
+    collation: 'utf8mb4_unicode_520_ci',
     nullable: true,
     default: null,
   })

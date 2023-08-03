@@ -5,10 +5,34 @@ function stop_processes() {
   pkill -f "node main.js"
 }
 
-# Start the servers
-cd monorepo/docker/ && ./run.sh
+# check if env vars is provided
+if [ -z "$OAUTH2_GOOGLE_CLIENT_SECRET" ]; then
+  echo "OAUTH2_GOOGLE_CLIENT_SECRET is not set"
+  exit 1
+fi
 
-cd ../../ && cd monorepo && npm i --legacy-peer-deps && npx nx run-many --target=build
+if [ -z "$OAUTH2_GOOGLE_CLIENT_ID" ]; then
+  echo "OAUTH2_GOOGLE_CLIENT_ID is not set"
+  exit 1
+fi
+
+if [ -z "$CLOUDINARY_CLOUD_NAME" ]; then
+  echo "CLOUDINARY_CLOUD_NAME is not set"
+  exit 1
+fi
+
+if [ -z "$CLOUDINARY_API_KEY" ]; then
+  echo "CLOUDINARY_API_KEY is not set"
+  exit 1
+fi
+
+# check if env vars is provided
+if [ -z "$GO_UPC_API_KEY" ]; then
+  echo "GO_UPC_API_KEY is not set"
+  exit 1
+fi
+
+cd monorepo && npm i --legacy-peer-deps && npx nx run-many --target=build
 
 # for each dir (services) ./dist/apps/*, copy .env* to
 # ./dist/apps/<dir>/.env*

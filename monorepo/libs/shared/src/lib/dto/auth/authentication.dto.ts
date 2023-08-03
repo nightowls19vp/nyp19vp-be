@@ -17,6 +17,7 @@ import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { ELoginType, IUser } from '../../core';
 import { BaseResDto } from '../base.dto';
 import { UserInfo } from '../users/users.dto';
+import { ERole } from 'libs/shared/src/lib/authorization';
 
 class LocalAuthenticationInfo {
   @ApiProperty({
@@ -36,6 +37,14 @@ class LocalAuthenticationInfo {
     // pattern: `^(?=[.\\S]*[A-Z][.\\S]*)(?=[.\\S]*[0-9][.\\S]*)(?=[.\\S]*[a-z][.\\S]*)[.\\S]{8,255}$`,
   })
   password: string;
+
+  @ApiProperty({
+    enum: ERole,
+    example: ERole.user,
+    nullable: false,
+    readOnly: true,
+  })
+  roleName?: ERole;
 }
 
 export class ValidateUserReqDto extends LocalAuthenticationInfo {
