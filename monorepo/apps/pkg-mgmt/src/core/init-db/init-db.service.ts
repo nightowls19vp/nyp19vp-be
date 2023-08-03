@@ -17,49 +17,49 @@ export class InitDbService {
     const count = await this.pkgModel.count();
     if (count == 0) {
       const ExPkg = new this.pkgModel({
-        name: 'Experience Package',
+        name: 'Gói trải nghiệm',
         duration: 1,
         price: 70000,
         noOfMember: 2,
         editableDuration: false,
         editableNoOfMember: true,
         description:
-          'Essentiels management\nGroup Chat\nGroup Call\nSpending management',
+          'Quản lí Kho\nQuản lí nhu yếu phẩm\nGroup Chat\nQuản lí chi tiêu\nLịch biểu\nTo-do list',
         coefficient: 20000,
       });
       await ExPkg.save();
       const FamiPkg = new this.pkgModel({
-        name: 'Family Package',
+        name: 'Gói gia đình',
         duration: 12,
         price: 300000,
         noOfMember: 4,
         editableDuration: false,
         editableNoOfMember: false,
         description:
-          'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+          'Quản lí Kho\nQuản lí nhu yếu phẩm\nGroup Chat\nQuản lí chi tiêu\nLịch biểu\nTo-do list',
       });
       await FamiPkg.save();
       const AnPkg = new this.pkgModel({
-        name: 'Annual Package',
+        name: 'Gói thường niên',
         duration: 12,
         price: 357000,
         noOfMember: 2,
         editableDuration: false,
         editableNoOfMember: true,
         description:
-          'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+          'Quản lí Kho\nQuản lí nhu yếu phẩm\nGroup Chat\nQuản lí chi tiêu\nLịch biểu\nTo-do list',
         coefficient: 20000,
       });
       await AnPkg.save();
       const CustomPkg = new this.pkgModel({
-        name: 'Customized Package',
+        name: 'Gói tùy chọn',
         duration: 1,
         price: 70000,
         noOfMember: 2,
         editableDuration: true,
         editableNoOfMember: true,
         description:
-          'Essentiels management\nGroup Chat\nGroup Call\nSpending management\nNotification\nScheduling',
+          'Quản lí Kho\nQuản lí nhu yếu phẩm\nGroup Chat\nQuản lí chi tiêu\nLịch biểu\nTo-do list',
         coefficient: 20000,
       });
       await CustomPkg.save();

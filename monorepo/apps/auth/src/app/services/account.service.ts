@@ -99,6 +99,7 @@ export class AccountService {
         name: reqDto.name,
         phone: reqDto.phone,
         avatar: reqDto.avatar,
+        role: roleUser.roleName,
       };
 
       if (platform && platformId) {

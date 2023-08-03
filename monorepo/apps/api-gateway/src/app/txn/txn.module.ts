@@ -34,5 +34,6 @@ dotenv.config({
   ],
   controllers: [TxnController],
   providers: [TxnService, { provide: 'ZALOPAY_CONFIG', useValue: zpconfig }],
+  exports: [TxnService],
 })
 export class TxnModule {}

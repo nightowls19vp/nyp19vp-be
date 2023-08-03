@@ -169,7 +169,6 @@ export class TxnCrudService implements OnModuleInit {
       _id,
       this.zpconfig,
     );
-    await delay(4 * 1000 * 60);
     const res = await this.zpCheckStatus(zpGetOrderStatusReqDto);
     console.log('result:', res);
     if (typeof res === 'string') {
@@ -348,6 +347,7 @@ export class TxnCrudService implements OnModuleInit {
     let timer;
     return new Promise((resolve) => {
       timer = setIntervalAsync(async () => {
+        console.log('get status', zpGetOrderStatusReqDto.app_trans_id);
         const res: ZPGetOrderStatusResDto = await this.zpGetOrderStatus(
           zpGetOrderStatusReqDto,
         );
@@ -379,7 +379,28 @@ export class TxnCrudService implements OnModuleInit {
     );
     return data;
   }
+  async statistic(req): Promise<any> {
+    console.log('statistic');
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
 
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
+    const res = this.transModel.aggregate([
+      { $match: { createdAt: { $gte: oneWeekAgo } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' },
+          },
+          total: { $sum: '$amount' },
+        },
+      },
+    ]);
+    return res;
+  }
   async zpGetOrderStatus(
     zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto,
   ): Promise<ZPGetOrderStatusResDto> {

@@ -3,6 +3,7 @@ import { HydratedDocument } from 'mongoose';
 import { Item } from './item.schema';
 import { UserSetting } from './setting.schema';
 import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
+import { ERole } from '@nyp19vp-be/shared';
 
 export type UserDocument = HydratedDocument<User> & SoftDeleteDocument;
 
@@ -34,6 +35,9 @@ export class User {
       'https://res.cloudinary.com/dzpxhrxsq/image/upload/v1648138020/cld-sample.jpg',
   })
   avatar: string;
+
+  @Prop({ type: String, enum: ERole })
+  role: string;
 
   @Prop({ required: true, default: Object })
   setting: UserSetting;

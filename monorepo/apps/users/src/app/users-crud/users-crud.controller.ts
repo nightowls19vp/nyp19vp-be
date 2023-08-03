@@ -133,4 +133,9 @@ export class UsersCrudController {
   findMany(@Payload() list_id: IdDto[]): Promise<UserInfo[]> {
     return this.usersCrudService.findMany(list_id);
   }
+
+  @MessagePattern(kafkaTopic.USERS.STATISTIC)
+  statistic(@Payload() req: Request): Promise<BaseResDto> {
+    return this.usersCrudService.statistic(req);
+  }
 }

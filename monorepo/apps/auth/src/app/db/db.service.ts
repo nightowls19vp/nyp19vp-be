@@ -65,6 +65,7 @@ export class DbService {
         dob: null,
         phone: null,
         avatar: undefined,
+        role: roleAdmin.roleName,
       });
 
       if (![200, 201].includes(resDto.statusCode)) {
@@ -123,6 +124,7 @@ export class DbService {
             dob: null,
             phone: null,
             avatar: undefined,
+            role: roleUser.roleName,
           });
 
           //save user

@@ -31,6 +31,7 @@ export const USERS = {
   GET_BY_ID: 'getUserById',
   GET_SETTING_BY_ID: 'getUserSettingById',
   GET: 'getAllUsers',
+  STATISTIC: 'statisticUsers',
   GET_DELETED: 'getUsersWithDeleted',
   GET_MANY: 'getManyUsers',
   UPDATE_INFO: 'updateUserInfo',
@@ -117,6 +118,7 @@ export const TXN = {
   VNP_IPN: 'vnpayIpnUrl',
   GET_BY_USER: 'GetTransactionsByUserId',
   GET: 'GetAllTransactions',
+  VIEW: 'ViewTransactions',
 };
 
 export const COMM = {

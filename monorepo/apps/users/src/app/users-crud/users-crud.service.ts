@@ -61,6 +61,7 @@ export class UsersCrudService implements OnModuleInit {
       phone: createUserReqDto.phone,
       email: createUserReqDto.email,
       avatar: createUserReqDto.avatar,
+      role: createUserReqDto.role,
     });
     return await newUser
       .save()
@@ -547,5 +548,42 @@ export class UsersCrudService implements OnModuleInit {
   }
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await this.userModel.find({ $text: { $search: keyword } });
+  }
+  async statistic(req: Request): Promise<BaseResDto> {
+    const countWithDeleted = await this.userModel.countWithDeleted();
+    const countDeleted = await this.userModel.countDeleted();
+    const count = await this.userModel.count();
+    const countByMonth = await this.userModel.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    const period = await this.userModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          minCreatedAt: { $min: '$createdAt' },
+          maxCreatedAt: { $max: '$createdAt' },
+        },
+      },
+    ]);
+    const data = {
+      count: count,
+      countDeleted: countDeleted,
+      countWithDeleted: countWithDeleted,
+      countByMonth: countByMonth,
+      period: period,
+    };
+    return Promise.resolve({
+      statusCode: HttpStatus.NOT_FOUND,
+      message: `Statistic users successfully`,
+      data: data,
+    });
   }
 }

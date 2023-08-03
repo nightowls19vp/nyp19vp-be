@@ -100,6 +100,12 @@ export class UsersController implements OnModuleInit {
     return this.usersService.getWithDeleted(req);
   }
 
+  @Get('statistic')
+  async statistic(@Req() req: Request): Promise<BaseResDto> {
+    console.log('statistic');
+    return this.usersService.statistic(req);
+  }
+
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Get('search')

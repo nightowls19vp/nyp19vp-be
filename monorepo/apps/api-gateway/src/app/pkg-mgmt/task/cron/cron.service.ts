@@ -100,14 +100,6 @@ export class CronService {
     intervals.forEach((key) => console.log(`Interval: ${key}`));
   }
 
-  public scheduleTimeout(jobName: string, milliseconds: number) {
-    const callback = () => {
-      console.warn(`Timeout ${name} executing after (${milliseconds})!`);
-    };
-    const timeout = setTimeout(callback, milliseconds);
-    this.schedulerRegistry.addTimeout(jobName, timeout);
-  }
-
   public deleteTimeout(jobName: string) {
     this.schedulerRegistry.deleteTimeout(jobName);
     console.warn(`Timeout ${jobName} deleted!`);

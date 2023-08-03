@@ -2,10 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { randomUUID } from 'crypto';
 
 import * as dotenv from 'dotenv';
 import { ENV_FILE } from '@nyp19vp-be/shared';
+import { TxnModule } from '../txn/txn.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -28,6 +28,7 @@ dotenv.config({
         },
       },
     ]),
+    TxnModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -19,7 +19,6 @@ export class PackageDto extends IdDto {
     description: 'Name of Package, must be an ascii string',
   })
   @IsString()
-  @IsAscii()
   name: string;
 
   @ApiProperty({

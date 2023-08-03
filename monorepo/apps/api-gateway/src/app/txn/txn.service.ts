@@ -74,14 +74,10 @@ export class TxnService {
   }
   async zpGetStatus(createTransReqDto: CreateTransReqDto): Promise<any> {
     return await firstValueFrom(
-      this.txnClient
-        .send(kafkaTopic.TXN.ZP_GET_STT, JSON.stringify(createTransReqDto))
-        .pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new RequestTimeoutException();
-          }),
-        ),
+      this.txnClient.send(
+        kafkaTopic.TXN.ZP_GET_STT,
+        JSON.stringify(createTransReqDto),
+      ),
     );
   }
   async vnpCallback(vnpIpnUrlReqDto: VNPIpnUrlReqDto): Promise<any> {
@@ -118,5 +114,9 @@ export class TxnService {
     return await firstValueFrom(
       this.txnClient.send(kafkaTopic.TXN.GET, collectionDto),
     );
+  }
+
+  async viewByMonth(req): Promise<any> {
+    return await firstValueFrom(this.txnClient.send(kafkaTopic.TXN.VIEW, req));
   }
 }

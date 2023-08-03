@@ -64,4 +64,9 @@ export class TxnCrudController {
   ): Promise<CollectionResponse<CreateTransReqDto>> {
     return await this.txnCrudService.find(collectionDto);
   }
+
+  @MessagePattern(kafkaTopic.TXN.VIEW)
+  async statistic(@Payload() req): Promise<any> {
+    return await this.txnCrudService.statistic(req);
+  }
 }

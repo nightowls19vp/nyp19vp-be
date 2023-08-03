@@ -10,6 +10,7 @@ import {
   IsAscii,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsPhoneNumber,
   IsUrl,
@@ -18,6 +19,7 @@ import {
 import { IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
 import { PackageDto } from '../pkg-mgmt/package.dto';
+import { ERole } from '@nyp19vp-be/shared';
 
 class UserSetting {
   @ApiProperty({
@@ -102,6 +104,12 @@ export class UserInfo extends IdDto {
   @IsUrl()
   @IsOptional()
   avatar?: string;
+
+  @ApiProperty({
+    enum: ERole,
+  })
+  @IsEnum(ERole)
+  role?: string;
 }
 
 export class Items {
@@ -200,7 +208,7 @@ export class CreateUserReqDto extends OmitType(UserInfo, ['_id']) {}
 
 export class UpdateUserReqDto extends IntersectionType(
   IdDto,
-  OmitType(UserInfo, ['email', 'avatar']),
+  OmitType(UserInfo, ['email', 'avatar', 'role']),
 ) {}
 
 export class UpdateSettingReqDto extends IntersectionType(IdDto, UserSetting) {}

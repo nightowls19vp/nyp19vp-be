@@ -38,8 +38,6 @@ import { TokenEntity } from '../entities/token.entity';
 import { sendMailWithRetries } from '../utils/mail';
 import { AccountService } from './account.service';
 import ms from 'ms';
-import { error } from 'console';
-import { UserInfo } from './../../../../../libs/shared/src/lib/dto/users/users.dto';
 
 @Injectable()
 export class AuthService {

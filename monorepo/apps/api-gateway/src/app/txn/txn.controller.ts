@@ -7,6 +7,7 @@ import {
   Get,
   Query,
   Param,
+  Req,
 } from '@nestjs/common';
 import { TxnService } from './txn.service';
 import {
@@ -64,6 +65,12 @@ export class TxnController implements OnModuleInit {
     if (typeof req === 'object') vnpIpnUrlReqDto = req;
     else if (typeof req === 'string') vnpIpnUrlReqDto = JSON.parse(req);
     return this.txnService.vnpCallback(vnpIpnUrlReqDto);
+  }
+
+  @Get('month')
+  viewByMonth(@Req() req: Request): Promise<any> {
+    console.log('get all transactions by month');
+    return this.txnService.viewByMonth(req);
   }
 
   @Get(':userId')

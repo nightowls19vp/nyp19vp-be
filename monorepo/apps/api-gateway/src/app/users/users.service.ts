@@ -10,9 +10,11 @@ import {
   RequestTimeoutException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   BaseResDto,
   CheckoutReqDto,
+  CreateTransReqDto,
   CreateUserReqDto,
   GetCartResDto,
   GetUserResDto,
@@ -28,11 +30,14 @@ import {
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
+import { TxnService } from '../txn/txn.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('USERS_SERVICE') private readonly usersClient: ClientKafka,
+    private schedulerRegistry: SchedulerRegistry,
+    private readonly txnService: TxnService,
   ) {}
   async createUser(createUserReqDto: CreateUserReqDto): Promise<BaseResDto> {
     const res = await firstValueFrom(
@@ -210,6 +215,19 @@ export class UsersService {
       }
     });
   }
+  public scheduleTimeout(
+    jobName: string,
+    milliseconds: number,
+    data: CreateTransReqDto,
+  ) {
+    const callback = async () => {
+      console.warn(`Timeout ${jobName} executing after (${milliseconds})!`);
+      const res = this.txnService.zpGetStatus(data);
+      console.log(res);
+    };
+    const timeout = setTimeout(callback, milliseconds);
+    this.schedulerRegistry.addTimeout(jobName, timeout);
+  }
   async checkout(
     checkoutReqDto: CheckoutReqDto,
   ): Promise<ZPCheckoutResDto | BaseResDto> {
@@ -224,6 +242,11 @@ export class UsersService {
         ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
+        this.scheduleTimeout(
+          `checkout-getStt-${res.trans._id}`,
+          240000,
+          res.trans,
+        );
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);
@@ -279,6 +302,16 @@ export class UsersService {
   async getWithDeleted(req): Promise<UserDto[]> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_DELETED, req).pipe(
+        timeout(5000),
+        catchError(() => {
+          throw new RequestTimeoutException();
+        }),
+      ),
+    );
+  }
+  async statistic(req): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.usersClient.send(kafkaTopic.USERS.STATISTIC, req).pipe(
         timeout(5000),
         catchError(() => {
           throw new RequestTimeoutException();
