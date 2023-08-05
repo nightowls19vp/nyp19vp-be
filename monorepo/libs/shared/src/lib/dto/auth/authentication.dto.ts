@@ -12,7 +12,11 @@ import {
   NotContains,
 } from 'class-validator';
 
-import { ApiProperty, IntersectionType } from '@nestjs/swagger';
+import {
+  ApiHideProperty,
+  ApiProperty,
+  IntersectionType,
+} from '@nestjs/swagger';
 
 import { ELoginType, IUser } from '../../core';
 import { BaseResDto } from '../base.dto';
@@ -38,12 +42,7 @@ class LocalAuthenticationInfo {
   })
   password: string;
 
-  @ApiProperty({
-    enum: ERole,
-    example: ERole.user,
-    nullable: false,
-    readOnly: true,
-  })
+  @ApiHideProperty()
   roleName?: ERole;
 }
 
@@ -91,7 +90,17 @@ export class LogoutResDto extends BaseResDto {}
 export class CreateAccountReqDto extends IntersectionType(
   LocalAuthenticationInfo,
   UserInfo,
-) {}
+) {
+  @ApiProperty({
+    readOnly: true,
+  })
+  roleName?: ERole;
+
+  @ApiProperty({
+    readOnly: true,
+  })
+  role?: string;
+}
 
 export class CreateAccountResDto extends BaseResDto {}
 

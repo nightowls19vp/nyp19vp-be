@@ -318,7 +318,7 @@ export class AuthController implements OnModuleInit {
     console.log(req.user);
 
     //todo: check if user is admin
-    if (req?.user?.['auth']?.['role'] !== 'admin') {
+    if (req?.user?.['auth']?.['user']?.['role'] !== 'admin') {
       throw new ForbiddenException();
     }
 
