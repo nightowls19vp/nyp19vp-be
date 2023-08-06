@@ -6,6 +6,7 @@ import {
   CheckGrSUReqDto,
   CheckoutReqDto,
   CreateUserReqDto,
+  ERole,
   GetCartResDto,
   GetUserResDto,
   GetUserSettingResDto,
@@ -550,10 +551,15 @@ export class UsersCrudService implements OnModuleInit {
     return await this.userModel.find({ $text: { $search: keyword } });
   }
   async statistic(req: Request): Promise<BaseResDto> {
-    const countWithDeleted = await this.userModel.countWithDeleted();
-    const countDeleted = await this.userModel.countDeleted();
-    const count = await this.userModel.count();
+    const countWithDeleted = await this.userModel.countWithDeleted({
+      role: ERole.user,
+    });
+    const countDeleted = await this.userModel.countDeleted({
+      role: ERole.user,
+    });
+    const count = await this.userModel.count({ role: ERole.user });
     const countByMonth = await this.userModel.aggregate([
+      { $match: { role: ERole.user } },
       {
         $group: {
           _id: {
@@ -565,6 +571,7 @@ export class UsersCrudService implements OnModuleInit {
       },
     ]);
     const period = await this.userModel.aggregate([
+      { $match: { role: ERole.user } },
       {
         $group: {
           _id: null,
@@ -580,10 +587,17 @@ export class UsersCrudService implements OnModuleInit {
       countByMonth: countByMonth,
       period: period,
     };
-    return Promise.resolve({
-      statusCode: HttpStatus.NOT_FOUND,
-      message: `Statistic users successfully`,
-      data: data,
-    });
+    if (data) {
+      return Promise.resolve({
+        statusCode: HttpStatus.OK,
+        message: `Statistic users successfully`,
+        data: data,
+      });
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Statistic users failed`,
+      });
+    }
   }
 }

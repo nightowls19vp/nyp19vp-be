@@ -149,6 +149,34 @@ export class FileController {
   ) {
     return this.fileService.uploadAvatar(`groups/${id}`, file);
   }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('upload-user-avatar/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  async uploadUserAvatar(
+    @Param('id') id: string,
+    @UploadedFile(
+      'file',
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif|webp)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    console.log("Upload user's avatar:", id, file);
+    return this.fileService.uploadAvatar(`users/${id}`, file);
+  }
+
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
   @Post('upload-gr-avatar-with-base64/:id')

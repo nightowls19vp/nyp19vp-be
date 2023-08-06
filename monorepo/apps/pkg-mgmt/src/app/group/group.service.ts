@@ -801,7 +801,7 @@ export class GroupService implements OnModuleInit {
     const { _id, extension } = getGrByExReqDto;
     console.log(`Get group by extension #${_id}`);
     const query = {};
-    query[extension] = { $elemMatch: _id };
+    query[extension] = new Types.ObjectId(_id);
     const group = await this.grModel.findOne(query).exec();
     const projectionParams: ProjectionParams = {
       _id: group._id,

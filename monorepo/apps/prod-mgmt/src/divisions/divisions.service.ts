@@ -50,10 +50,15 @@ export class DivisionsService implements OnModuleInit {
       }
     }, 1e3);
 
-    await this.saveProvince();
-    await this.saveDistrict();
-    await this.saveWard();
+    try {
+      await this.saveProvince();
+      await this.saveDistrict();
+      await this.saveWard();
+    } catch (error) {
+      console.log(error);
 
+      console.log('DivisionsService initialized failed: ' + new Date());
+    }
     DivisionsService.isInit = false;
   }
 

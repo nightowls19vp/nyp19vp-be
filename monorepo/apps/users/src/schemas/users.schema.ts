@@ -39,7 +39,15 @@ export class User {
   @Prop({ type: String, enum: ERole })
   role: string;
 
-  @Prop({ required: true, default: Object })
+  @Prop({
+    required: true,
+    default: {
+      stockNoti: true,
+      callNoti: true,
+      msgNoti: true,
+      newsNoti: true,
+    },
+  })
   setting: UserSetting;
 
   @Prop({ required: true, default: [] })
