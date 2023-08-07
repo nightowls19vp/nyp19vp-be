@@ -199,10 +199,13 @@ export class TodosService implements OnModuleInit {
             },
           },
         )
-        .then(() => {
+        .then(async () => {
           return {
             statusCode: HttpStatus.OK,
             message: `Update todos #${_id}'s state successfully`,
+            data: await this.todosModel
+              .findById(_id)
+              .populate({ path: 'todos', model: 'Todo' }),
           };
         })
         .catch((error) => {
