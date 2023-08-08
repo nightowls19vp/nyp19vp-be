@@ -287,7 +287,6 @@ export class BillService implements OnModuleInit {
     return await this.billModel
       .deleteById(id)
       .then((res) => {
-        console.log(res);
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `Remove billing ${id} successfully`,
@@ -307,7 +306,6 @@ export class BillService implements OnModuleInit {
     return await this.billModel
       .restore({ _id: id })
       .then((res) => {
-        console.log(res);
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `Restore billing ${id} successfully`,

@@ -280,7 +280,6 @@ export class TaskService implements OnModuleInit {
     return await this.taskModel
       .deleteById(id)
       .then((res) => {
-        console.log(res);
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `Remove task ${id} successfully`,
@@ -300,7 +299,6 @@ export class TaskService implements OnModuleInit {
     return await this.taskModel
       .restore({ _id: id })
       .then((res) => {
-        console.log(res);
         return Promise.resolve({
           statusCode: HttpStatus.OK,
           message: `Restore task ${id} successfully`,

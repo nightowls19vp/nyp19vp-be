@@ -468,7 +468,6 @@ export class GroupService implements OnModuleInit {
       .findOne({ _id: _id, members: { $elemMatch: { user: user_id } } })
       .then(async (checkExists) => {
         if (checkExists) {
-          console.log(checkExists.members);
           if (checkExists.members.length > 1)
             if (checkExists.members[0].role != 'Super User') {
               return await this.grModel

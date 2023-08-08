@@ -179,7 +179,6 @@ export class PackageService {
 
   async findMany(list_id: IdDto[]): Promise<PackageDto[]> {
     const res = await this.pkgModel.find({ _id: { $in: list_id } }).exec();
-    console.log(res);
     return res;
   }
 }

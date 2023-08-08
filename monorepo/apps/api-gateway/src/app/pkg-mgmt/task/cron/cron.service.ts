@@ -56,6 +56,7 @@ export class CronService {
   }
 
   public stopCron(job: CronJob) {
+    console.log('Cron stopped successfully');
     job.stop();
   }
 
@@ -156,10 +157,13 @@ export function setCronPattern(
 }
 function isPassNthWeek(now: Date, task: GetGrDto_Task, last: Date): boolean {
   const { recurrence, startDate } = task;
-  const { unit, times } = recurrence;
-  if (now > startDate && unit == WeekDays[1] && times > 1) {
-    const daydiff = (now.getTime() - last.getTime()) / 86400000;
-    if (daydiff >= 7 * times || daydiff <= 7 * (times - 1)) return false;
+  if (recurrence) {
+    const { unit, times } = recurrence;
+    if (now > startDate && unit == WeekDays[1] && times > 1) {
+      const daydiff = (now.getTime() - last.getTime()) / 86400000;
+      if (daydiff >= 7 * times || daydiff <= 7 * (times - 1)) return false;
+    }
+    return true;
   }
   return true;
 }
