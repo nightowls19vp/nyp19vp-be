@@ -63,7 +63,10 @@ export class TaskService implements OnModuleInit {
   async update(updateTaskReqDto: UpdateTaskReqDto): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient
-        .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE, updateTaskReqDto)
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE,
+          JSON.stringify(updateTaskReqDto),
+        )
         .pipe(
           timeout(5000),
           catchError(() => {
@@ -85,7 +88,7 @@ export class TaskService implements OnModuleInit {
       this.packageMgmtClient
         .send(
           kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE_STATE,
-          updateTaskStateReqDto,
+          JSON.stringify(updateTaskStateReqDto),
         )
         .pipe(
           timeout(5000),
