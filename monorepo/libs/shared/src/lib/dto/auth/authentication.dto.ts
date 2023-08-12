@@ -94,11 +94,13 @@ export class CreateAccountReqDto extends IntersectionType(
   @ApiProperty({
     readOnly: true,
   })
+  @IsOptional()
   roleName?: ERole;
 
   @ApiProperty({
     readOnly: true,
   })
+  @IsOptional()
   role?: string;
 }
 
