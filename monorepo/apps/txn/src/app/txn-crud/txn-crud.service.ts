@@ -426,6 +426,7 @@ export class TxnCrudService implements OnModuleInit {
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     const pkgByMonth = await this.transModel.aggregate([
       { $match: { createdAt: { $gte: lastMonth } } },
+      { $unwind: '$item' },
       {
         $group: {
           _id: { _id: '$item.id', name: '$item.name' },
@@ -435,6 +436,7 @@ export class TxnCrudService implements OnModuleInit {
     ]);
     const pkgByWeek = await this.transModel.aggregate([
       { $match: { createdAt: { $gte: oneWeekAgo } } },
+      { $unwind: '$item' },
       {
         $group: {
           _id: { _id: '$item.id', name: '$item.name' },
@@ -689,13 +691,12 @@ function mapStatisticByWeek(arrByWeek, key: string) {
   const currentDate = new Date();
 
   const numberOfDays = 7;
-  const dayOfWeek = currentDate.getDay();
   const dayArray = [];
   let value = 0;
 
   for (let i = numberOfDays - 1; i >= 0; i--) {
     const pastDay = new Date(currentDate);
-    pastDay.setDate(currentDate.getDate() - (dayOfWeek - i));
+    pastDay.setDate(currentDate.getDate() - i);
     const temp = arrByWeek.find((item) => {
       if (
         item._id.year == pastDay.getFullYear() &&
@@ -706,8 +707,9 @@ function mapStatisticByWeek(arrByWeek, key: string) {
       return false;
     });
     value += temp ? temp[key] : 0;
+    const day = pastDay.getDay();
     dayArray.push({
-      x: dayOfWeek - i != 0 ? `T${dayOfWeek - i + 1}` : 'CN',
+      x: day != 0 ? `T${day}` : 'CN',
       y: temp ? temp[key] : 0,
     });
   }

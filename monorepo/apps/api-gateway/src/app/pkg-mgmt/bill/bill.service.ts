@@ -13,6 +13,7 @@ import {
   GetBillResDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
+  UpdateBorrowSttReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -146,6 +147,34 @@ export class BillService implements OnModuleInit {
           );
         });
         await Promise.all(noti);
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode);
+      }
+    });
+  }
+  async updateSttBorrower(
+    updateBorrowSttReqDto: UpdateBorrowSttReqDto,
+  ): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.packageMgmtClient
+        .send(
+          kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT_BORROWER,
+          JSON.stringify(updateBorrowSttReqDto),
+        )
+        .pipe(
+          timeout(5000),
+          catchError(() => {
+            throw new RequestTimeoutException();
+          }),
+        ),
+    ).then(async (res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        await this.socketGateway.handleEvent(
+          'updatedBill',
+          res.data?.lender,
+          res.data?.borrowers,
+        );
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);

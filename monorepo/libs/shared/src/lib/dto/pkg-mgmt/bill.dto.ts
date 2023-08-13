@@ -100,11 +100,21 @@ export class UpdateBillReqDto extends IntersectionType(
   OmitType(BillingDto, ['createdBy']),
 ) {}
 
-class UpdateBorrowSttReqDto extends PickType(BorrowerDto, ['borrower']) {
+export class BorrowSttReqDto extends PickType(BorrowerDto, ['borrower']) {
   @ApiProperty({ enum: BillStatus })
   @IsEnum(BillStatus)
   status: string;
 }
+
+export class UpdateBorrowSttReqDto extends IdDto {
+  @Transform((v: TransformFnParams) => new ObjectId(v.value))
+  borrower?: string;
+
+  @ApiProperty({ enum: BillStatus })
+  @IsEnum(BillStatus)
+  status: string;
+}
+
 export class UpdateBillSttReqDto extends IntersectionType(
   IdDto,
   PickType(BillingDto, ['updatedBy']),
@@ -112,7 +122,7 @@ export class UpdateBillSttReqDto extends IntersectionType(
   @ApiProperty({
     example: [{ user: '648a7dff13638f64bbf9c156', status: BillStatus[0] }],
   })
-  @Type(() => UpdateBorrowSttReqDto)
+  @Type(() => BorrowSttReqDto)
   @ValidateNested({ each: true })
-  borrowers: UpdateBorrowSttReqDto[];
+  borrowers: BorrowSttReqDto[];
 }

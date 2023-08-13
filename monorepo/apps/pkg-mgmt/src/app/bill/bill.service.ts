@@ -11,6 +11,7 @@ import {
   UpdateBillSttReqDto,
   kafkaTopic,
   BillStatus,
+  UpdateBorrowSttReqDto,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
@@ -59,6 +60,10 @@ export class BillService implements OnModuleInit {
             borrower: borrower.borrower,
             amount: borrower.amount,
             status: BillStatus[0],
+            detailStt: {
+              borrower: BillStatus[0],
+              lender: BillStatus[0],
+            },
           };
           return newBorrower;
         }),
@@ -141,6 +146,7 @@ export class BillService implements OnModuleInit {
       const borrow = {
         borrower: user,
         amount: borrowers[i].amount,
+        detailStt: borrowers[i].detailStt,
         status: borrowers[i].status,
       };
       newBorrowers.push(borrow);
@@ -191,6 +197,10 @@ export class BillService implements OnModuleInit {
           borrower: borrower.borrower,
           amount: borrower.amount,
           status: BillStatus[0],
+          detailStt: {
+            borrower: BillStatus[0],
+            lender: BillStatus[0],
+          },
         });
       }
     });
@@ -245,7 +255,13 @@ export class BillService implements OnModuleInit {
             (obj) => obj.borrower == borrower.borrower,
           );
           if (idx != -1) {
-            billing.borrowers[idx].status = borrower.status;
+            billing.borrowers[idx].detailStt = {
+              lender: borrower.status,
+              borrower: billing.borrowers[idx].detailStt.borrower,
+            };
+            billing.borrowers[idx].status = doubleCheck(
+              billing.borrowers[idx].detailStt,
+            );
           }
         }
         return await this.billModel
@@ -279,6 +295,69 @@ export class BillService implements OnModuleInit {
         statusCode: HttpStatus.UNAUTHORIZED,
         message: `No permission`,
         error: 'UNAUTHORIZED',
+      });
+    }
+  }
+  async updateSttBorrower(
+    updateBorrowSttReqDto: UpdateBorrowSttReqDto,
+  ): Promise<BaseResDto> {
+    const { _id, status, borrower } = updateBorrowSttReqDto;
+    console.log(
+      `Update billing status of group #${_id}`,
+      updateBorrowSttReqDto,
+    );
+    const billing = await this.billModel.findById({ _id: _id });
+    if (billing) {
+      let flag = false;
+      let newState = [...billing.borrowers];
+      newState = newState.map((data) => {
+        if (data.borrower == borrower) {
+          flag = true;
+          const detailStt = {
+            lender: data.detailStt.lender,
+            borrower: status,
+          };
+          const updatedData = {
+            ...data,
+            detailStt: detailStt,
+            status: doubleCheck(detailStt),
+          };
+          return updatedData;
+        }
+        return data;
+      });
+      if (!flag) {
+        return Promise.resolve({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: `No permission`,
+          error: 'UNAUTHORIZED',
+        });
+      } else {
+        return await this.billModel
+          .updateOne(
+            { _id: _id },
+            { $set: { borrowers: newState, updatedBy: borrower } },
+          )
+          .then(() => {
+            return Promise.resolve({
+              statusCode: HttpStatus.OK,
+              message: `Update bill ${_id}' status successfully`,
+              data: { lender: billing.lender, borrowers: newState },
+            });
+          })
+          .catch((error) => {
+            return Promise.resolve({
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              message: error.message,
+              error: 'INTERNAL SERVER ERROR',
+            });
+          });
+      }
+    } else {
+      return Promise.resolve({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Billing #${_id} not found`,
+        error: 'NOT FOUND',
       });
     }
   }
@@ -341,4 +420,16 @@ const setStatus = (borrowers: string[]): string => {
   }
   if (isApproved) return BillStatus[1];
   return BillStatus[2];
+};
+
+const doubleCheck = (detailStt): string => {
+  const { lender, borrow } = detailStt;
+  if (lender === BillStatus[0]) return BillStatus[0];
+  if (lender === BillStatus[2]) return BillStatus[2];
+  if (lender === BillStatus[1] && borrow === BillStatus[1])
+    return BillStatus[1];
+  if (lender === BillStatus[1] && borrow === BillStatus[0])
+    return BillStatus[0];
+  if (lender === BillStatus[1] && borrow === BillStatus[2])
+    return BillStatus[0];
 };

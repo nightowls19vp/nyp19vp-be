@@ -7,6 +7,7 @@ import {
   GetBillResDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
+  UpdateBorrowSttReqDto,
   kafkaTopic,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
@@ -35,6 +36,13 @@ export class BillController {
     @Payload() updateBillSttReqDto: UpdateBillSttReqDto,
   ): Promise<BaseResDto> {
     return this.billService.updateStt(updateBillSttReqDto);
+  }
+
+  @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.UPDATE_STT_BORROWER)
+  updateSttBorrower(
+    @Payload() updateBorrowSttReqDto: UpdateBorrowSttReqDto,
+  ): Promise<BaseResDto> {
+    return this.billService.updateSttBorrower(updateBorrowSttReqDto);
   }
 
   @MessagePattern(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE)
