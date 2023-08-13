@@ -304,7 +304,10 @@ export class AuthController implements OnModuleInit {
 
   @Post('register')
   register(@Body() reqDto: CreateAccountReqDto): Promise<CreateAccountResDto> {
-    return this.authService.register(reqDto);
+    return this.authService.register({
+      ...reqDto,
+      roleName: ERole.user,
+    });
   }
 
   @Post('register-admin')
