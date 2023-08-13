@@ -10,6 +10,10 @@
 
 - Zalopay callback data string; [ZPDataCallback](/monorepo/libs/shared/src/lib/dto/txn/zalopay.dto.ts)
 
+- Event: vnpCallback
+
+- VnPay callback data string [VNPIpnUrlReqDto](/monorepo/libs/shared/src/lib/dto/txn/vnpay.dto.ts)
+
 ## 1.2. Billing
 
 ### 1.2.1. Create Bill

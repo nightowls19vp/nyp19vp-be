@@ -20,6 +20,7 @@ import {
   GetUserResDto,
   GetUserSettingResDto,
   kafkaTopic,
+  MOP,
   RenewGrPkgReqDto,
   UpdateAvatarReqDto,
   UpdateCartReqDto,
@@ -242,11 +243,14 @@ export class UsersService {
         ),
     ).then((res) => {
       if (res.statusCode == HttpStatus.OK) {
-        this.scheduleTimeout(
-          `checkout-getStt-${res.trans._id}`,
-          240000,
-          res.trans,
-        );
+        if (checkoutReqDto.method.type === MOP.KEY.EWALLET.ZALOPAY) {
+          this.scheduleTimeout(
+            `checkout-getStt-${res.trans._id}`,
+            240000,
+            res.trans,
+          );
+        }
+
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);

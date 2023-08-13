@@ -90,7 +90,20 @@ export class TxnService {
             throw new RequestTimeoutException();
           }),
         ),
-    );
+    ).then(async (res) => {
+      if (res.statusCode == HttpStatus.OK) {
+        const info = vnpIpnUrlReqDto.vnp_OrderInfo;
+        const infos = info.split('#');
+        await this.socketGateway.handleEvent(
+          'vnpCallback',
+          infos[0],
+          vnpIpnUrlReqDto,
+        );
+        return res;
+      } else {
+        throw new HttpException(res.message, res.statusCode);
+      }
+    });
   }
   async findByUser(user_id: string): Promise<BaseResDto> {
     return await firstValueFrom(
@@ -116,7 +129,9 @@ export class TxnService {
     );
   }
 
-  async viewByMonth(req): Promise<any> {
-    return await firstValueFrom(this.txnClient.send(kafkaTopic.TXN.VIEW, req));
+  async statistic(req): Promise<BaseResDto> {
+    return await firstValueFrom(
+      this.txnClient.send(kafkaTopic.TXN.STATISTIC, req),
+    );
   }
 }

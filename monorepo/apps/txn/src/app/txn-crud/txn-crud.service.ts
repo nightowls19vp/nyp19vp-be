@@ -22,7 +22,6 @@ import {
   CreateGrReqDto,
   UpdateGrPkgReqDto,
   CheckoutReqDto,
-  VNPCreateOrderReqDto,
   VNPIpnUrlReqDto,
   BaseResDto,
 } from '@nyp19vp-be/shared';
@@ -38,6 +37,7 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import * as MOP from '../../core/constants/payment_method.constants';
 import { SoftDeleteModel } from 'mongoose-delete';
 import moment from 'moment-timezone';
+import * as qs from 'qs';
 import {
   CollectionDto,
   CollectionResponse,
@@ -379,14 +379,35 @@ export class TxnCrudService implements OnModuleInit {
     );
     return data;
   }
-  async statistic(req): Promise<any> {
+  async statistic(req): Promise<BaseResDto> {
     console.log('statistic');
+    const countWithDeleted = await this.transModel.countWithDeleted();
+    const countDeleted = await this.transModel.countDeleted();
+    const count = await this.transModel.count();
+
+    const total = await this.transModel.aggregate([
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+    const revenueByMonth = await this.transModel.aggregate([
+      { $match: { createdAt: { $gte: twelveMonthsAgo } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          total: { $sum: '$amount' },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
-    const res = this.transModel.aggregate([
+    const revenueByWeek = await this.transModel.aggregate([
       { $match: { createdAt: { $gte: oneWeekAgo } } },
       {
         $group: {
@@ -396,10 +417,59 @@ export class TxnCrudService implements OnModuleInit {
             day: { $dayOfMonth: '$createdAt' },
           },
           total: { $sum: '$amount' },
+          count: { $sum: 1 },
         },
       },
     ]);
-    return res;
+
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const pkgByMonth = await this.transModel.aggregate([
+      { $match: { createdAt: { $gte: lastMonth } } },
+      {
+        $group: {
+          _id: { _id: '$item.id', name: '$item.name' },
+          totalQuantity: { $sum: '$item.quantity' },
+        },
+      },
+    ]);
+    const pkgByWeek = await this.transModel.aggregate([
+      { $match: { createdAt: { $gte: oneWeekAgo } } },
+      {
+        $group: {
+          _id: { _id: '$item.id', name: '$item.name' },
+          totalQuantity: { $sum: '$item.quantity' },
+        },
+      },
+    ]);
+
+    const period = await this.transModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          minCreatedAt: { $min: '$createdAt' },
+          maxCreatedAt: { $max: '$createdAt' },
+        },
+      },
+    ]);
+    const data = {
+      countTxn: count,
+      countDeletedTxn: countDeleted,
+      countWithDeletedTxn: countWithDeleted,
+      txnByMonth: mapStatisticByMonth(revenueByMonth, 'count'),
+      txnByWeek: mapStatisticByWeek(revenueByWeek, 'count'),
+      totalRevenue: total[0].total,
+      revenueByMonth: mapStatisticByMonth(revenueByMonth, 'total'),
+      revenueByWeek: mapStatisticByWeek(revenueByWeek, 'total'),
+      pkgByMonth: pkgByMonth,
+      pkgByWeek: pkgByWeek,
+      period: { min: period[0].minCreatedAt, max: period[0].maxCreatedAt },
+    };
+    return Promise.resolve({
+      statusCode: HttpStatus.OK,
+      message: `Statistic transactions successfully`,
+      data: data,
+    });
   }
   async zpGetOrderStatus(
     zpGetOrderStatusReqDto: ZPGetOrderStatusReqDto,
@@ -462,21 +532,20 @@ export class TxnCrudService implements OnModuleInit {
     const trans_id = vnpIpnUrlReqDto.vnp_TxnRef;
 
     const vnpParams = sortObject(vnpIpnUrlReqDto);
-    const hmacinput = new URLSearchParams(vnpParams).toString();
-    const mac: string = createHmac('sha512', this.vnpconfig.key)
-      .update(new Buffer(hmacinput, 'utf-8'))
-      .digest('hex');
+    const hmacinput = qs.stringify(vnpParams, { encode: false });
+    const hmac = createHmac('sha512', this.vnpconfig.key);
+    const mac = hmac.update(Buffer.from(hmacinput, 'utf-8')).digest('hex');
     if (secureHash === mac) {
       if (resCode == 0) {
         const newTrans = new this.transModel({
           _id: trans_id,
-          user: users[0],
+          user: users,
           item: items,
           amount: vnpIpnUrlReqDto.vnp_Amount / 100,
           method: {
             type: MOP.PAYMENT_METHOD.EWALLET,
             name: MOP.EWALLET.VNPAY,
-            trans_id: trans_id,
+            trans_id: vnpIpnUrlReqDto.vnp_TransactionNo,
             embed_data: {
               bankCode: vnpIpnUrlReqDto.vnp_BankCode,
               bankTransNo: vnpIpnUrlReqDto.vnp_BankTranNo,
@@ -493,7 +562,7 @@ export class TxnCrudService implements OnModuleInit {
           }
           const createGrReqDto: CreateGrReqDto = mapCreateGrReqDto(
             items,
-            users[0],
+            users,
           );
           if (!group) {
             const createGr = await firstValueFrom(
@@ -522,7 +591,7 @@ export class TxnCrudService implements OnModuleInit {
                 duration: items[0].duration,
                 noOfMember: items[0].noOfMember,
               },
-              user: users[0],
+              user: users,
             };
             const renewGrPkg = await firstValueFrom(
               this.pkgClient
@@ -545,7 +614,7 @@ export class TxnCrudService implements OnModuleInit {
           }
 
           const updateTrxHistReqDto = mapUpdateTrxHistReqDto(
-            users[0],
+            users,
             trans_id,
             items,
           );
@@ -594,6 +663,55 @@ export class TxnCrudService implements OnModuleInit {
 }
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, '0');
+}
+function mapStatisticByMonth(arrByMonth, key: string) {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+
+  const numberOfMonths = 12; // Số tháng trong năm
+  const monthYearArray = [];
+  let value = 0;
+
+  for (let i = numberOfMonths - 1; i >= 0; i--) {
+    const month = currentDate.getMonth() - i;
+    const year = currentYear + Math.floor(month / 12);
+    const curMonth = (month < 0 ? month + 12 : month) + 1;
+    const temp = arrByMonth.find((item) => {
+      if (item._id.year == year && item._id.month == curMonth) return true;
+      return false;
+    });
+    value += temp ? temp[key] : 0;
+    monthYearArray.push({ x: `T${curMonth}`, y: temp ? temp[key] : 0 });
+  }
+  return { value: value, data: monthYearArray };
+}
+function mapStatisticByWeek(arrByWeek, key: string) {
+  const currentDate = new Date();
+
+  const numberOfDays = 7;
+  const dayOfWeek = currentDate.getDay();
+  const dayArray = [];
+  let value = 0;
+
+  for (let i = numberOfDays - 1; i >= 0; i--) {
+    const pastDay = new Date(currentDate);
+    pastDay.setDate(currentDate.getDate() - (dayOfWeek - i));
+    const temp = arrByWeek.find((item) => {
+      if (
+        item._id.year == pastDay.getFullYear() &&
+        item._id.month == pastDay.getMonth() + 1 &&
+        item._id.day === pastDay.getDate()
+      )
+        return true;
+      return false;
+    });
+    value += temp ? temp[key] : 0;
+    dayArray.push({
+      x: dayOfWeek - i != 0 ? `T${dayOfWeek - i + 1}` : 'CN',
+      y: temp ? temp[key] : 0,
+    });
+  }
+  return { value: value, data: dayArray };
 }
 const mapPkgDtoToItemDto = (
   listPkg: PackageDto[],
@@ -779,28 +897,29 @@ const mapVNPCreateOrderReqDto = (
   if (group_id) {
     orderInfo += `#${group_id}`;
   }
-  const vnpCreateOrderReqDto: VNPCreateOrderReqDto = {
-    vnp_Version: '2.1.0',
-    vnp_Command: 'pay',
-    vnp_TmnCode: config.app_id,
-    vnp_Amount: amount * 100,
-    vnp_CreateDate: createDate,
-    vnp_CurrCode: 'VND',
-    vnp_IpAddr: ip,
-    vnp_Locale: 'vn',
-    vnp_OrderType: 'other',
-    vnp_OrderInfo: orderInfo,
-    vnp_ReturnUrl: 'http://localhost:8888/order/vnpay_return',
-    vnp_TxnRef: trans_id,
-  };
-  let vnpParams = sortObject(vnpCreateOrderReqDto);
-  const hmacinput = new URLSearchParams(vnpParams).toString();
-  const mac: string = createHmac('sha512', config.key)
-    .update(hmacinput)
-    .digest('hex');
-  vnpParams['vnp_SecureHash'] = mac;
-  vnpParams = new URLSearchParams(vnpParams).toString();
-  return `${config.create_order_endpoint}?${vnpParams}`;
+
+  let vnp_Params: { [key: string]: any } = {};
+  vnp_Params['vnp_Version'] = '2.1.0';
+  vnp_Params['vnp_Command'] = 'pay';
+  vnp_Params['vnp_TmnCode'] = config.app_id;
+  vnp_Params['vnp_Locale'] = 'vn';
+  vnp_Params['vnp_CurrCode'] = 'VND';
+  vnp_Params['vnp_TxnRef'] = trans_id;
+  vnp_Params['vnp_OrderInfo'] = orderInfo;
+  vnp_Params['vnp_OrderType'] = 'other';
+  vnp_Params['vnp_Amount'] = amount * 100;
+  vnp_Params['vnp_ReturnUrl'] = config.callback_url;
+  vnp_Params['vnp_IpAddr'] = ip;
+  vnp_Params['vnp_CreateDate'] = createDate;
+
+  let vnpUrl = config.create_order_endpoint;
+  vnp_Params = sortObject(vnp_Params);
+  const signData = qs.stringify(vnp_Params, { encode: false });
+  const hmac = createHmac('sha512', config.key);
+  const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+  vnp_Params['vnp_SecureHash'] = signed;
+  vnpUrl += '?' + qs.stringify(vnp_Params, { encode: false });
+  return vnpUrl;
 };
 function sortObject(obj) {
   const sorted = {};

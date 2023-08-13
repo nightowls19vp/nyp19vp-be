@@ -67,10 +67,10 @@ export class TxnController implements OnModuleInit {
     return this.txnService.vnpCallback(vnpIpnUrlReqDto);
   }
 
-  @Get('month')
-  viewByMonth(@Req() req: Request): Promise<any> {
+  @Get('statistic')
+  statistic(@Req() req: Request): Promise<BaseResDto> {
     console.log('get all transactions by month');
-    return this.txnService.viewByMonth(req);
+    return this.txnService.statistic(req);
   }
 
   @Get(':userId')

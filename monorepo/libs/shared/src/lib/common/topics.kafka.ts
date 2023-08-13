@@ -118,7 +118,7 @@ export const TXN = {
   VNP_IPN: 'vnpayIpnUrl',
   GET_BY_USER: 'GetTransactionsByUserId',
   GET: 'GetAllTransactions',
-  VIEW: 'ViewTransactions',
+  STATISTIC: 'StatisticTransactions',
 };
 
 export const COMM = {
