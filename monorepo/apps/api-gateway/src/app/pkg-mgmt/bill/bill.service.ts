@@ -136,17 +136,13 @@ export class BillService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
-        const list_id = updateBillSttReqDto.borrowers.map((borrower) => {
-          return borrower.borrower;
-        });
-        const noti = list_id.map(async (user_id) => {
+        for (const item of res.data.borrowers) {
           await this.socketGateway.handleEvent(
             'updatedBill',
-            user_id,
+            item.borrower,
             res.data,
           );
-        });
-        await Promise.all(noti);
+        }
         return res;
       } else {
         throw new HttpException(res.message, res.statusCode);

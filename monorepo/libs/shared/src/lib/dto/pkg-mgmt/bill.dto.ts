@@ -120,7 +120,7 @@ export class UpdateBillSttReqDto extends IntersectionType(
   PickType(BillingDto, ['updatedBy']),
 ) {
   @ApiProperty({
-    example: [{ user: '648a7dff13638f64bbf9c156', status: BillStatus[0] }],
+    example: [{ borrower: '648a7dff13638f64bbf9c156', status: BillStatus[0] }],
   })
   @Type(() => BorrowSttReqDto)
   @ValidateNested({ each: true })

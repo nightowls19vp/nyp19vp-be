@@ -248,32 +248,35 @@ export class BillService implements OnModuleInit {
     const { _id, updatedBy, borrowers } = updateBillSttReqDto;
     console.log(`Update billing status of group #${_id}`, updateBillSttReqDto);
     const billing = await this.billModel.findById({ _id: _id });
-    if (updatedBy == billing.lender) {
-      if (billing) {
-        for (const borrower of borrowers) {
-          const idx = billing.borrowers.findIndex(
-            (obj) => obj.borrower == borrower.borrower,
-          );
-          if (idx != -1) {
-            billing.borrowers[idx].detailStt = {
-              lender: borrower.status,
-              borrower: billing.borrowers[idx].detailStt.borrower,
+    if (billing) {
+      if (updatedBy == billing.lender) {
+        let newState = [...billing.borrowers];
+        newState = newState.map((data) => {
+          const idx = borrowers.find((obj) => obj.borrower == data.borrower);
+          if (idx) {
+            const detailStt = {
+              lender: idx.status,
+              borrower: data.detailStt.borrower,
             };
-            billing.borrowers[idx].status = doubleCheck(
-              billing.borrowers[idx].detailStt,
-            );
+            const updatedData = {
+              ...data,
+              detailStt: detailStt,
+              status: doubleCheck(detailStt),
+            };
+            return updatedData;
           }
-        }
+          return data;
+        });
         return await this.billModel
           .updateOne(
             { _id: _id },
-            { $set: { borrowers: billing.borrowers, updatedBy: updatedBy } },
+            { $set: { borrowers: newState, updatedBy: updatedBy } },
           )
           .then(() => {
             return Promise.resolve({
               statusCode: HttpStatus.OK,
               message: `Update bill ${_id}' status successfully`,
-              data: billing.borrowers,
+              data: { lender: billing.lender, borrowers: newState },
             });
           })
           .catch((error) => {
@@ -285,16 +288,16 @@ export class BillService implements OnModuleInit {
           });
       } else {
         return Promise.resolve({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: `Billing #${_id} not found`,
-          error: 'NOT FOUND',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: `No permission`,
+          error: 'UNAUTHORIZED',
         });
       }
     } else {
       return Promise.resolve({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: `No permission`,
-        error: 'UNAUTHORIZED',
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Billing #${_id} not found`,
+        error: 'NOT FOUND',
       });
     }
   }
