@@ -136,7 +136,7 @@ export class BillService implements OnModuleInit {
         ),
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
-        for (const item of res.data.borrowers) {
+        for (const item of updateBillSttReqDto.borrowers) {
           await this.socketGateway.handleEvent(
             'updatedBill',
             item.borrower,
