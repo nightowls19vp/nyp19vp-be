@@ -19,6 +19,7 @@ import { AccessJwtAuthGuard } from '../auth/guards/jwt.guard';
 import { SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME } from '../constants/authentication';
 import { ATUser } from '../decorators/at-user.decorator';
 import { FileService } from './file.service';
+import { randomUUID } from 'crypto';
 
 @Controller('file')
 export class FileController {
@@ -186,6 +187,16 @@ export class FileController {
   ) {
     return this.fileService.uploadAvatarWithBase64(
       `groups/${id}`,
+      reqDto.base64,
+    );
+  }
+
+  @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('upload-image-with-base64')
+  async uploadImageBase64(@Body() reqDto: UpdateAvatarWithBase64) {
+    return this.fileService.uploadAvatarWithBase64(
+      `images/${randomUUID()}}`,
       reqDto.base64,
     );
   }
