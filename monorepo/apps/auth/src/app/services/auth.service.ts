@@ -143,12 +143,41 @@ export class AuthService {
     const decodeRes = this.jwtService.decode(token);
     const payload: IJwtPayload = decodeRes as IJwtPayload;
 
+    const account = await this.accountRepo.findOneBy({
+      id: payload.user.id,
+    });
+
+    if (!account) {
+      const accountNotFountRpcException: LoginResWithTokensDto = {
+        statusCode: 401,
+        message: `account not found`,
+      };
+    }
+
+    // update payload with latest info
+    /**
+     * "id": "user1",
+      "username": "user1",
+      "email": "user1@gmail.com",
+      "role": "user",
+      "userInfoId": "64a088917a6c92c74d764dfb",
+      "socialAccounts": []
+     */
+    const user = {
+      id: account.id,
+      username: account.username,
+      email: account.email,
+      role: account.role.roleName,
+      userInfoId: account.userInfoId,
+      socialAccounts: (await account.socialAccounts).map((sa) => sa.platform),
+    };
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Login successfully',
       data: {
         auth: {
-          ...payload,
+          user: user,
         },
         userInfo: (
           await this.accountService.getUserInfoById(payload.user.userInfoId)
