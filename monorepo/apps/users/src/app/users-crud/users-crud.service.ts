@@ -362,6 +362,7 @@ export class UsersCrudService implements OnModuleInit {
               .pipe(timeout(5000)),
           );
           const result = [];
+          const rest = [];
           for (const item of res.cart) {
             const pack = pkgs.find((elem) => elem._id == item.package);
             if (pack) {
@@ -390,14 +391,31 @@ export class UsersCrudService implements OnModuleInit {
               };
               result.push(pkg);
             } else {
-              return Promise.resolve({
-                statusCode: HttpStatus.NOT_FOUND,
-                message: `Package #${item.package} have been removed`,
-                cart: result,
-              });
+              rest.push(item);
             }
           }
-
+          if (rest) {
+            let newState = [...res.cart];
+            newState = newState.filter((elem) => {
+              if (
+                rest.some(
+                  (item) =>
+                    item.package == elem.package &&
+                    item.quantity == elem.quantity &&
+                    item.duration == elem.duration &&
+                    item.noOfMember == elem.noOfMember,
+                )
+              ) {
+                return false;
+              } else {
+                return true;
+              }
+            });
+            await this.userModel.updateOne(
+              { _id: id },
+              { $set: { cart: newState } },
+            );
+          }
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get user #${id}'s cart successfully`,

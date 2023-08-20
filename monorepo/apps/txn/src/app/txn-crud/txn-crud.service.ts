@@ -391,36 +391,6 @@ export class TxnCrudService implements OnModuleInit {
 
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
-    const revenueByMonth = await this.transModel.aggregate([
-      { $match: { createdAt: { $gte: twelveMonthsAgo } } },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' },
-          },
-          total: { $sum: '$amount' },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
-    const revenueByWeek = await this.transModel.aggregate([
-      { $match: { createdAt: { $gte: oneWeekAgo } } },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' },
-            day: { $dayOfMonth: '$createdAt' },
-          },
-          total: { $sum: '$amount' },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
 
     const lastMonth = new Date();
     lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -434,13 +404,27 @@ export class TxnCrudService implements OnModuleInit {
         },
       },
     ]);
-    const pkgByWeek = await this.transModel.aggregate([
-      { $match: { createdAt: { $gte: oneWeekAgo } } },
+    const pkgByYear = await this.transModel.aggregate([
+      { $match: { createdAt: { $gte: lastMonth } } },
       { $unwind: '$item' },
       {
         $group: {
           _id: { _id: '$item.id', name: '$item.name' },
           totalQuantity: { $sum: '$item.quantity' },
+        },
+      },
+    ]);
+    const statisticTrans = await this.transModel.aggregate([
+      { $match: { createdAt: { $gte: twelveMonthsAgo } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' },
+          },
+          total: { $sum: '$amount' },
+          count: { $sum: 1 },
         },
       },
     ]);
@@ -458,13 +442,10 @@ export class TxnCrudService implements OnModuleInit {
       countTxn: count,
       countDeletedTxn: countDeleted,
       countWithDeletedTxn: countWithDeleted,
-      txnByMonth: mapStatisticByMonth(revenueByMonth, 'count'),
-      txnByWeek: mapStatisticByWeek(revenueByWeek, 'count'),
+      statisticTrans: statisticTrans,
       totalRevenue: total[0].total,
-      revenueByMonth: mapStatisticByMonth(revenueByMonth, 'total'),
-      revenueByWeek: mapStatisticByWeek(revenueByWeek, 'total'),
       pkgByMonth: pkgByMonth,
-      pkgByWeek: pkgByWeek,
+      pkgByYear: pkgByYear,
       period: { min: period[0].minCreatedAt, max: period[0].maxCreatedAt },
     };
     return Promise.resolve({
@@ -665,55 +646,6 @@ export class TxnCrudService implements OnModuleInit {
 }
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, '0');
-}
-function mapStatisticByMonth(arrByMonth, key: string) {
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-
-  const numberOfMonths = 12; // Số tháng trong năm
-  const monthYearArray = [];
-  let value = 0;
-
-  for (let i = numberOfMonths - 1; i >= 0; i--) {
-    const month = currentDate.getMonth() - i;
-    const year = currentYear + Math.floor(month / 12);
-    const curMonth = (month < 0 ? month + 12 : month) + 1;
-    const temp = arrByMonth.find((item) => {
-      if (item._id.year == year && item._id.month == curMonth) return true;
-      return false;
-    });
-    value += temp ? temp[key] : 0;
-    monthYearArray.push({ x: `T${curMonth}`, y: temp ? temp[key] : 0 });
-  }
-  return { value: value, data: monthYearArray };
-}
-function mapStatisticByWeek(arrByWeek, key: string) {
-  const currentDate = new Date();
-
-  const numberOfDays = 7;
-  const dayArray = [];
-  let value = 0;
-
-  for (let i = numberOfDays - 1; i >= 0; i--) {
-    const pastDay = new Date(currentDate);
-    pastDay.setDate(currentDate.getDate() - i);
-    const temp = arrByWeek.find((item) => {
-      if (
-        item._id.year == pastDay.getFullYear() &&
-        item._id.month == pastDay.getMonth() + 1 &&
-        item._id.day === pastDay.getDate()
-      )
-        return true;
-      return false;
-    });
-    value += temp ? temp[key] : 0;
-    const day = pastDay.getDay();
-    dayArray.push({
-      x: day != 0 ? `T${day}` : 'CN',
-      y: temp ? temp[key] : 0,
-    });
-  }
-  return { value: value, data: dayArray };
 }
 const mapPkgDtoToItemDto = (
   listPkg: PackageDto[],

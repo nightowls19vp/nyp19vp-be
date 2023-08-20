@@ -77,6 +77,17 @@ export const PKG_MGMT = {
     DEL_PKG: 'removePackageFromGroup',
     IS_SU: 'isSuperUserOfAGroup',
   },
+  FUNDING: {
+    CREATE: 'createGroupFunding',
+    GET_BY_ID: 'getGroupFundingById',
+    UPDATE: 'updateGroupFundingById',
+    UPDATE_STT: 'updateGroupFundingHistoryStatus',
+    UPDATE_OCCURRENCE: 'updateGroupFundingOccurrences',
+    ADD_HISTORY: 'addGroupFundingHistory',
+    SEND_REQ: 'sendGroupFundingRequest',
+    DELETE: 'deleteGroupFunding',
+    RESTORE: 'restoreGroupFunding',
+  },
   EXTENSION: {
     BILL: {
       CREATE: 'createGroupBilling',

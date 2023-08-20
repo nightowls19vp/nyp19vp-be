@@ -83,35 +83,6 @@ export class CronService {
     });
   }
 
-  public scheduleInterval(jobName: string, milliseconds: number) {
-    const callback = () => {
-      console.warn(`Interval ${jobName} executing at time (${milliseconds})!`);
-    };
-    const interval = setInterval(callback, milliseconds);
-    this.schedulerRegistry.addInterval(jobName, interval);
-  }
-
-  public deleteInterval(jobName: string) {
-    this.schedulerRegistry.deleteInterval(jobName);
-    console.warn(`Interval ${name} deleted!`);
-  }
-
-  public getIntervals() {
-    const intervals = this.schedulerRegistry.getIntervals();
-    intervals.forEach((key) => console.log(`Interval: ${key}`));
-  }
-
-  public deleteTimeout(jobName: string) {
-    this.schedulerRegistry.deleteTimeout(jobName);
-    console.warn(`Timeout ${jobName} deleted!`);
-  }
-
-  public getTimeouts() {
-    const timeouts = this.schedulerRegistry.getTimeouts();
-    timeouts.forEach((key) => {
-      console.log(`Timeout: ${key}`);
-    });
-  }
   async sendNoti(event: string, task: GetGrDto_Task): Promise<void> {
     const { createdBy, members, state } = task;
     await this.socketGateway.handleEvent(event, createdBy._id, task);

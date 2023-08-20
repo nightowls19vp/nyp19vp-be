@@ -42,6 +42,8 @@ export * from './lib/dto/pkg-mgmt/todos.dto';
 
 export * from './lib/dto/pkg-mgmt/task.dto';
 
+export * from './lib/dto/pkg-mgmt/funding.dto';
+
 export * from './lib/dto/txn/txn.dto';
 
 export * from './lib/dto/txn/zalopay.dto';

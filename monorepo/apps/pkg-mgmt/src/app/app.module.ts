@@ -9,6 +9,7 @@ import { InitDbModule } from '../core/init-db/init-db.module';
 import { BillModule } from './bill/bill.module';
 import { TodosModule } from './todos/todos.module';
 import { TaskModule } from './task/task.module';
+import { FundingModule } from './funding/funding.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TaskModule } from './task/task.module';
     BillModule,
     TodosModule,
     TaskModule,
+    FundingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

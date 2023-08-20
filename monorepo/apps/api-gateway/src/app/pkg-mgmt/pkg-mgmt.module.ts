@@ -11,6 +11,7 @@ import { PackageModule } from './package/package.module';
 import { TodosModule } from './todos/todos.module';
 import { GroupModule } from './group/group.module';
 import { TaskModule } from './task/task.module';
+import { FundingModule } from './funding/funding.module';
 dotenv.config({
   path: process.env.NODE_ENV !== 'dev' ? process.env.ENV_FILE : ENV_FILE.DEV,
 });
@@ -51,6 +52,7 @@ dotenv.config({
     GroupModule,
     CommModule,
     TaskModule,
+    FundingModule,
   ],
   controllers: [PkgMgmtController],
   providers: [PkgMgmtService],

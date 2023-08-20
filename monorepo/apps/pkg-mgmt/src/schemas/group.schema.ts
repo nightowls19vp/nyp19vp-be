@@ -5,6 +5,7 @@ import { Bill } from './billing.schema';
 import { TodoList } from './todos.schema';
 import { Task } from './task.schema';
 import { PkgStatus } from '@nyp19vp-be/shared';
+import { Funding } from './funding.schema';
 
 export type GroupDocument = HydratedDocument<Group> & SoftDeleteDocument;
 
@@ -81,6 +82,9 @@ export class Group {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Billing' }] })
   billing: Bill[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Funding' }] })
+  funding: Funding[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'TodoList' }] })
   todos: TodoList[];

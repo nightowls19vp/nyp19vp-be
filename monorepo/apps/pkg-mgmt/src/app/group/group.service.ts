@@ -606,7 +606,7 @@ export class GroupService implements OnModuleInit {
       );
       const endDateArray = notAcitivatedPkg.map((x) => x.endDate);
       const start: Date = maxDate(endDateArray);
-      const end: Date = addDays(start, updateGrPkgReqDto.package.duration);
+      const end: Date = addDays(start, updateGrPkgReqDto.package.duration * 30);
       const pkg: GrPkgDto = {
         package: updateGrPkgReqDto.package,
         startDate: start,
