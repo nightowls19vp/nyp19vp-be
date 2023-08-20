@@ -55,3 +55,13 @@
 -Event: taskReminder
 
 [GetGrDto_Task](/monorepo/libs/shared/src/lib/dto/pkg-mgmt/task.dto.ts)
+
+## 1.6. Funding
+
+### 1.6.1. Send Request
+
+-Event: funding_req
+
+### 1.6.2.
+
+-Event: funding

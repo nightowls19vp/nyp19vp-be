@@ -194,7 +194,7 @@ export class FundingService {
     ).then(async (res) => {
       if (res.statusCode == HttpStatus.OK) {
         await this.socketGateway.handleEvent(
-          'funding',
+          'funding_req',
           sendReqDto.to_user,
           res?.data,
         );
