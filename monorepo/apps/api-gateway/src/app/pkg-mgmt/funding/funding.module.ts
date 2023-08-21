@@ -41,6 +41,6 @@ dotenv.config({
     CommModule,
   ],
   controllers: [FundingController],
-  providers: [FundingService],
+  providers: [FundingService, Object],
 })
 export class FundingModule {}
