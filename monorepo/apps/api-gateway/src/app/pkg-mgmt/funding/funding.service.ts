@@ -28,8 +28,8 @@ export class FundingService {
     private schedulerRegistry: SchedulerRegistry,
     @Inject('PKG_MGMT_SERVICE') private readonly packageMgmtClient: ClientKafka,
     private readonly socketGateway: SocketGateway,
-    private timezone = process.env.TZ,
   ) {}
+  private timezone = process.env.TZ;
   onModuleInit() {
     const fundTopics = Object.values(kafkaTopic.PKG_MGMT.FUNDING);
 
@@ -249,10 +249,10 @@ export class FundingService {
   scheduleCron(event: string, jobName: string, pattern: string) {
     const job = new CronJob({
       cronTime: pattern,
-      onTick: async function () {
+      onTick: async () => {
         this.handleCron(event, jobName);
       },
-      timeZone: this.timezone,
+      timeZone: this.timezone || 'Asia/Ho_Chi_Minh',
       onComplete: () => {
         console.log(`Cron job ${jobName} stopped successfully.`);
       },
@@ -325,7 +325,7 @@ function setCronPattern(start: Date, times: number): string {
     start.getMinutes(),
     start.getHours(),
     start.getDate(),
-    `/${times}`,
+    `*/${times}`,
     '*',
   ];
   return pattern.join(' ');
