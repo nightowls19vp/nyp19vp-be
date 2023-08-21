@@ -92,7 +92,7 @@ export class FundingController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Post(':id')
+  @Post('send_request')
   sendRequest(
     @ATUser() user: unknown,
     @Body() sendReqDto: SendReqDto,
@@ -104,7 +104,7 @@ export class FundingController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put(':fundHist_id')
+  @Put('stt/:fundHist_id')
   updateStt(
     @ATUser() user: unknown,
     @Param('fundHist_id') id: string,

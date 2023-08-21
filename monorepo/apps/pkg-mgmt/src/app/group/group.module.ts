@@ -16,6 +16,13 @@ import {
 } from '../../schemas/todos.schema';
 import { TaskModule } from '../task/task.module';
 import { Task, TaskSchema } from '../../schemas/task.schema';
+import { FundingModule } from '../funding/funding.module';
+import {
+  FundHist,
+  FundHistSchema,
+  Funding,
+  FundingSchema,
+} from '../../schemas/funding.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -25,6 +32,8 @@ import { Task, TaskSchema } from '../../schemas/task.schema';
       { name: TodoList.name, schema: TodoListSchema },
       { name: Todo.name, schema: TodoSchema },
       { name: Task.name, schema: TaskSchema },
+      { name: Funding.name, schema: FundingSchema },
+      { name: FundHist.name, schema: FundHistSchema },
     ]),
     ClientsModule.register([
       {
@@ -57,6 +66,7 @@ import { Task, TaskSchema } from '../../schemas/task.schema';
     BillModule,
     TodosModule,
     TaskModule,
+    FundingModule,
   ],
   controllers: [GroupController],
   providers: [GroupService],

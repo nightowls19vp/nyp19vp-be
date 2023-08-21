@@ -38,5 +38,6 @@ import { BillModule } from '../bill/bill.module';
   ],
   controllers: [FundingController],
   providers: [FundingService],
+  exports: [FundingService],
 })
 export class FundingModule {}

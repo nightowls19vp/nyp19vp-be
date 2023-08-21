@@ -27,6 +27,7 @@ import { PackageDto } from './package.dto';
 import { GetGrDto_Todos } from './todos.dto';
 import { GetGrDto_Bill } from './bill.dto';
 import { GetGrDto_Task } from './task.dto';
+import { GetGrDto_Fund } from './funding.dto';
 
 export enum PkgStatus {
   'Not Activated',
@@ -338,6 +339,7 @@ export class GetGrDto extends IdDto {
   avatar?: string;
   channel?: string;
   billing?: GetGrDto_Bill[];
+  funding?: GetGrDto_Fund[];
   todos?: GetGrDto_Todos[];
   task?: GetGrDto_Task[];
   packages?: GetGrDto_Pkg[];

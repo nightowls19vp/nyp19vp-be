@@ -5,6 +5,7 @@ enum Group {
   avatar,
   channel,
   billing,
+  funding,
   todos,
   task,
   packages,

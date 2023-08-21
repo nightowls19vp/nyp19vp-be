@@ -33,6 +33,7 @@ import {
   GetGrByExReqDto,
   GetGrDto_Task,
   PkgStatus,
+  GetGrDto_Fund,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { Group, GroupDocument } from '../../schemas/group.schema';
@@ -58,6 +59,13 @@ import {
 } from '../../schemas/todos.schema';
 import { TaskService } from '../task/task.service';
 import { Task, TaskDocument } from '../../schemas/task.schema';
+import { FundingService } from '../funding/funding.service';
+import {
+  FundHist,
+  FundHistDocument,
+  Funding,
+  FundingDocument,
+} from '../../schemas/funding.schema';
 
 @Injectable()
 export class GroupService implements OnModuleInit {
@@ -72,9 +80,14 @@ export class GroupService implements OnModuleInit {
     @InjectModel(Bill.name) private billModel: SoftDeleteModel<BillDocument>,
     @InjectModel(Todo.name) private todoModel: SoftDeleteModel<TodoDocument>,
     @InjectModel(Task.name) private taskModel: SoftDeleteModel<TaskDocument>,
+    @InjectModel(FundHist.name)
+    private fundHistModel: SoftDeleteModel<FundHistDocument>,
+    @InjectModel(Funding.name)
+    private fundingModel: SoftDeleteModel<FundingDocument>,
     private readonly billService: BillService,
     private readonly todosService: TodosService,
     private readonly taskService: TaskService,
+    private readonly fundingService: FundingService,
   ) {}
   async onModuleInit() {
     this.prodClient.subscribeToResponseOf(kafkaTopic.PROD_MGMT.init);
@@ -165,6 +178,11 @@ export class GroupService implements OnModuleInit {
             });
           if (proj.task)
             res = await res.populate({ path: 'task', model: 'Task' });
+          if (proj.funding)
+            res = await res.populate({
+              path: 'funding',
+              populate: { path: 'history', model: 'FundHist' },
+            });
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get group #${_id} successfully`,
@@ -234,6 +252,9 @@ export class GroupService implements OnModuleInit {
             await this.todoModel.populate(gr.todos, {
               path: 'todos',
             });
+            await this.todoModel.populate(gr.funding, {
+              path: 'history',
+            });
             return await this.mapGrModelToGetGrDto(gr, user);
           }),
         );
@@ -302,6 +323,18 @@ export class GroupService implements OnModuleInit {
         },
       };
       pipeline.push(taskLookup);
+    }
+    if (proj.funding) {
+      const fundLookup = {
+        $lookup: {
+          from: this.todosModel.collection.name,
+          localField: 'funding',
+          foreignField: '_id',
+          pipeline: [{ $match: { $expr: { $eq: ['$deleted', false] } } }],
+          as: 'funding',
+        },
+      };
+      pipeline.push(fundLookup);
     }
     return pipeline;
   }
@@ -900,6 +933,15 @@ export class GroupService implements OnModuleInit {
     }
     return undefined;
   }
+  async mapGrModelToGetGrDto_Fund(model): Promise<GetGrDto_Fund[]> {
+    if (model.funding) {
+      const result = model.funding.map(async (fund) => {
+        return await this.fundingService.mapFundingModelToGetGrDto_Fund(fund);
+      });
+      return await Promise.all(result);
+    }
+    return undefined;
+  }
   async mapGrModelToGetGrDto_Task(
     model,
     owner?: string,
@@ -919,6 +961,7 @@ export class GroupService implements OnModuleInit {
       avatar: model.avatar,
       channel: model.channel,
       billing: await this.mapGrModelToGetGrDto_Bill(model),
+      funding: await this.mapGrModelToGetGrDto_Fund(model),
       todos: await this.mapGrModelToGetGrDto_Todos(model, owner),
       task: await this.mapGrModelToGetGrDto_Task(model, owner),
       packages: await this.mapGrModelToGetGrDto_Pkg(model),
