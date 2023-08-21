@@ -428,8 +428,8 @@ export class AuthService {
 
         await sendMailWithRetries(this.mailerService, {
           to: email,
-          subject: 'Join group invitation',
-          template: 'invite-to-gr.hbs',
+          subject: 'Lời mời tham gia nhóm',
+          template: 'invite-to-gr_vi.hbs',
           context: {
             inviterName: userInfoResDto?.user?.name,
             groupName: grResDto?.group?.name,
@@ -440,7 +440,7 @@ export class AuthService {
               {
                 long: true,
               },
-            ),
+            ).replace('days', 'ngày'),
           },
         });
       }),

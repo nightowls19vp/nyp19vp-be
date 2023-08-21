@@ -111,10 +111,12 @@ export class GroupController {
     @Body() reqDto: PkgGrInvReqDto,
     @ATUser() user: unknown,
   ): Promise<BaseResDto> {
+    console.log('atu', user);
+
     console.log(
       `invite ${JSON.stringify(reqDto.emails)} to join group #${
         reqDto.grId
-      } by user #${user['userInfo']['_id']}`,
+      } by user #${user?.['userInfo']?.['_id']}`,
     );
 
     if (isEmpty(user?.['userInfo']?.['_id'])) {
