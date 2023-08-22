@@ -94,7 +94,7 @@ export const PKG_MGMT = {
       GET_BY_ID: 'getGroupBillingById',
       UPDATE: 'updateGroupBilling',
       UPDATE_STT: 'updateGroupBillingStatus',
-      UPDATE_STT_BORROWER: 'updateGroupBillingStatusFromBorrower',
+      SEND_REQ: 'sendGroupBillingRequest',
       DELETE: 'removeGroupBilling',
       RESTORE: 'restoreGroupBilling',
     },

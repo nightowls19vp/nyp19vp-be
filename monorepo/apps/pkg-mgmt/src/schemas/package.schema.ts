@@ -4,6 +4,20 @@ import MongooseDelete, { SoftDeleteDocument } from 'mongoose-delete';
 
 export type PackageDocument = HydratedDocument<Package> & SoftDeleteDocument;
 
+class Extensions {
+  @Prop({ type: Boolean, default: true })
+  taskReminder: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  todoList: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  billing: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  rateCalculator: boolean;
+}
+
 @Schema({ timestamps: true })
 export class Package {
   @Prop({ type: String, unique: true, required: true })
@@ -23,6 +37,17 @@ export class Package {
 
   @Prop({ type: Boolean, required: false, default: false })
   editableNoOfMember: boolean;
+
+  @Prop({
+    required: true,
+    default: {
+      taskReminder: true,
+      todoList: true,
+      billing: true,
+      rateCalculator: true,
+    },
+  })
+  extensions: Extensions;
 
   @Prop({ type: String, maxlength: 1000, required: false })
   description: string;

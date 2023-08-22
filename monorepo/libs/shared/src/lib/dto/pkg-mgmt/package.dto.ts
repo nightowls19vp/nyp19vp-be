@@ -4,8 +4,46 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import { IsString, IsInt, IsPositive, IsAscii } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsPositive,
+  IsAscii,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator';
 import { BaseResDto, IdDto } from '../base.dto';
+import { Type } from 'class-transformer';
+
+class ExtensionsDto {
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+  })
+  @IsBoolean()
+  taskReminder: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+  })
+  @IsBoolean()
+  todoList: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+  })
+  @IsBoolean()
+  billing: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    default: true,
+  })
+  @IsBoolean()
+  rateCalculator: boolean;
+}
 
 export class PackageDto extends IdDto {
   @ApiProperty({
@@ -45,6 +83,11 @@ export class PackageDto extends IdDto {
 
   @ApiProperty({ required: false, default: false, example: false })
   editableNoOfMember?: boolean;
+
+  @ApiProperty({ required: false })
+  @ValidateNested()
+  @Type(() => ExtensionsDto)
+  extensions?: ExtensionsDto;
 
   @ApiProperty({
     type: String,

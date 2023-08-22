@@ -405,7 +405,7 @@ export class TxnCrudService implements OnModuleInit {
       },
     ]);
     const pkgByYear = await this.transModel.aggregate([
-      { $match: { createdAt: { $gte: lastMonth } } },
+      { $match: { createdAt: { $gte: twelveMonthsAgo } } },
       { $unwind: '$item' },
       {
         $group: {

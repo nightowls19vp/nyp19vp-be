@@ -15,9 +15,9 @@ import {
   CreateBillReqDto,
   GetBillResDto,
   ParseObjectIdPipe,
+  SendRequestReqDto,
   UpdateBillReqDto,
   UpdateBillSttReqDto,
-  UpdateBorrowSttReqDto,
 } from '@nyp19vp-be/shared';
 import { Types } from 'mongoose';
 import { AccessJwtAuthGuard } from '../../auth/guards/jwt.guard';
@@ -88,19 +88,16 @@ export class BillController {
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)
   @UseGuards(AccessJwtAuthGuard)
-  @Put(':id/status/borrower')
-  updateSttBorrower(
+  @Post(':id/send_request')
+  sendRequest(
     @ATUser() user: unknown,
     @Param('id') id: string,
-    @Body() updateBorrowSttReqDto: UpdateBorrowSttReqDto,
+    @Body() sendRequestReqDto: SendRequestReqDto,
   ): Promise<BaseResDto> {
-    console.log(
-      `Update billing status of group #${id} from borrower`,
-      updateBorrowSttReqDto,
-    );
-    updateBorrowSttReqDto._id = id;
-    updateBorrowSttReqDto.borrower = user?.['userInfo']?.['_id'];
-    return this.billService.updateSttBorrower(updateBorrowSttReqDto);
+    console.log(`send billing request to #${sendRequestReqDto.to_user}`);
+    sendRequestReqDto.from_user = user?.['userInfo']?.['_id'];
+    sendRequestReqDto._id = id;
+    return this.billService.sendRequest(sendRequestReqDto);
   }
 
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_ACCESS_TOKEN_NAME)

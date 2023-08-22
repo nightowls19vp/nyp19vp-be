@@ -28,6 +28,10 @@
 
 [Bill](/monorepo/apps/pkg-mgmt/src/schemas/billing.schema.ts)
 
+### 1.2.4. Send Request
+
+-Event: billing_req
+
 ## 1.3. Todos
 
 ### 1.3.1. Create Todos

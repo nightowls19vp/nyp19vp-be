@@ -297,7 +297,7 @@ export class FundingService {
           return {
             statusCode: HttpStatus.OK,
             message: `Gửi nhắc nhở thành công tới ${to_user}`,
-            data: { from_user: from_user, data: data },
+            data: { from_user: from_user, id: fund_id, data: data },
           };
         }
         isSUReq.user = to_user;
@@ -313,7 +313,7 @@ export class FundingService {
           return {
             statusCode: HttpStatus.OK,
             message: `Gửi yêu cầu thành công tới Super User ${to_user}`,
-            data: { from_user: from_user, data: data },
+            data: { from_user: from_user, id: fund_id, data: data },
           };
         }
         return {

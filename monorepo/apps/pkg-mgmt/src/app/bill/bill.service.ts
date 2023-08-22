@@ -11,7 +11,7 @@ import {
   UpdateBillSttReqDto,
   kafkaTopic,
   BillStatus,
-  UpdateBorrowSttReqDto,
+  SendRequestReqDto,
 } from '@nyp19vp-be/shared';
 import { Group, GroupDocument } from '../../schemas/group.schema';
 import { Types } from 'mongoose';
@@ -60,10 +60,6 @@ export class BillService implements OnModuleInit {
             borrower: borrower.borrower,
             amount: borrower.amount,
             status: BillStatus[0],
-            detailStt: {
-              borrower: BillStatus[0],
-              lender: BillStatus[0],
-            },
           };
           return newBorrower;
         }),
@@ -146,7 +142,6 @@ export class BillService implements OnModuleInit {
       const borrow = {
         borrower: user,
         amount: borrowers[i].amount,
-        detailStt: borrowers[i].detailStt,
         status: borrowers[i].status,
       };
       newBorrowers.push(borrow);
@@ -197,10 +192,6 @@ export class BillService implements OnModuleInit {
           borrower: borrower.borrower,
           amount: borrower.amount,
           status: BillStatus[0],
-          detailStt: {
-            borrower: BillStatus[0],
-            lender: BillStatus[0],
-          },
         });
       }
     });
@@ -254,14 +245,9 @@ export class BillService implements OnModuleInit {
         newState = newState.map((data) => {
           const idx = borrowers.find((obj) => obj.borrower == data.borrower);
           if (idx) {
-            const detailStt = {
-              lender: idx.status,
-              borrower: data.detailStt.borrower,
-            };
             const updatedData = {
               ...data,
-              detailStt: detailStt,
-              status: doubleCheck(detailStt),
+              status: idx.status,
             };
             return updatedData;
           }
@@ -301,65 +287,39 @@ export class BillService implements OnModuleInit {
       });
     }
   }
-  async updateSttBorrower(
-    updateBorrowSttReqDto: UpdateBorrowSttReqDto,
-  ): Promise<BaseResDto> {
-    const { _id, status, borrower } = updateBorrowSttReqDto;
-    console.log(
-      `Update billing status of group #${_id}`,
-      updateBorrowSttReqDto,
-    );
+  async sendRequest(sendRequestReqDto: SendRequestReqDto): Promise<BaseResDto> {
+    const { _id, to_user, from_user } = sendRequestReqDto;
+    console.log(`Send billing request #${to_user}`);
     const billing = await this.billModel.findById({ _id: _id });
     if (billing) {
-      let flag = false;
-      let newState = [...billing.borrowers];
-      newState = newState.map((data) => {
-        if (data.borrower == borrower) {
-          flag = true;
-          const detailStt = {
-            lender: data.detailStt.lender,
-            borrower: status,
-          };
-          const updatedData = {
-            ...data,
-            detailStt: detailStt,
-            status: doubleCheck(detailStt),
-          };
-          return updatedData;
-        }
-        return data;
-      });
-      if (!flag) {
-        return Promise.resolve({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: `No permission`,
-          error: 'UNAUTHORIZED',
-        });
-      } else {
-        return await this.billModel
-          .updateOne(
-            { _id: _id },
-            { $set: { borrowers: newState, updatedBy: borrower } },
-          )
-          .then(() => {
-            return Promise.resolve({
-              statusCode: HttpStatus.OK,
-              message: `Update bill ${_id}' status successfully`,
-              data: { lender: billing.lender, borrowers: newState },
-            });
-          })
-          .catch((error) => {
-            return Promise.resolve({
-              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              message: error.message,
-              error: 'INTERNAL SERVER ERROR',
-            });
+      if (from_user == billing.lender) {
+        const idx = billing.borrowers.find((obj) => obj.borrower == to_user);
+        if (idx) {
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Gửi nhắc nhở tới ${to_user} thành công`,
+            data: { from_user: from_user, id: _id, data: idx },
           });
+        } else {
+          return Promise.resolve({
+            statusCode: HttpStatus.FORBIDDEN,
+            message: `Người nhận không tồn tại trong phiếu nhắc nợ`,
+          });
+        }
+      } else {
+        const idx = billing.borrowers.find((obj) => obj.borrower == from_user);
+        if (idx) {
+          return Promise.resolve({
+            statusCode: HttpStatus.OK,
+            message: `Gửi yêu cầu tới ${to_user} thành công`,
+            data: { from_user: from_user, id: _id, data: idx },
+          });
+        }
       }
     } else {
       return Promise.resolve({
         statusCode: HttpStatus.NOT_FOUND,
-        message: `Billing #${_id} not found`,
+        message: `Phiéu nhắc nợ #${_id} không tồn tại hoặc đã bị xóa`,
         error: 'NOT FOUND',
       });
     }
@@ -423,16 +383,4 @@ const setStatus = (borrowers: string[]): string => {
   }
   if (isApproved) return BillStatus[1];
   return BillStatus[2];
-};
-
-const doubleCheck = (detailStt): string => {
-  const { lender, borrow } = detailStt;
-  if (lender === BillStatus[0]) return BillStatus[0];
-  if (lender === BillStatus[2]) return BillStatus[2];
-  if (lender === BillStatus[1] && borrow === BillStatus[1])
-    return BillStatus[1];
-  if (lender === BillStatus[1] && borrow === BillStatus[0])
-    return BillStatus[0];
-  if (lender === BillStatus[1] && borrow === BillStatus[2])
-    return BillStatus[0];
 };
