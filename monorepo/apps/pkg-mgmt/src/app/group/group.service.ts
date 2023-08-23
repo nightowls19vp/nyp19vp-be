@@ -327,7 +327,7 @@ export class GroupService implements OnModuleInit {
     if (proj.funding) {
       const fundLookup = {
         $lookup: {
-          from: this.todosModel.collection.name,
+          from: this.fundingModel.collection.name,
           localField: 'funding',
           foreignField: '_id',
           pipeline: [{ $match: { $expr: { $eq: ['$deleted', false] } } }],
