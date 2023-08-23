@@ -310,7 +310,7 @@ export class ItemsService implements OnModuleInit {
           Promise.all(
             memberIds.map(async (memberId) => {
               await this.socketGateway.handleEvent(
-                'itemQuantityChanged',
+                'prodNoti',
                 memberId,
                 payload,
               );
