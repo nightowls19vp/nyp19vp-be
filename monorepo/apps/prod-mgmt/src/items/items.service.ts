@@ -260,6 +260,11 @@ export class ItemsService {
       }
     }
 
+    // for quantity
+    if (reqDto.quantity === 0) {
+      item.quantity = 0;
+    }
+
     // save the updated group product
     try {
       await this.itemRepo.save(item);

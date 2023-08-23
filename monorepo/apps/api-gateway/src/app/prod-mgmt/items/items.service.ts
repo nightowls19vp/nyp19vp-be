@@ -256,7 +256,7 @@ export class ItemsService implements OnModuleInit {
       if (
         reqDto?.quantity !== undefined &&
         reqDto?.quantity !== null &&
-        res?.data?.quantity
+        (res?.data?.quantity || res?.data?.quantity === 0)
       ) {
         const newQuantity = res.data.quantity;
         const payload: INoti = {
