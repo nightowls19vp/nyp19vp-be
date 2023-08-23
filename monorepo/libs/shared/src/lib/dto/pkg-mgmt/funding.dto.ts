@@ -66,6 +66,8 @@ export class FundingDto {
   @IsEnum(FundingStatus)
   status?: string;
 
+  createdBy?: string;
+
   createdAt?: Date;
 
   updatedAt?: Date;

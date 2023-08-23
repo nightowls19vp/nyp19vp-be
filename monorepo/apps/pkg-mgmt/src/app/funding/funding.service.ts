@@ -64,6 +64,7 @@ export class FundingService {
     const newFunding = new this.fundingModel({
       ...rest,
       status: FundingStatus[0],
+      createdBy: createdBy,
     });
     return await newFunding.save().then(async (newFund) => {
       return await this.grModel
@@ -384,6 +385,7 @@ export class FundingService {
       total: model.total,
       history: model.history,
       status: setStatus(model.ends, model.startDate),
+      createdBy: model.createdBy,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };
@@ -408,6 +410,6 @@ const setStatus = (ends, startDate: Date): string => {
     else return FundingStatus[1];
   } else {
     if (ends === 0) return FundingStatus[2];
-    else FundingStatus[1];
+    else return FundingStatus[1];
   }
 };

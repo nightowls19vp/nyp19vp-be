@@ -66,6 +66,9 @@ export class Funding {
   })
   status: string;
 
+  @Prop({ type: String, required: false })
+  createdBy: string;
+
   @Prop({ type: Date })
   createdAt: Date;
 
