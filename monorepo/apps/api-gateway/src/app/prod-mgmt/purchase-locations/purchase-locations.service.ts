@@ -61,7 +61,7 @@ export class PurchaseLocationsService implements OnModuleInit {
             kafkaTopic.PROD_MGMT.purchaseLocations.create,
             { ...createPurchaseLocationReqDto },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -99,7 +99,7 @@ export class PurchaseLocationsService implements OnModuleInit {
               id: id,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -141,7 +141,7 @@ export class PurchaseLocationsService implements OnModuleInit {
           >(kafkaTopic.PROD_MGMT.purchaseLocations.getPaginated, {
             ...reqDto,
           })
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -185,7 +185,7 @@ export class PurchaseLocationsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -227,7 +227,7 @@ export class PurchaseLocationsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -272,7 +272,7 @@ export class PurchaseLocationsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;

@@ -63,7 +63,7 @@ export class GroupProductsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -100,7 +100,7 @@ export class GroupProductsService implements OnModuleInit {
               id,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -141,7 +141,7 @@ export class GroupProductsService implements OnModuleInit {
           >(kafkaTopic.PROD_MGMT.groupProducts.getPaginated, {
             ...reqDto,
           })
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -185,7 +185,7 @@ export class GroupProductsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -226,7 +226,7 @@ export class GroupProductsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -266,7 +266,7 @@ export class GroupProductsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;

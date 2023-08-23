@@ -21,6 +21,7 @@ import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { GetGrResDto, kafkaTopic, ProjectionParams } from '@nyp19vp-be/shared';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ItemsService implements OnModuleInit {
@@ -49,6 +50,10 @@ export class ItemsService implements OnModuleInit {
     for (const topic of groupProductTopics) {
       this.prodMgmtClient.subscribeToResponseOf(topic);
     }
+
+    this.packageMgmtClient.subscribeToResponseOf(
+      kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
+    );
   }
 
   /**
@@ -66,7 +71,7 @@ export class ItemsService implements OnModuleInit {
               ...reqDto,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -99,7 +104,7 @@ export class ItemsService implements OnModuleInit {
               id: id,
             },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -141,7 +146,7 @@ export class ItemsService implements OnModuleInit {
             kafkaTopic.PROD_MGMT.items.getPaginated,
             { ...reqDto },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -180,7 +185,7 @@ export class ItemsService implements OnModuleInit {
             kafkaTopic.PROD_MGMT.items.delete,
             { ...reqDto },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -210,7 +215,7 @@ export class ItemsService implements OnModuleInit {
             kafkaTopic.PROD_MGMT.items.restore,
             { ...reqDto },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       return res;
@@ -236,13 +241,15 @@ export class ItemsService implements OnModuleInit {
     reqDto.id = id;
 
     try {
+      console.log('#kafkaTopic.PROD_MGMT.items.update', reqDto);
+
       const res = await firstValueFrom(
         this.prodMgmtClient
           .send<UpdateItemResDto, UpdateItemReqDto>(
             kafkaTopic.PROD_MGMT.items.update,
             { ...reqDto },
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       // check if quantity has changed to lower than 2, if so, send a socket event
@@ -290,13 +297,15 @@ export class ItemsService implements OnModuleInit {
 
         console.log('memberIds', memberIds);
 
-        if (newQuantity < 2) {
-          payload.type = 'runningOutOfStock';
-        } else if (newQuantity === 0) {
+        if (newQuantity === 0) {
           payload.type = 'outOfStock';
+        } else if (newQuantity < 2) {
+          payload.type = 'runningOutOfStock';
         }
 
         if (payload.type) {
+          console.log('send socket event', payload);
+
           // send socket event to all members of the group
           Promise.all(
             memberIds.map(async (memberId) => {

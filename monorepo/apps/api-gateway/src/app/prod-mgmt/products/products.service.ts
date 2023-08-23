@@ -42,7 +42,7 @@ export class ProductsService implements OnModuleInit {
             kafkaTopic.PROD_MGMT.products.getByBarcode,
             JSON.stringify(payload),
           )
-          .pipe(timeout(ms('5s'))),
+          .pipe(timeout(ms('10s'))),
       );
 
       console.log('response', response);
@@ -67,7 +67,7 @@ export class ProductsService implements OnModuleInit {
     const response = await firstValueFrom(
       this.prodMgmtClient
         .send(kafkaTopic.PROD_MGMT.products.create, JSON.stringify(payload))
-        .pipe(timeout(ms('5s'))),
+        .pipe(timeout(ms('10s'))),
     );
 
     console.log('response', response);
