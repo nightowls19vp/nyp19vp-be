@@ -1,14 +1,18 @@
+import { SocketGateway } from 'apps/api-gateway/src/app/socket/socket.gateway';
+import { CloneReqDto } from 'libs/shared/src/lib/dto/prod-mgmt';
+import { firstValueFrom } from 'rxjs';
+
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { BaseResDto, kafkaTopic } from '@nyp19vp-be/shared';
-import { CloneReqDto } from 'libs/shared/src/lib/dto/prod-mgmt';
-import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ProdMgmtService implements OnModuleInit {
   constructor(
     @Inject('PROD_MGMT_SERVICE')
     private readonly prodMgmtClient: ClientKafka,
+
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   onModuleInit() {

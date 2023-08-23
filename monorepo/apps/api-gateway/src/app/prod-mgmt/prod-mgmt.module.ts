@@ -1,17 +1,19 @@
+import { CommModule } from 'apps/api-gateway/src/app/comm/comm.module';
+import { GroupProductsModule } from 'apps/api-gateway/src/app/prod-mgmt/group-products/group-products.module';
+import { GroupsModule } from 'apps/api-gateway/src/app/prod-mgmt/groups/groups.module';
+import { ItemsModule } from 'apps/api-gateway/src/app/prod-mgmt/items/items.module';
+import { ProdMgmtController } from 'apps/api-gateway/src/app/prod-mgmt/prod-mgmt.controller';
+import { ProdMgmtService } from 'apps/api-gateway/src/app/prod-mgmt/prod-mgmt.service';
+import { ProductsModule } from 'apps/api-gateway/src/app/prod-mgmt/products/products.module';
+import { ProductsService } from 'apps/api-gateway/src/app/prod-mgmt/products/products.service';
+import { PurchaseLocationsModule } from 'apps/api-gateway/src/app/prod-mgmt/purchase-locations/purchase-locations.module';
+import { PurchaseLocationsService } from 'apps/api-gateway/src/app/prod-mgmt/purchase-locations/purchase-locations.service';
+import { StorageLocationsModule } from 'apps/api-gateway/src/app/prod-mgmt/storage-locations/storage-locations.module';
+import { StorageLocationsService } from 'apps/api-gateway/src/app/prod-mgmt/storage-locations/storage-locations.service';
+import { SocketModule } from 'apps/api-gateway/src/app/socket/socket.module';
+
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
-import { GroupProductsModule } from './group-products/group-products.module';
-import { GroupsModule } from './groups/groups.module';
-import { ItemsModule } from './items/items.module';
-import { ProdMgmtController } from './prod-mgmt.controller';
-import { ProdMgmtService } from './prod-mgmt.service';
-import { ProductsModule } from './products/products.module';
-import { ProductsService } from './products/products.service';
-import { PurchaseLocationsModule } from './purchase-locations/purchase-locations.module';
-import { PurchaseLocationsService } from './purchase-locations/purchase-locations.service';
-import { StorageLocationsModule } from './storage-locations/storage-locations.module';
-import { StorageLocationsService } from './storage-locations/storage-locations.service';
 
 @Module({
   imports: [
@@ -36,6 +38,9 @@ import { StorageLocationsService } from './storage-locations/storage-locations.s
     ItemsModule,
     PurchaseLocationsModule,
     StorageLocationsModule,
+
+    SocketModule,
+    CommModule,
   ],
   controllers: [ProdMgmtController],
   providers: [

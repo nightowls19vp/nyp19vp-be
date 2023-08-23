@@ -3,6 +3,12 @@ import * as cheerio from 'cheerio';
 import * as dotenv from 'dotenv';
 import { ProductDto } from 'libs/shared/src/lib/dto/prod-mgmt/dto/product.dto';
 
+import * as https from 'https';
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
 import { HttpStatus } from '@nestjs/common';
 import { ENV_FILE } from '@nyp19vp-be/shared';
 import validbarcode from 'barcode-validator';
@@ -52,6 +58,7 @@ export const fetchProductDataFromGoUpc = async (
       headers: {
         Authorization: `Bearer ${process.env.GO_UPC_API_KEY}`,
       },
+      httpsAgent,
     });
 
     console.log('Response: ', response.data);
@@ -101,7 +108,9 @@ const crawlProductInfoWithRetries = async (
   try {
     // check barcode is valid
 
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      httpsAgent,
+    });
 
     if (response.status !== HttpStatus.OK) {
       return null;

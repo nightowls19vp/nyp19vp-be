@@ -39,6 +39,7 @@ export class SocketGateway
       );
     } catch (error) {
       console.error(error);
+      client.disconnect();
     }
   }
 
@@ -51,12 +52,14 @@ export class SocketGateway
       );
     } catch (error) {
       console.error(error);
+      client.disconnect();
     }
   }
 
   afterInit(server) {
     console.log('Socket Gateway Initialized');
   }
+
   async handleEvent(event: string, user_id: string, data) {
     const client = await this.commService.getClientSocket(user_id);
     if (client.socket) {
