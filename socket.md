@@ -66,6 +66,20 @@
 
 -Event: funding_req
 
-### 1.6.2.
+### 1.6.2. Funding
 
 -Event: funding
+
+## 1.7. Prod noti
+
+- event-pattern: "prodNoti"
+
+Payload
+
+```typescript
+interface {
+    type: 'outOfStock' | 'runningOutOfStock' | 'expiringSoon' | 'expired';
+    itemId: string;
+    groupId: string;
+}
+```
