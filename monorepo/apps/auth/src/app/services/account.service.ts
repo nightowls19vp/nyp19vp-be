@@ -303,7 +303,7 @@ export class AccountService {
     const createUserInfoRes: BaseResDto = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(reqDto))
-        .pipe(timeout(toMs('5s'))),
+        .pipe(timeout(toMs('10s'))),
     );
 
     console.log('createUserInfoRes', createUserInfoRes);
@@ -403,7 +403,7 @@ export class AccountService {
       const getUserInfoRes: GetUserResDto = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.GET_BY_ID, id)
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
 
       return getUserInfoRes;
@@ -420,7 +420,7 @@ export class AccountService {
     return await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.GET_DELETED, req)
-        .pipe(timeout(7000)),
+        .pipe(timeout(10000)),
     );
   }
 }

@@ -128,7 +128,7 @@ export class TodosService implements OnModuleInit {
       const list_user = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.GET_MANY, list_others)
-          .pipe(timeout(5000)),
+          .pipe(timeout(10000)),
       );
       const result: GetGrDto_Todos = {
         _id: model._id,

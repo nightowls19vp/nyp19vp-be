@@ -53,7 +53,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(createTodosReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -91,7 +91,7 @@ export class TodosService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.GET_BY_ID, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -112,7 +112,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(updateTodosReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -155,7 +155,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(updateTodosStateReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -196,7 +196,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(updateTodoReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -214,7 +214,7 @@ export class TodosService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.DELETE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -232,7 +232,7 @@ export class TodosService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TODOS.RESTORE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -253,7 +253,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(rmTodosReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -274,7 +274,7 @@ export class TodosService implements OnModuleInit {
           JSON.stringify(addTodosReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

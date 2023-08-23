@@ -45,7 +45,7 @@ export class TaskService implements OnModuleInit {
           JSON.stringify(createTaskReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -68,7 +68,7 @@ export class TaskService implements OnModuleInit {
           JSON.stringify(updateTaskReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -91,7 +91,7 @@ export class TaskService implements OnModuleInit {
           JSON.stringify(updateTaskStateReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -109,7 +109,7 @@ export class TaskService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.DELETE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -129,7 +129,7 @@ export class TaskService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.RESTORE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -149,7 +149,7 @@ export class TaskService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.GET_BY_ID, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -167,7 +167,7 @@ export class TaskService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.TASK.UPDATE_OCCURRENCE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

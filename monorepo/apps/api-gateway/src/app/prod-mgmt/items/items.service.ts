@@ -20,8 +20,8 @@ import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { GetGrResDto, kafkaTopic, ProjectionParams } from '@nyp19vp-be/shared';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { GetGrResDto, kafkaTopic, ProjectionParams } from '@nyp19vp-be/shared';
 
 @Injectable()
 export class ItemsService implements OnModuleInit {

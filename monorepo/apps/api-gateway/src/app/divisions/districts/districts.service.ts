@@ -25,7 +25,7 @@ export class DistrictsService implements OnModuleInit {
     return firstValueFrom(
       this.prodMgmtClient
         .send(kafkaTopic.PROD_MGMT.districts.findByCode, code)
-        .pipe(timeout(ms('5s'))),
+        .pipe(timeout(ms('10s'))),
     );
   }
 
@@ -35,7 +35,7 @@ export class DistrictsService implements OnModuleInit {
     return firstValueFrom(
       this.prodMgmtClient
         .send(kafkaTopic.PROD_MGMT.districts.search, [q, p].join(','))
-        .pipe(timeout(ms('5s'))),
+        .pipe(timeout(ms('10s'))),
     );
   }
 }

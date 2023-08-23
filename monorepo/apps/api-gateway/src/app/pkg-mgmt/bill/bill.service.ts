@@ -43,7 +43,7 @@ export class BillService implements OnModuleInit {
           JSON.stringify(createBillReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -73,7 +73,7 @@ export class BillService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.GET_BY_ID, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -94,7 +94,7 @@ export class BillService implements OnModuleInit {
           JSON.stringify(updateBillReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -129,7 +129,7 @@ export class BillService implements OnModuleInit {
           JSON.stringify(updateBillSttReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -157,7 +157,7 @@ export class BillService implements OnModuleInit {
           JSON.stringify(sendRequestReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -180,7 +180,7 @@ export class BillService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.DELETE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -198,7 +198,7 @@ export class BillService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.EXTENSION.BILL.RESTORE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

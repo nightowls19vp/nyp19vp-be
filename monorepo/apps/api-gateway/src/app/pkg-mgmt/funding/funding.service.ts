@@ -45,7 +45,7 @@ export class FundingService {
           JSON.stringify(createFundingDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -69,7 +69,7 @@ export class FundingService {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.FUNDING.GET_BY_ID, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -91,7 +91,7 @@ export class FundingService {
           JSON.stringify(updateFundingReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -110,7 +110,7 @@ export class FundingService {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.FUNDING.UPDATE_STT, JSON.stringify(updateStt))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -127,7 +127,7 @@ export class FundingService {
   async remove(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.FUNDING.DELETE, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -146,7 +146,7 @@ export class FundingService {
   async restore(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.packageMgmtClient.send(kafkaTopic.PKG_MGMT.FUNDING.RESTORE, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -167,7 +167,7 @@ export class FundingService {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.FUNDING.UPDATE_OCCURRENCE, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -186,7 +186,7 @@ export class FundingService {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.FUNDING.SEND_REQ, JSON.stringify(sendReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -210,7 +210,7 @@ export class FundingService {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.FUNDING.ADD_HISTORY, id)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

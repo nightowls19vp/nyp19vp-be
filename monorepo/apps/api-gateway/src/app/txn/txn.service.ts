@@ -85,7 +85,7 @@ export class TxnService {
       this.txnClient
         .send(kafkaTopic.TXN.VNP_CALLBACK, JSON.stringify(vnpIpnUrlReqDto))
         .pipe(
-          timeout(3000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -108,7 +108,7 @@ export class TxnService {
   async findByUser(user_id: string): Promise<BaseResDto> {
     return await firstValueFrom(
       this.txnClient.send(kafkaTopic.TXN.GET_BY_USER, user_id).pipe(
-        timeout(3000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
