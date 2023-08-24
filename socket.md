@@ -83,3 +83,16 @@ interface {
     groupId: string;
 }
 ```
+
+## Bo sung nhu yeu pham
+
+- Event: 'restockNoti'
+
+Payload
+
+```typescript
+interface IRestockNoti {
+    itemId: string;
+    groupId: string;
+}
+```
