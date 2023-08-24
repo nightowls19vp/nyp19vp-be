@@ -31,6 +31,10 @@ class TodoDto {
     example: true,
   })
   isCompleted: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  assignee?: string;
 }
 
 export class TodosDto {

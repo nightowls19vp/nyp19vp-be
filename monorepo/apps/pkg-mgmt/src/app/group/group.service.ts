@@ -252,7 +252,7 @@ export class GroupService implements OnModuleInit {
             await this.todoModel.populate(gr.todos, {
               path: 'todos',
             });
-            await this.todoModel.populate(gr.funding, {
+            await this.fundHistModel.populate(gr.funding, {
               path: 'history',
             });
             return await this.mapGrModelToGetGrDto(gr, user);

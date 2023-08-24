@@ -120,20 +120,41 @@ export class TodosService implements OnModuleInit {
     model,
     owner?: string,
   ): Promise<GetGrDto_Todos> {
-    const { updatedBy, createdBy, ...rest } = model;
+    const { updatedBy, createdBy } = model;
     if (owner != undefined && model.state == State[0] && createdBy != owner) {
       return undefined;
     } else {
-      const list_others = updatedBy ? [createdBy, updatedBy] : [createdBy];
+      let list_others = updatedBy ? [createdBy, updatedBy] : [createdBy];
+      for (const item of model.todos) {
+        if (item.assignee) {
+          list_others.push(item.assignee);
+        }
+      }
+      list_others = list_others.filter(
+        (value, index, array) => array.indexOf(value) === index,
+      );
+
       const list_user = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.GET_MANY, list_others)
           .pipe(timeout(10000)),
       );
+      let newState = [...model.todos];
+      newState = newState.map((data) => {
+        const idx = list_user.find((elem) => elem._id == data.assignee);
+        if (idx) {
+          const updatedData = {
+            ...data,
+            assignee: idx,
+          };
+          return updatedData;
+        }
+        return data;
+      });
       const result: GetGrDto_Todos = {
         _id: model._id,
         summary: model.summary,
-        todos: model.todos,
+        todos: newState,
         state: model.state,
         createdBy: list_user.find((elem) => elem._id == createdBy),
         updatedBy: updatedBy
@@ -248,6 +269,7 @@ export class TodosService implements OnModuleInit {
           {
             $set: {
               todo: updateTodoReqDto.todo,
+              assignee: updateTodoReqDto.assignee,
               description: updateTodoReqDto.description
                 ? updateTodoReqDto.description
                 : null,
