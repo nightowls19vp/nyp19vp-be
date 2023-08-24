@@ -45,9 +45,6 @@ export class NewGroupProductDto {
   @ApiProperty({ type: TimestampEmbeddedDto, required: false, readOnly: true })
   timestamp?: TimestampEmbeddedDto;
 
-  @ApiProperty({ required: false, readOnly: true })
-  groupId?: string;
-
   @ApiProperty({ required: false, readOnly: true, type: GroupDto })
   group: ProdMgmtGroupDto;
 }
