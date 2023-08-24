@@ -55,7 +55,9 @@ export class NewGroupsProductsService {
       interval: newGroupProduct?.interval,
       intervalType: newGroupProduct?.intervalType,
 
+      lastNotification: newGroupProduct?.lastNotification,
       nextNotification: newGroupProduct?.nextNotification,
+
       timestamp: newGroupProduct?.timestamp,
       group: {
         id: newGroupProduct?.group?.id,
