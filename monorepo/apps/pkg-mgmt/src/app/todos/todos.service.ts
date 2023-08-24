@@ -59,6 +59,7 @@ export class TodosService implements OnModuleInit {
       const createdTodos = todos.map(async (todo) => {
         const newTodo = new this.todoModel({
           todo: todo.todo,
+          assignee: todo.assignee,
           description: todo.description,
           isCompleted: todo.isCompleted,
         });
