@@ -20,8 +20,8 @@ import { catchError, firstValueFrom, timeout } from 'rxjs';
 
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { GetGrResDto, kafkaTopic, ProjectionParams } from '@nyp19vp-be/shared';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { GetGrResDto, kafkaTopic, ProjectionParams } from '@nyp19vp-be/shared';
 
 @Injectable()
 export class ItemsService implements OnModuleInit {
@@ -256,7 +256,7 @@ export class ItemsService implements OnModuleInit {
       if (
         reqDto?.quantity !== undefined &&
         reqDto?.quantity !== null &&
-        res?.data?.quantity
+        (res?.data?.quantity || res?.data?.quantity === 0)
       ) {
         const newQuantity = res.data.quantity;
         const payload: INoti = {
@@ -310,7 +310,7 @@ export class ItemsService implements OnModuleInit {
           Promise.all(
             memberIds.map(async (memberId) => {
               await this.socketGateway.handleEvent(
-                'itemQuantityChanged',
+                'prodNoti',
                 memberId,
                 payload,
               );

@@ -372,7 +372,7 @@ export class FundingService {
     const list_user = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.GET_MANY, members)
-        .pipe(timeout(5000)),
+        .pipe(timeout(10000)),
     );
     const getGrDto_Fund: GetGrDto_Fund = {
       _id: model._id,

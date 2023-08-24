@@ -251,7 +251,7 @@ export class GroupService implements OnModuleInit {
           JSON.stringify(updateAvatarReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -274,7 +274,7 @@ export class GroupService implements OnModuleInit {
           JSON.stringify(activateGrPkgReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -297,7 +297,7 @@ export class GroupService implements OnModuleInit {
           JSON.stringify(updateChannelReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

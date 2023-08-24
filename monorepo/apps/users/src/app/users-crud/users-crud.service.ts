@@ -359,7 +359,7 @@ export class UsersCrudService implements OnModuleInit {
           const pkgs = await firstValueFrom(
             this.pkgClient
               .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
-              .pipe(timeout(5000)),
+              .pipe(timeout(10000)),
           );
           const result = [];
           const rest = [];
@@ -510,7 +510,7 @@ export class UsersCrudService implements OnModuleInit {
         return await firstValueFrom(
           this.txnClient
             .send(mop[method.bank_code], checkoutReqDto)
-            .pipe(timeout(5000)),
+            .pipe(timeout(10000)),
         );
       } else {
         return Promise.resolve({
@@ -561,7 +561,7 @@ export class UsersCrudService implements OnModuleInit {
       return await firstValueFrom(
         this.txnClient
           .send(mop[method.bank_code], checkoutReqDto)
-          .pipe(timeout(5000)),
+          .pipe(timeout(10000)),
       );
     }
   }

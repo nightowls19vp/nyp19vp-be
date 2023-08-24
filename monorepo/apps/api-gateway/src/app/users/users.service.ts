@@ -45,7 +45,7 @@ export class UsersService {
       this.usersClient
         .send(kafkaTopic.USERS.CREATE, JSON.stringify(createUserReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -65,7 +65,7 @@ export class UsersService {
       this.usersClient
         .send(kafkaTopic.USERS.UPDATE_INFO, JSON.stringify(updateUserReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -83,7 +83,7 @@ export class UsersService {
   async getUserById(id: Types.ObjectId): Promise<GetUserResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_BY_ID, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -99,7 +99,7 @@ export class UsersService {
   async getUserSettingById(id: Types.ObjectId): Promise<GetUserSettingResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_SETTING_BY_ID, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -129,7 +129,7 @@ export class UsersService {
           JSON.stringify(updateSettingReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -152,7 +152,7 @@ export class UsersService {
           JSON.stringify(updateAvatarReqDto),
         )
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -169,7 +169,7 @@ export class UsersService {
   async deleteUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.REMOVE, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -187,7 +187,7 @@ export class UsersService {
       this.usersClient
         .send(kafkaTopic.USERS.UPDATE_CART, JSON.stringify(updateCartReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -203,7 +203,7 @@ export class UsersService {
   async getCart(id: Types.ObjectId): Promise<GetCartResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_CART, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -236,7 +236,7 @@ export class UsersService {
       this.usersClient
         .send(kafkaTopic.USERS.CHECKOUT, JSON.stringify(checkoutReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -260,7 +260,7 @@ export class UsersService {
   async searchUser(keyword: string): Promise<UserDto[]> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.SEARCH_USER, keyword).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -270,7 +270,7 @@ export class UsersService {
   async restoreUser(id: Types.ObjectId): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.RESTORE, id).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -290,7 +290,7 @@ export class UsersService {
       this.usersClient
         .send(kafkaTopic.USERS.RENEW_PKG, JSON.stringify(renewGrPkgReqDto))
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),
@@ -306,7 +306,7 @@ export class UsersService {
   async getWithDeleted(req): Promise<UserDto[]> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.GET_DELETED, req).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),
@@ -316,7 +316,7 @@ export class UsersService {
   async statistic(req): Promise<BaseResDto> {
     return await firstValueFrom(
       this.usersClient.send(kafkaTopic.USERS.STATISTIC, req).pipe(
-        timeout(5000),
+        timeout(10000),
         catchError(() => {
           throw new RequestTimeoutException();
         }),

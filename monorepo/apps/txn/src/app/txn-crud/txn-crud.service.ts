@@ -117,7 +117,7 @@ export class TxnCrudService implements OnModuleInit {
       const res = await firstValueFrom(
         this.pkgClient
           .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
-          .pipe(timeout(5000)),
+          .pipe(timeout(10000)),
       );
       if (res.length) {
         const zaloPayReq = mapZaloPayReqDto(
@@ -289,7 +289,7 @@ export class TxnCrudService implements OnModuleInit {
       const updateTrxHist = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
-          .pipe(timeout(5000)),
+          .pipe(timeout(10000)),
       );
       if (updateTrxHist.statusCode != HttpStatus.OK) {
         return Promise.resolve({
@@ -312,7 +312,7 @@ export class TxnCrudService implements OnModuleInit {
           const renewGrPkg = await firstValueFrom(
             this.pkgClient
               .send(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG, updateGrPkgReqDto)
-              .pipe(timeout(5000)),
+              .pipe(timeout(10000)),
           );
           if (renewGrPkg.statusCode != HttpStatus.OK) {
             return Promise.resolve({
@@ -328,7 +328,7 @@ export class TxnCrudService implements OnModuleInit {
           const createGr = await firstValueFrom(
             this.pkgClient
               .send(kafkaTopic.PKG_MGMT.GROUP.CREATE, createGrReqDto)
-              .pipe(timeout(5000)),
+              .pipe(timeout(10000)),
           );
           if (createGr.statusCode != HttpStatus.CREATED) {
             return Promise.resolve({
@@ -477,7 +477,7 @@ export class TxnCrudService implements OnModuleInit {
     const res = await firstValueFrom(
       this.pkgClient
         .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_MANY, list_id)
-        .pipe(timeout(5000)),
+        .pipe(timeout(10000)),
     );
     if (res.length) {
       const vnPayReq = mapVNPCreateOrderReqDto(
@@ -551,7 +551,7 @@ export class TxnCrudService implements OnModuleInit {
             const createGr = await firstValueFrom(
               this.pkgClient
                 .send(kafkaTopic.PKG_MGMT.GROUP.CREATE, createGrReqDto)
-                .pipe(timeout(5000)),
+                .pipe(timeout(10000)),
             );
             if (createGr.statusCode == HttpStatus.CREATED) {
               await session.commitTransaction();
@@ -579,7 +579,7 @@ export class TxnCrudService implements OnModuleInit {
             const renewGrPkg = await firstValueFrom(
               this.pkgClient
                 .send(kafkaTopic.PKG_MGMT.GROUP.ADD_PKG, updateGrPkgReqDto)
-                .pipe(timeout(5000)),
+                .pipe(timeout(10000)),
             );
             if (renewGrPkg.statusCode == HttpStatus.OK) {
               await session.commitTransaction();
@@ -604,7 +604,7 @@ export class TxnCrudService implements OnModuleInit {
           const res = await firstValueFrom(
             this.usersClient
               .send(kafkaTopic.USERS.UPDATE_TRX, updateTrxHistReqDto)
-              .pipe(timeout(5000)),
+              .pipe(timeout(10000)),
           );
           if (res.statusCode == HttpStatus.OK) {
             await session.commitTransaction();

@@ -133,7 +133,7 @@ export class BillService implements OnModuleInit {
     const list_user = await firstValueFrom(
       this.usersClient
         .send(kafkaTopic.USERS.GET_MANY, list_id)
-        .pipe(timeout(5000)),
+        .pipe(timeout(10000)),
     );
     const newBorrowers = [];
     let total = 0;

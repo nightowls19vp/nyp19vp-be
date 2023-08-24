@@ -61,7 +61,7 @@ export class PackageService implements OnModuleInit {
       this.packageMgmtClient
         .send(kafkaTopic.PKG_MGMT.PACKAGE.GET_DELETED, req)
         .pipe(
-          timeout(5000),
+          timeout(10000),
           catchError(() => {
             throw new RequestTimeoutException();
           }),

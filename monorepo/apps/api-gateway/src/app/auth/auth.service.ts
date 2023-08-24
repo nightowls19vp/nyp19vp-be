@@ -79,7 +79,7 @@ export class AuthService {
             kafkaTopic.AUTH.SOCIAL_SIGN_UP,
             JSON.stringify(socialSignupReqDto),
           )
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
       return resDto;
     } catch (error) {
@@ -126,7 +126,7 @@ export class AuthService {
       return await firstValueFrom(
         this.authClient
           .send(kafkaTopic.AUTH.LOGIN, JSON.stringify(reqDto))
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
     } catch (error) {
       console.error('error', error);
@@ -139,7 +139,7 @@ export class AuthService {
     return firstValueFrom(
       this.authClient
         .send(kafkaTopic.AUTH.LOGOUT, JSON.stringify(reqDto))
-        .pipe(timeout(toMs('5s'))),
+        .pipe(timeout(toMs('10s'))),
     );
   }
 
@@ -197,7 +197,7 @@ export class AuthService {
       const resDto: RefreshTokenResDto = await firstValueFrom(
         this.authClient
           .send(kafkaTopic.AUTH.REFRESH, reqDto)
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
 
       return resDto;
@@ -225,7 +225,7 @@ export class AuthService {
     const resDto = await firstValueFrom(
       this.authClient
         .send(kafkaTopic.AUTH.SOCIAL_LINK, JSON.stringify(reqDto))
-        .pipe(timeout(toMs('5s')))
+        .pipe(timeout(toMs('10s')))
         .pipe(
           catchError((error) => {
             throw error;
@@ -260,7 +260,7 @@ export class AuthService {
     const resDto = await firstValueFrom(
       this.authClient
         .send(kafkaTopic.AUTH.GET, req)
-        .pipe(timeout(toMs('5s')))
+        .pipe(timeout(toMs('10s')))
         .pipe(
           catchError((error) => {
             throw error;

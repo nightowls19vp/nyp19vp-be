@@ -391,7 +391,7 @@ export class AuthService {
       userInfoResDto = await firstValueFrom(
         this.usersClient
           .send(kafkaTopic.USERS.GET_BY_ID, reqDto.addedBy)
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
     } catch (error) {
       console.error('error', error);
@@ -412,7 +412,7 @@ export class AuthService {
             kafkaTopic.PKG_MGMT.GROUP.GET_BY_ID,
             JSON.stringify(projectParams),
           )
-          .pipe(timeout(toMs('5s'))),
+          .pipe(timeout(toMs('10s'))),
       );
     } catch (error) {
       console.error('error', error);
