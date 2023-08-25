@@ -11,7 +11,7 @@ export class Todo {
   @Prop({ type: String, required: true })
   todo: string;
 
-  @Prop()
+  @Prop({ type: String, required: false })
   assignee: string;
 
   @Prop({ type: String, required: false })

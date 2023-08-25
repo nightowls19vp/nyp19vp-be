@@ -186,7 +186,7 @@ export class GroupService implements OnModuleInit {
           return Promise.resolve({
             statusCode: HttpStatus.OK,
             message: `get group #${_id} successfully`,
-            group: await this.mapGrModelToGetGrDto(res),
+            group: await this.mapGrModelToGetGrDto(res.toObject()),
           });
         } else {
           return Promise.resolve({
