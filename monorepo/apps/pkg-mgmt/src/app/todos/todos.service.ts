@@ -105,7 +105,9 @@ export class TodosService implements OnModuleInit {
           message: res
             ? `Get todos #${id} successfully`
             : `Todos #${id} not found`,
-          todos: res ? await this.mapTodosModelToGetGrDto_Todos(res) : null,
+          todos: res
+            ? await this.mapTodosModelToGetGrDto_Todos(res.toObject())
+            : null,
         };
       })
       .catch((error) => {

@@ -32,7 +32,7 @@ class TodoDto {
   })
   isCompleted: boolean;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: String, required: false })
   @IsOptional()
   assignee?: string;
 }
@@ -52,11 +52,13 @@ export class TodosDto {
         todo: 'Nước tương tam thái tử',
         description: 'Mua 2 chai',
         isCompleted: false,
+        assignee: '',
       },
       {
         todo: 'Tương ớt Cholimex',
         description: null,
         isCompleted: false,
+        assignee: null,
       },
     ],
   })
