@@ -15,6 +15,8 @@ import { SocketModule } from 'apps/api-gateway/src/app/socket/socket.module';
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { NewGroupProductsModule } from './new-group-products/new-group-products.module';
+
 @Module({
   imports: [
     ClientsModule.register([
@@ -35,6 +37,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     GroupsModule,
     ProductsModule,
     GroupProductsModule,
+    NewGroupProductsModule,
     ItemsModule,
     PurchaseLocationsModule,
     StorageLocationsModule,

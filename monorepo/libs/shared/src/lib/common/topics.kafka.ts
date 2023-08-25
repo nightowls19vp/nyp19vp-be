@@ -160,6 +160,18 @@ export const PROD_MGMT = {
     getPaginated: 'prod_mgmt_get_paginated_group_products',
     getById: 'prod_mgmt_get_group_by_id',
   },
+
+  newGroupProducts: {
+    create: 'prod_mgmt_create_new_group_product',
+    update: 'prod_mgmt_update_new_group_product',
+    delete: 'prod_mgmt_delete_new_group_product',
+    restore: 'prod_mgmt_restore_new_group_product',
+    getPaginated: 'prod_mgmt_get_paginated_new_group_products',
+    getById: 'prod_mgmt_get_new_group_by_id',
+
+    updateNextNotification: 'prod_mgmt_update_next_notification',
+  },
+
   storageLocations: {
     create: 'prod_mgmt_create_storage_location',
     update: 'prod_mgmt_update_storage_location',
